@@ -1,0 +1,136 @@
+# =============================================================================
+# engagement — UTM attribution masters (utm.campaign / utm.source /
+#   utm.medium). The attribution PRIMITIVE of the marketing stack: every
+#   downstream surface (CRM convergence, W6 mass mailing, W7 events) cites
+#   these three masters as its attribution floor.
+#
+# PORT DECISIONS (source: docs/odoo/foundation/engagement/_extraction_utm.md):
+#  - The v19 COLLAPSE is modeled from day one: there is ONE campaign entity.
+#    Odoo 19 deleted mass_mailing.campaign — mailing (W6) hangs mailings and
+#    A/B testing off utm.campaign. EngagementCampaign is that entity, so the
+#    W6 mailing work extends it and never re-shapes it.
+#  - campaign carries the title/name duality verbatim: `title` is the human
+#    name (required), `name` is the URL-facing unique identifier minted from
+#    the title through the unique-name counter engine (write service).
+#  - is_auto_campaign marks cookie-minted campaigns so lists can filter them
+#    (EN-29) — the find-or-create seam sets it.
+#  - Masters are UNFENCED (company_fence: none) — Odoo ships utm.* with zero
+#    company columns and zero ir.rules; ADR-0014 names this stack posture-4.
+#  - user_id (responsible) is a logical sapiens.User ref like every sibling.
+#  - utm.stage / utm.tag are kanban decoration — deferred; their later
+#    addition does not reshape these masters (see index flag coverage).
+# =============================================================================
+
+models:
+
+  - name: EngagementCampaign
+    collection: engagement_campaigns
+    description: "utm.campaign — THE single campaign entity (Odoo 19 collapsed mass_mailing.campaign INTO utm.campaign; mailings and A/B testing ride this model). title is the human name; name is the URL-facing unique identifier minted from title via the unique-name counter engine. is_auto_campaign marks campaigns minted from visitor attribution rather than authored."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(120)", "@indexed"]
+        description: "Campaign Identifier — URL-facing unique key, minted from title through the unique-name engine ('Name [N]' counters fill holes)."
+
+      title:
+        type: string
+        attributes: ["@required", "@max(120)"]
+        description: "Human campaign name."
+
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag (inactive campaigns drop out of default lists)."
+
+      user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Responsible user # logical FK sapiens.User.id"
+
+      is_auto_campaign:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "True when minted by the attribution find-or-create seam (visitor cookie strings) rather than authored — lists filter on it."
+
+      color:
+        type: integer?
+        description: "Kanban color index (presentation-only)."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [name]
+        where: "deleted_at IS NULL"
+        description: "One live campaign per identifier (the URL-facing key)"
+      - type: index
+        fields: [is_auto_campaign]
+        description: "Auto-minted filter (cookie-minted campaigns)"
+
+  - name: EngagementSource
+    collection: engagement_sources
+    description: "utm.source — where the link came from (Search Engine, Referral, ...). Names are the dedup grain: the find-or-create seam matches case-insensitively and mints what it cannot match."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(120)"]
+        description: "Source name — unique among live rows; case-insensitive dedup grain."
+
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [name]
+        where: "deleted_at IS NULL"
+        description: "One live source per name (SQL-level backstop of the find-or-create grain)"
+
+  - name: EngagementMedium
+    collection: engagement_media
+    description: "utm.medium — delivery channel vocabulary (Email, Website, Banner, ...). Names are the dedup grain, case-insensitive; the find-or-create seam mints unknown channels on demand."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(120)"]
+        description: "Medium name — unique among live rows; case-insensitive dedup grain."
+
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [name]
+        where: "deleted_at IS NULL"
+        description: "One live medium per name (SQL-level backstop of the find-or-create grain)"

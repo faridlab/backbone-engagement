@@ -1,0 +1,147 @@
+# =============================================================================
+# engagement — the short-link click engine (link.tracker +
+#   link.tracker.click). A tracker is one shortened target carrying its
+#   attribution triple; every resolved /r/<code> hit mints a click row and
+#   redirects to the target with the tracker's UTM params injected.
+#
+# PORT DECISIONS (source: docs/odoo/foundation/engagement/_extraction_link_tracker.md):
+#  - link.tracker.code is collapsed INTO the tracker row (`code` column):
+#    upstream's own inverse RENAMES the single code row — one live code per
+#    tracker is the invariant; the history table is Odoo-compat, not needed.
+#    UNIQUE(code) stays a real SQL constraint (as upstream).
+#  - NO server-side title fetch (decided hardening — the og:title GET was an
+#    SSRF-shaped egress, EN-41): `title` is caller-supplied, previews render
+#    client-side in the webapp. See the module README port notes.
+#  - Clicks are deduped and capped (decided hardening of EN-40): a dedup key
+#    over (link, visitor ip, UTC day) with a UNIQUE index makes click minting
+#    idempotent (replays converge), and the write path refuses to mint past a
+#    per-tracker cap (storage-exhaustion backstop; the redirect itself never
+#    depends on minting succeeding).
+#  - 5-tuple uniqueness (url, campaign, medium, source, label — EN-42) stays
+#    in the write path (search_or_create with IS NOT DISTINCT FROM matching),
+#    NOT in SQL, for exactly the NULL semantics upstream cites.
+#  - UTM refs are logical (backbone emits no cross-table SQL FKs); deleting a
+#    master leaves the tracker's attribution dangling-NULL by write-path
+#    convention (EN-45's set-null posture) — campaign_click_summary reads
+#    the click rows' own denormalized campaign, which survives master deletes.
+#  - ip is stored as a hash-grain string exactly as upstream stores
+#    remote_addr; country is a plain ISO code column when the host supplies
+#    one (upstream's GeoIP country_id lookup is host infrastructure, not
+#    ported).
+# =============================================================================
+
+models:
+
+  - name: EngagementLinkTracker
+    collection: engagement_link_trackers
+    description: "link.tracker — one shortened target: the absolute http(s) URL, its single short code (UNIQUE), the attribution triple, and a caller-supplied title. The public /r/<code> route resolves the code, mints a deduped click, and redirects with UTM params injected."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      url:
+        type: string
+        attributes: ["@required", "@max(2000)", "@indexed"]
+        description: "Target URL — ABSOLUTE http(s) only, enforced at create and re-checked at redirect (no open redirect)."
+
+      code:
+        type: string
+        attributes: ["@required", "@max(16)"]
+        description: "The short code ([A-Za-z0-9], minted random from length 3; the minting retry grows the length on collision). One live code per tracker."
+
+      title:
+        type: string?
+        attributes: ["@max(300)"]
+        description: "Caller-supplied display title. NO server-side fetch is performed (the og:title egress is closed by decision); link previews render client-side."
+
+      label:
+        type: string
+        attributes: ["@max(40)"]
+        description: "Anchor/button label the link was minted from — part of the uniqueness 5-tuple (empty when unknown)."
+
+      campaign_id:
+        type: uuid?
+        attributes: ["@foreign_key(EngagementCampaign.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Attribution: campaign # logical FK EngagementCampaign.id (set-null posture on master delete)"
+
+      medium_id:
+        type: uuid?
+        attributes: ["@foreign_key(EngagementMedium.id)", "@exclude_from_foreign_key_check"]
+        description: "Attribution: medium # logical FK EngagementMedium.id (set-null posture)"
+
+      source_id:
+        type: uuid?
+        attributes: ["@foreign_key(EngagementSource.id)", "@exclude_from_foreign_key_check"]
+        description: "Attribution: source # logical FK EngagementSource.id (set-null posture)"
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [code]
+        where: "deleted_at IS NULL"
+        description: "The short-code registry — one live tracker per code"
+      - type: index
+        fields: [url]
+        description: "5-tuple lookup arm (search_or_create probes by url first)"
+
+  - name: EngagementLinkTrackerClick
+    collection: engagement_link_tracker_clicks
+    description: "link.tracker.click — the click ledger: one row per DEDUPED hit (link, visitor ip, UTC day). Upstream minted one row per raw hit with no dedup, cap, or constraint; this port makes the mint idempotent via the unique dedup key and caps rows per tracker in the write path."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      link_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(EngagementLinkTracker.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The tracker that was hit # logical FK EngagementLinkTracker.id (clicks go when the tracker goes — write-path cascade)"
+
+      campaign_id:
+        type: uuid?
+        attributes: ["@foreign_key(EngagementCampaign.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "DENORMALIZED copy of the tracker's campaign at mint time — campaign stats never join the tracker table (upstream's read_group grain; survives later attribution edits)."
+
+      ip:
+        type: string?
+        attributes: ["@max(64)"]
+        description: "Visitor remote_addr as seen by the host (the dedup grain alongside the link and the UTC day)."
+
+      country_code:
+        type: string?
+        attributes: ["@max(2)"]
+        description: "Optional ISO 3166-1 alpha-2 country code when the host resolves one (GeoIP is host infrastructure; not ported)."
+
+      click_day:
+        type: date
+        attributes: ["@required", "@indexed"]
+        description: "UTC day of the hit — the dedup window (one counted click per (link, ip, day))."
+
+      dedup_key:
+        type: string
+        attributes: ["@required", "@max(200)"]
+        description: "The idempotency key over (link, ip, UTC day) — UNIQUE among live rows; replayed hits converge instead of minting."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [dedup_key]
+        where: "deleted_at IS NULL"
+        description: "Click idempotency — one live row per (link, ip, UTC day)"
+      - type: index
+        fields: [link_id, click_day]
+        description: "Per-tracker per-day counting (the click-count projection)"
+      - type: index
+        fields: [campaign_id]
+        description: "Campaign click summaries read clicks by their denormalized campaign"

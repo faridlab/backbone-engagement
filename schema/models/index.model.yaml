@@ -1,0 +1,131 @@
+# =============================================================================
+# engagement Module - Schema Index
+# =============================================================================
+# Version: 2.0
+# Description: Module schema index. `module:` and `schema:` are stamped from
+# the module name by `metaphor module create`. `schema:` gives this module its
+# OWN Postgres schema (migrations emit `CREATE SCHEMA engagement` and qualify
+# tables as `engagement.<table>`) — the convention every backbone module
+# follows (see backbone-sapiens, backbone-bucket). Do not remove it.
+# =============================================================================
+
+module: engagement
+version: 2
+schema: engagement
+description: "engagement — the attribution floor: UTM masters (campaign/source/medium) + the short-link tracker and its click ledger (Odoo utm + link_tracker port)"
+
+# ADR-0014 company fence: the Odoo engagement stack ships NO company column
+# and zero ir.rules (posture 4 — the ADR names utm/link_tracker's family
+# explicitly). Declaring `none` emits no company RLS migration; synthesizing
+# a fence would change behavior, not just enforcement (do-not-synthesize).
+# Tenant isolation (ADR-0006) remains the only fence; security is ACLs +
+# service-layer checks.
+company_fence: none
+
+config:
+  database: postgresql
+  soft_delete: true
+  audit: true
+  default_timestamps: true
+  generators:
+    disabled:
+      - graphql
+      - grpc
+      - proto
+
+# Reuse sapiens for user identity (actors) — logical refs, no DB constraint.
+external_imports:
+  - module: sapiens
+    types: [User]
+
+# Shared value-object types available to all models in this module.
+shared_types:
+  Timestamps:
+    created_at:
+      type: datetime
+      attributes: ["@default(now)"]
+      description: "Record creation timestamp"
+    updated_at:
+      type: datetime
+      attributes: ["@updated_at"]
+      description: "Last update timestamp"
+    deleted_at:
+      type: datetime?
+      description: "Soft delete timestamp"
+
+  Actors:
+    created_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who created this record"
+    updated_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who last updated this record"
+    deleted_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who deleted this record"
+
+  Metadata: [Timestamps, Actors]
+
+# Import each entity model (informational — discovery is a recursive glob,
+# but keeping the list accurate helps readers).
+imports:
+  - utm-attribution.model.yaml
+  - link-tracker.model.yaml
+
+# =============================================================================
+# FLAG-ID COVERAGE — docs/odoo/foundation/engagement port (this module closes):
+#
+# utm (docs/odoo/foundation/engagement/_extraction_utm.md):
+#   utm.campaign   → EngagementCampaign   utm-attribution.model.yaml
+#   utm.source     → EngagementSource     utm-attribution.model.yaml
+#   utm.medium     → EngagementMedium     utm-attribution.model.yaml
+#   EN-20 cookie ferry       → engagement_write_service resolve_attribution
+#                             (find-or-create seam the host calls; values are
+#                             validated + length-capped BEFORE minting)
+#   EN-22/EN-23 name engine  → engagement_write_service (unique-name counters,
+#                             case-insensitive find-or-create grain)
+#   EN-24 protected masters  → NOT ported as undeletable rows (no seed data in
+#                             this release); hosts seed their protected set
+#   EN-27 ACL shape          → guarded routes: reads + validated writes only
+#   utm.stage/utm.tag        → deferred (kanban decoration; adding them later
+#                             does not reshape the masters)
+#   ir.http cookie planting  → HOST concern (the webapp plants odoo_utm_*
+#                             cookies from URL params; this module materializes
+#                             them via the resolve seam)
+#
+# link_tracker (docs/odoo/foundation/engagement/_extraction_link_tracker.md):
+#   link.tracker       → EngagementLinkTracker        link-tracker.model.yaml
+#   link.tracker.code  → collapsed INTO link_tracker.code (upstream keeps a
+#                        single-code invariant — the inverse renames the row;
+#                        the history table is Odoo-compat, not needed here)
+#   link.tracker.click → EngagementLinkTrackerClick   link-tracker.model.yaml
+#   EN-40 replayable clicks  → HARDENED: dedup key (link, ip, utc-day) unique
+#                              + per-tracker click cap (see link-tracker.model.yaml)
+#   EN-41 og:title fetch     → REMOVED (SSRF surface closed by decision):
+#                              title is caller-supplied; previews render
+#                              client-side (see README port notes)
+#   EN-42 5-tuple uniqueness → write-path search_or_create with IS NOT DISTINCT
+#                              FROM matching (kept out of SQL for the same
+#                              NULL semantics upstream cites)
+#   EN-43 code minting       → random [A-Za-z0-9] from length 3, length grows
+#                              on collision (ported with the retry loop)
+#   EN-44 UTM injection      → write service builds the redirect target
+#                              (utm_campaign/source/medium from the tracker's
+#                              masters); no_external_tracking ICP not ported —
+#                              see README
+#   EN-46 cookie-default leak→ tracker create takes UTMs only from its explicit
+#                              input (there is no cookie default path here)
+#   EN-47 input gates        → absolute http(s) targets only (also the
+#                              no-open-redirect rule at /r/<code>); label ≤ 40
+#   /r/<code> public 301     → ADR-0019 action_link-class guarded route:
+#                              throttled, idempotent click minting (dedup key),
+#                              302 (target edits must propagate — upstream's
+#                              301 would freeze a rewritten target client-side)
+#
+# Out of scope by decision (later waves own them): rating + portal_rating,
+# gamification + karma, utm.stage/tag, mail.render.mixin link rewriting
+# (W6 mass mailing calls this module's search_or_create seam instead).
+# =============================================================================

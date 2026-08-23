@@ -1,0 +1,33 @@
+# Codegen policy for engagement.
+#
+# `user_owned` globs are hand-written files that live inside generator-owned trees but are
+# NOT schema-derived. `metaphor schema generate [--force]` skips them wholesale (never reads,
+# merges, or deletes them). Everything else in src/ is regenerated from schema/models.
+#
+# Re-exports/declarations that must sit alongside generated code live inside
+# `// <<< CUSTOM ... // END CUSTOM` markers (service/mod.rs, presentation/http/mod.rs, lib.rs)
+# and are preserved by the marker mechanism, not listed here.
+#
+# Declared BEFORE any file lands (the regen-safety contract).
+
+user_owned:
+  # Hand-authored validated write path (services orchestrate, repositories
+  # hold SQL — the module rule): attribution find-or-create, tracker minting,
+  # click minting with dedup/cap, the redirect-target builder.
+  - "src/application/service/engagement_write_service.rs"
+  - "src/infrastructure/persistence/engagement_repository.rs"
+
+  # Hand-authored HTTP surface: the guarded composition (reads + validated
+  # writes, no generic mutation) and the public /r/<code> redirect route
+  # (ADR-0019 action_link-class: throttled, idempotent click minting).
+  - "src/presentation/http/guarded_routes.rs"
+  - "src/presentation/http/redirect_routes.rs"
+
+  # Behavior tests (the golden cases / oracle) + BDD features.
+  - "tests/features/**"
+  - "tests/attribution_cases.rs"
+  - "tests/link_tracker_cases.rs"
+
+  # Hand-authored module documentation.
+  - "docs/**"
+  - "README.md"
