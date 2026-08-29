@@ -1,8 +1,8 @@
 [package]
 name = "backbone-engagement"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "Engagement — the attribution floor: UTM masters (campaign/source/medium) + the short-link tracker and its deduped click ledger (Odoo utm + link_tracker port)"
+description = "Engagement — the attribution floor (UTM masters, short-link tracker, deduped click ledger) plus the visitor rating substrate and the gamification family: goals, challenges, badges, and the append-only karma ledger (Odoo utm + link_tracker + rating + gamification port)"
 
 [lib]
 path = "src/lib.rs"
@@ -51,8 +51,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 validator = { version = "0.16", features = ["derive"] }
 
 # Short-code minting for link trackers (random [A-Za-z0-9], length grows on
-# collision — the upstream retry loop).
+# collision — the upstream retry loop) and rating-token nonce minting.
 rand = "0.8"
+
+# Rating-token capability MAC: HMAC-SHA256 over (id, nonce, grant, expiry) —
+# the constant-time verify rides hmac::Mac::verify_slice.
+hmac = "0.12"
+sha2 = "0.10"
 
 # Error handling
 anyhow = "1.0"

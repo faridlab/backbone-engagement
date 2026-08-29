@@ -1,0 +1,48 @@
+# =============================================================================
+# goal_state — GamificationGoal.state (machine #2, EN-S2; ADR-0016 hand_set).
+# Split into its own per-entity hook file because the validator resolves a
+# field's `state_machine:` ref against per-entity hook names.
+#
+# HAND-SET verbs + DERIVED edges: evaluate_met/window_close are derived (the
+# registered metric's condition / the passing window); manual_reach is
+# VALIDATED (the verb re-computes the metric and refuses loudly when unmet —
+# no silent revert on next update); cancel is the leaver-sweep edge (goals
+# are CANCELED, never unlinked). definition/user freeze once non-draft
+# (rule R-G7 — procedural, enforced in the verb).
+# =============================================================================
+
+name: goal_state
+model: GamificationGoal
+
+states:
+  field: state
+  values:
+    draft:
+      initial: true
+    inprogress: {}
+    reached: {}
+    failed:
+      final: true
+    canceled:
+      final: true
+  transitions:
+    start:
+      from: draft
+      to: inprogress
+      message: "Goal activates — definition and user are immutable from here on (rule R-G7)"
+    evaluate_met:
+      from: inprogress
+      to: reached
+      message: "Derived — the registered metric's condition is met (computation_mode = registered_metric)"
+    manual_reach:
+      from: inprogress
+      to: reached
+      message: "Validated — the verb re-computes the metric; unmet is a loud refusal, never a silent revert"
+    window_close:
+      from: inprogress
+      to: failed
+      message: "Derived — the goal's window passed with the condition unmet (failed is terminal; no closed flag)"
+    cancel:
+      from: [inprogress, reached]
+      to: canceled
+      message: "The leaver sweep cancels goals — never unlinks them (rule R-G8's sibling guarantee)"

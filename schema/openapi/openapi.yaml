@@ -11,10 +11,30 @@ servers:
     description: Development server
 
 tags:
+  - name: GamificationBadges
+    description: GamificationBadge management endpoints
+  - name: GamificationBadgeUsers
+    description: GamificationBadgeUser management endpoints
+  - name: GamificationKarmaTrackings
+    description: GamificationKarmaTracking management endpoints
+  - name: GamificationKarmaRanks
+    description: GamificationKarmaRank management endpoints
+  - name: GamificationChallenges
+    description: GamificationChallenge management endpoints
+  - name: GamificationChallengeMemberships
+    description: GamificationChallengeMembership management endpoints
+  - name: GamificationChallengeLines
+    description: GamificationChallengeLine management endpoints
+  - name: GamificationGoalDefinitions
+    description: GamificationGoalDefinition management endpoints
+  - name: GamificationGoals
+    description: GamificationGoal management endpoints
   - name: EngagementLinkTrackers
     description: EngagementLinkTracker management endpoints
   - name: EngagementLinkTrackerClicks
     description: EngagementLinkTrackerClick management endpoints
+  - name: EngagementRatings
+    description: EngagementRating management endpoints
   - name: EngagementCampaigns
     description: EngagementCampaign management endpoints
   - name: EngagementSources
@@ -23,6 +43,3300 @@ tags:
     description: EngagementMedium management endpoints
 
 paths:
+  /api/v1/gamification_badges:
+    get:
+      tags:
+        - GamificationBadges
+      summary: List GamificationBadges
+      description: Get a paginated list of GamificationBadges with optional filtering and sorting
+      operationId: listGamificationBadges
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationBadges
+      summary: Create GamificationBadge
+      description: Create a new GamificationBadge
+      operationId: createGamificationBadge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationBadgeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_badges/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationBadges
+      summary: Get GamificationBadge by ID
+      operationId: getGamificationBadge
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationBadges
+      summary: Update GamificationBadge (full)
+      operationId: updateGamificationBadge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationBadgeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationBadges
+      summary: Update GamificationBadge (partial)
+      operationId: patchGamificationBadge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationBadgeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationBadges
+      summary: Delete GamificationBadge (soft)
+      operationId: deleteGamificationBadge
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_badges/bulk:
+    post:
+      tags:
+        - GamificationBadges
+      summary: Bulk create GamificationBadges
+      operationId: bulkCreateGamificationBadges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationBadgeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationBadge'
+    put:
+      tags:
+        - GamificationBadges
+      summary: Bulk update GamificationBadges (full, atomic)
+      operationId: bulkUpdateGamificationBadges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationBadgeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationBadges
+      summary: Bulk partial-update GamificationBadges (atomic)
+      operationId: bulkPatchGamificationBadges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badges/upsert:
+    post:
+      tags:
+        - GamificationBadges
+      summary: Upsert GamificationBadge
+      operationId: upsertGamificationBadge
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationBadgeRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+
+  /api/v1/gamification_badges/trash:
+    get:
+      tags:
+        - GamificationBadges
+      summary: List deleted GamificationBadges
+      operationId: listDeletedGamificationBadges
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeList'
+
+  /api/v1/gamification_badges/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationBadges
+      summary: Restore deleted GamificationBadge
+      operationId: restoreGamificationBadge
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_badges/empty:
+    delete:
+      tags:
+        - GamificationBadges
+      summary: Empty trash for GamificationBadges
+      operationId: emptyTrashGamificationBadges
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_badges/delete/bulk:
+    post:
+      tags:
+        - GamificationBadges
+      summary: Bulk soft-delete GamificationBadges by ids (atomic)
+      operationId: bulkDeleteGamificationBadges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badges/restore/bulk:
+    post:
+      tags:
+        - GamificationBadges
+      summary: Bulk restore GamificationBadges by ids (atomic)
+      operationId: bulkRestoreGamificationBadges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badges/restore/all:
+    post:
+      tags:
+        - GamificationBadges
+      summary: Restore all soft-deleted GamificationBadges
+      operationId: restoreAllGamificationBadges
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_badges/trash/bulk:
+    delete:
+      tags:
+        - GamificationBadges
+      summary: Bulk permanently-delete GamificationBadges from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationBadges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badge_users:
+    get:
+      tags:
+        - GamificationBadgeUsers
+      summary: List GamificationBadgeUsers
+      description: Get a paginated list of GamificationBadgeUsers with optional filtering and sorting
+      operationId: listGamificationBadgeUsers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUserList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Create GamificationBadgeUser
+      description: Create a new GamificationBadgeUser
+      operationId: createGamificationBadgeUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationBadgeUserRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_badge_users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationBadgeUsers
+      summary: Get GamificationBadgeUser by ID
+      operationId: getGamificationBadgeUser
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationBadgeUsers
+      summary: Update GamificationBadgeUser (full)
+      operationId: updateGamificationBadgeUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationBadgeUserRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationBadgeUsers
+      summary: Update GamificationBadgeUser (partial)
+      operationId: patchGamificationBadgeUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationBadgeUserRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationBadgeUsers
+      summary: Delete GamificationBadgeUser (soft)
+      operationId: deleteGamificationBadgeUser
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_badge_users/bulk:
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk create GamificationBadgeUsers
+      operationId: bulkCreateGamificationBadgeUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationBadgeUserRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationBadgeUser'
+    put:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk update GamificationBadgeUsers (full, atomic)
+      operationId: bulkUpdateGamificationBadgeUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationBadgeUserRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUserBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk partial-update GamificationBadgeUsers (atomic)
+      operationId: bulkPatchGamificationBadgeUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUserBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badge_users/upsert:
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Upsert GamificationBadgeUser
+      operationId: upsertGamificationBadgeUser
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationBadgeUserRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+
+  /api/v1/gamification_badge_users/trash:
+    get:
+      tags:
+        - GamificationBadgeUsers
+      summary: List deleted GamificationBadgeUsers
+      operationId: listDeletedGamificationBadgeUsers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUserList'
+
+  /api/v1/gamification_badge_users/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Restore deleted GamificationBadgeUser
+      operationId: restoreGamificationBadgeUser
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUser'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_badge_users/empty:
+    delete:
+      tags:
+        - GamificationBadgeUsers
+      summary: Empty trash for GamificationBadgeUsers
+      operationId: emptyTrashGamificationBadgeUsers
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_badge_users/delete/bulk:
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk soft-delete GamificationBadgeUsers by ids (atomic)
+      operationId: bulkDeleteGamificationBadgeUsers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badge_users/restore/bulk:
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk restore GamificationBadgeUsers by ids (atomic)
+      operationId: bulkRestoreGamificationBadgeUsers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationBadgeUserBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_badge_users/restore/all:
+    post:
+      tags:
+        - GamificationBadgeUsers
+      summary: Restore all soft-deleted GamificationBadgeUsers
+      operationId: restoreAllGamificationBadgeUsers
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_badge_users/trash/bulk:
+    delete:
+      tags:
+        - GamificationBadgeUsers
+      summary: Bulk permanently-delete GamificationBadgeUsers from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationBadgeUsers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_trackings:
+    get:
+      tags:
+        - GamificationKarmaTrackings
+      summary: List GamificationKarmaTrackings
+      description: Get a paginated list of GamificationKarmaTrackings with optional filtering and sorting
+      operationId: listGamificationKarmaTrackings
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTrackingList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Create GamificationKarmaTracking
+      description: Create a new GamificationKarmaTracking
+      operationId: createGamificationKarmaTracking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationKarmaTrackingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_karma_trackings/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Get GamificationKarmaTracking by ID
+      operationId: getGamificationKarmaTracking
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Update GamificationKarmaTracking (full)
+      operationId: updateGamificationKarmaTracking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationKarmaTrackingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Update GamificationKarmaTracking (partial)
+      operationId: patchGamificationKarmaTracking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationKarmaTrackingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Delete GamificationKarmaTracking (soft)
+      operationId: deleteGamificationKarmaTracking
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_karma_trackings/bulk:
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk create GamificationKarmaTrackings
+      operationId: bulkCreateGamificationKarmaTrackings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationKarmaTrackingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationKarmaTracking'
+    put:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk update GamificationKarmaTrackings (full, atomic)
+      operationId: bulkUpdateGamificationKarmaTrackings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationKarmaTrackingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTrackingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk partial-update GamificationKarmaTrackings (atomic)
+      operationId: bulkPatchGamificationKarmaTrackings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTrackingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_trackings/upsert:
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Upsert GamificationKarmaTracking
+      operationId: upsertGamificationKarmaTracking
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationKarmaTrackingRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+
+  /api/v1/gamification_karma_trackings/trash:
+    get:
+      tags:
+        - GamificationKarmaTrackings
+      summary: List deleted GamificationKarmaTrackings
+      operationId: listDeletedGamificationKarmaTrackings
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTrackingList'
+
+  /api/v1/gamification_karma_trackings/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Restore deleted GamificationKarmaTracking
+      operationId: restoreGamificationKarmaTracking
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTracking'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_karma_trackings/empty:
+    delete:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Empty trash for GamificationKarmaTrackings
+      operationId: emptyTrashGamificationKarmaTrackings
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_karma_trackings/delete/bulk:
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk soft-delete GamificationKarmaTrackings by ids (atomic)
+      operationId: bulkDeleteGamificationKarmaTrackings
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_trackings/restore/bulk:
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk restore GamificationKarmaTrackings by ids (atomic)
+      operationId: bulkRestoreGamificationKarmaTrackings
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaTrackingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_trackings/restore/all:
+    post:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Restore all soft-deleted GamificationKarmaTrackings
+      operationId: restoreAllGamificationKarmaTrackings
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_karma_trackings/trash/bulk:
+    delete:
+      tags:
+        - GamificationKarmaTrackings
+      summary: Bulk permanently-delete GamificationKarmaTrackings from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationKarmaTrackings
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_ranks:
+    get:
+      tags:
+        - GamificationKarmaRanks
+      summary: List GamificationKarmaRanks
+      description: Get a paginated list of GamificationKarmaRanks with optional filtering and sorting
+      operationId: listGamificationKarmaRanks
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRankList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Create GamificationKarmaRank
+      description: Create a new GamificationKarmaRank
+      operationId: createGamificationKarmaRank
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationKarmaRankRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_karma_ranks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationKarmaRanks
+      summary: Get GamificationKarmaRank by ID
+      operationId: getGamificationKarmaRank
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationKarmaRanks
+      summary: Update GamificationKarmaRank (full)
+      operationId: updateGamificationKarmaRank
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationKarmaRankRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationKarmaRanks
+      summary: Update GamificationKarmaRank (partial)
+      operationId: patchGamificationKarmaRank
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationKarmaRankRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationKarmaRanks
+      summary: Delete GamificationKarmaRank (soft)
+      operationId: deleteGamificationKarmaRank
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_karma_ranks/bulk:
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk create GamificationKarmaRanks
+      operationId: bulkCreateGamificationKarmaRanks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationKarmaRankRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationKarmaRank'
+    put:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk update GamificationKarmaRanks (full, atomic)
+      operationId: bulkUpdateGamificationKarmaRanks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationKarmaRankRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRankBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk partial-update GamificationKarmaRanks (atomic)
+      operationId: bulkPatchGamificationKarmaRanks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRankBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_ranks/upsert:
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Upsert GamificationKarmaRank
+      operationId: upsertGamificationKarmaRank
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationKarmaRankRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+
+  /api/v1/gamification_karma_ranks/trash:
+    get:
+      tags:
+        - GamificationKarmaRanks
+      summary: List deleted GamificationKarmaRanks
+      operationId: listDeletedGamificationKarmaRanks
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRankList'
+
+  /api/v1/gamification_karma_ranks/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Restore deleted GamificationKarmaRank
+      operationId: restoreGamificationKarmaRank
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRank'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_karma_ranks/empty:
+    delete:
+      tags:
+        - GamificationKarmaRanks
+      summary: Empty trash for GamificationKarmaRanks
+      operationId: emptyTrashGamificationKarmaRanks
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_karma_ranks/delete/bulk:
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk soft-delete GamificationKarmaRanks by ids (atomic)
+      operationId: bulkDeleteGamificationKarmaRanks
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_ranks/restore/bulk:
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk restore GamificationKarmaRanks by ids (atomic)
+      operationId: bulkRestoreGamificationKarmaRanks
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationKarmaRankBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_karma_ranks/restore/all:
+    post:
+      tags:
+        - GamificationKarmaRanks
+      summary: Restore all soft-deleted GamificationKarmaRanks
+      operationId: restoreAllGamificationKarmaRanks
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_karma_ranks/trash/bulk:
+    delete:
+      tags:
+        - GamificationKarmaRanks
+      summary: Bulk permanently-delete GamificationKarmaRanks from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationKarmaRanks
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenges:
+    get:
+      tags:
+        - GamificationChallenges
+      summary: List GamificationChallenges
+      description: Get a paginated list of GamificationChallenges with optional filtering and sorting
+      operationId: listGamificationChallenges
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Create GamificationChallenge
+      description: Create a new GamificationChallenge
+      operationId: createGamificationChallenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationChallengeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_challenges/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationChallenges
+      summary: Get GamificationChallenge by ID
+      operationId: getGamificationChallenge
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationChallenges
+      summary: Update GamificationChallenge (full)
+      operationId: updateGamificationChallenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationChallenges
+      summary: Update GamificationChallenge (partial)
+      operationId: patchGamificationChallenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationChallengeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationChallenges
+      summary: Delete GamificationChallenge (soft)
+      operationId: deleteGamificationChallenge
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenges/bulk:
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Bulk create GamificationChallenges
+      operationId: bulkCreateGamificationChallenges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationChallengeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationChallenge'
+    put:
+      tags:
+        - GamificationChallenges
+      summary: Bulk update GamificationChallenges (full, atomic)
+      operationId: bulkUpdateGamificationChallenges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationChallengeRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationChallenges
+      summary: Bulk partial-update GamificationChallenges (atomic)
+      operationId: bulkPatchGamificationChallenges
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenges/upsert:
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Upsert GamificationChallenge
+      operationId: upsertGamificationChallenge
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+
+  /api/v1/gamification_challenges/trash:
+    get:
+      tags:
+        - GamificationChallenges
+      summary: List deleted GamificationChallenges
+      operationId: listDeletedGamificationChallenges
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeList'
+
+  /api/v1/gamification_challenges/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Restore deleted GamificationChallenge
+      operationId: restoreGamificationChallenge
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallenge'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenges/empty:
+    delete:
+      tags:
+        - GamificationChallenges
+      summary: Empty trash for GamificationChallenges
+      operationId: emptyTrashGamificationChallenges
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_challenges/delete/bulk:
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Bulk soft-delete GamificationChallenges by ids (atomic)
+      operationId: bulkDeleteGamificationChallenges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenges/restore/bulk:
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Bulk restore GamificationChallenges by ids (atomic)
+      operationId: bulkRestoreGamificationChallenges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenges/restore/all:
+    post:
+      tags:
+        - GamificationChallenges
+      summary: Restore all soft-deleted GamificationChallenges
+      operationId: restoreAllGamificationChallenges
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_challenges/trash/bulk:
+    delete:
+      tags:
+        - GamificationChallenges
+      summary: Bulk permanently-delete GamificationChallenges from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationChallenges
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_memberships:
+    get:
+      tags:
+        - GamificationChallengeMemberships
+      summary: List GamificationChallengeMemberships
+      description: Get a paginated list of GamificationChallengeMemberships with optional filtering and sorting
+      operationId: listGamificationChallengeMemberships
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembershipList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Create GamificationChallengeMembership
+      description: Create a new GamificationChallengeMembership
+      operationId: createGamificationChallengeMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationChallengeMembershipRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_challenge_memberships/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Get GamificationChallengeMembership by ID
+      operationId: getGamificationChallengeMembership
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Update GamificationChallengeMembership (full)
+      operationId: updateGamificationChallengeMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeMembershipRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Update GamificationChallengeMembership (partial)
+      operationId: patchGamificationChallengeMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationChallengeMembershipRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Delete GamificationChallengeMembership (soft)
+      operationId: deleteGamificationChallengeMembership
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenge_memberships/bulk:
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk create GamificationChallengeMemberships
+      operationId: bulkCreateGamificationChallengeMemberships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationChallengeMembershipRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationChallengeMembership'
+    put:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk update GamificationChallengeMemberships (full, atomic)
+      operationId: bulkUpdateGamificationChallengeMemberships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationChallengeMembershipRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembershipBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk partial-update GamificationChallengeMemberships (atomic)
+      operationId: bulkPatchGamificationChallengeMemberships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembershipBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_memberships/upsert:
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Upsert GamificationChallengeMembership
+      operationId: upsertGamificationChallengeMembership
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeMembershipRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+
+  /api/v1/gamification_challenge_memberships/trash:
+    get:
+      tags:
+        - GamificationChallengeMemberships
+      summary: List deleted GamificationChallengeMemberships
+      operationId: listDeletedGamificationChallengeMemberships
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembershipList'
+
+  /api/v1/gamification_challenge_memberships/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Restore deleted GamificationChallengeMembership
+      operationId: restoreGamificationChallengeMembership
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembership'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenge_memberships/empty:
+    delete:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Empty trash for GamificationChallengeMemberships
+      operationId: emptyTrashGamificationChallengeMemberships
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_challenge_memberships/delete/bulk:
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk soft-delete GamificationChallengeMemberships by ids (atomic)
+      operationId: bulkDeleteGamificationChallengeMemberships
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_memberships/restore/bulk:
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk restore GamificationChallengeMemberships by ids (atomic)
+      operationId: bulkRestoreGamificationChallengeMemberships
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeMembershipBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_memberships/restore/all:
+    post:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Restore all soft-deleted GamificationChallengeMemberships
+      operationId: restoreAllGamificationChallengeMemberships
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_challenge_memberships/trash/bulk:
+    delete:
+      tags:
+        - GamificationChallengeMemberships
+      summary: Bulk permanently-delete GamificationChallengeMemberships from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationChallengeMemberships
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_lines:
+    get:
+      tags:
+        - GamificationChallengeLines
+      summary: List GamificationChallengeLines
+      description: Get a paginated list of GamificationChallengeLines with optional filtering and sorting
+      operationId: listGamificationChallengeLines
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLineList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Create GamificationChallengeLine
+      description: Create a new GamificationChallengeLine
+      operationId: createGamificationChallengeLine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationChallengeLineRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_challenge_lines/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationChallengeLines
+      summary: Get GamificationChallengeLine by ID
+      operationId: getGamificationChallengeLine
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationChallengeLines
+      summary: Update GamificationChallengeLine (full)
+      operationId: updateGamificationChallengeLine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeLineRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationChallengeLines
+      summary: Update GamificationChallengeLine (partial)
+      operationId: patchGamificationChallengeLine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationChallengeLineRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationChallengeLines
+      summary: Delete GamificationChallengeLine (soft)
+      operationId: deleteGamificationChallengeLine
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenge_lines/bulk:
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk create GamificationChallengeLines
+      operationId: bulkCreateGamificationChallengeLines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationChallengeLineRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationChallengeLine'
+    put:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk update GamificationChallengeLines (full, atomic)
+      operationId: bulkUpdateGamificationChallengeLines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationChallengeLineRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLineBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk partial-update GamificationChallengeLines (atomic)
+      operationId: bulkPatchGamificationChallengeLines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLineBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_lines/upsert:
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Upsert GamificationChallengeLine
+      operationId: upsertGamificationChallengeLine
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationChallengeLineRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+
+  /api/v1/gamification_challenge_lines/trash:
+    get:
+      tags:
+        - GamificationChallengeLines
+      summary: List deleted GamificationChallengeLines
+      operationId: listDeletedGamificationChallengeLines
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLineList'
+
+  /api/v1/gamification_challenge_lines/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Restore deleted GamificationChallengeLine
+      operationId: restoreGamificationChallengeLine
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLine'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_challenge_lines/empty:
+    delete:
+      tags:
+        - GamificationChallengeLines
+      summary: Empty trash for GamificationChallengeLines
+      operationId: emptyTrashGamificationChallengeLines
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_challenge_lines/delete/bulk:
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk soft-delete GamificationChallengeLines by ids (atomic)
+      operationId: bulkDeleteGamificationChallengeLines
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_lines/restore/bulk:
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk restore GamificationChallengeLines by ids (atomic)
+      operationId: bulkRestoreGamificationChallengeLines
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationChallengeLineBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_challenge_lines/restore/all:
+    post:
+      tags:
+        - GamificationChallengeLines
+      summary: Restore all soft-deleted GamificationChallengeLines
+      operationId: restoreAllGamificationChallengeLines
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_challenge_lines/trash/bulk:
+    delete:
+      tags:
+        - GamificationChallengeLines
+      summary: Bulk permanently-delete GamificationChallengeLines from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationChallengeLines
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goal_definitions:
+    get:
+      tags:
+        - GamificationGoalDefinitions
+      summary: List GamificationGoalDefinitions
+      description: Get a paginated list of GamificationGoalDefinitions with optional filtering and sorting
+      operationId: listGamificationGoalDefinitions
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinitionList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Create GamificationGoalDefinition
+      description: Create a new GamificationGoalDefinition
+      operationId: createGamificationGoalDefinition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationGoalDefinitionRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_goal_definitions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Get GamificationGoalDefinition by ID
+      operationId: getGamificationGoalDefinition
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Update GamificationGoalDefinition (full)
+      operationId: updateGamificationGoalDefinition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationGoalDefinitionRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Update GamificationGoalDefinition (partial)
+      operationId: patchGamificationGoalDefinition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationGoalDefinitionRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Delete GamificationGoalDefinition (soft)
+      operationId: deleteGamificationGoalDefinition
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_goal_definitions/bulk:
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk create GamificationGoalDefinitions
+      operationId: bulkCreateGamificationGoalDefinitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationGoalDefinitionRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationGoalDefinition'
+    put:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk update GamificationGoalDefinitions (full, atomic)
+      operationId: bulkUpdateGamificationGoalDefinitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationGoalDefinitionRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinitionBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk partial-update GamificationGoalDefinitions (atomic)
+      operationId: bulkPatchGamificationGoalDefinitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinitionBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goal_definitions/upsert:
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Upsert GamificationGoalDefinition
+      operationId: upsertGamificationGoalDefinition
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationGoalDefinitionRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+
+  /api/v1/gamification_goal_definitions/trash:
+    get:
+      tags:
+        - GamificationGoalDefinitions
+      summary: List deleted GamificationGoalDefinitions
+      operationId: listDeletedGamificationGoalDefinitions
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinitionList'
+
+  /api/v1/gamification_goal_definitions/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Restore deleted GamificationGoalDefinition
+      operationId: restoreGamificationGoalDefinition
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_goal_definitions/empty:
+    delete:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Empty trash for GamificationGoalDefinitions
+      operationId: emptyTrashGamificationGoalDefinitions
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_goal_definitions/delete/bulk:
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk soft-delete GamificationGoalDefinitions by ids (atomic)
+      operationId: bulkDeleteGamificationGoalDefinitions
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goal_definitions/restore/bulk:
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk restore GamificationGoalDefinitions by ids (atomic)
+      operationId: bulkRestoreGamificationGoalDefinitions
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalDefinitionBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goal_definitions/restore/all:
+    post:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Restore all soft-deleted GamificationGoalDefinitions
+      operationId: restoreAllGamificationGoalDefinitions
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_goal_definitions/trash/bulk:
+    delete:
+      tags:
+        - GamificationGoalDefinitions
+      summary: Bulk permanently-delete GamificationGoalDefinitions from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationGoalDefinitions
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goals:
+    get:
+      tags:
+        - GamificationGoals
+      summary: List GamificationGoals
+      description: Get a paginated list of GamificationGoals with optional filtering and sorting
+      operationId: listGamificationGoals
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - GamificationGoals
+      summary: Create GamificationGoal
+      description: Create a new GamificationGoal
+      operationId: createGamificationGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGamificationGoalRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/gamification_goals/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - GamificationGoals
+      summary: Get GamificationGoal by ID
+      operationId: getGamificationGoal
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - GamificationGoals
+      summary: Update GamificationGoal (full)
+      operationId: updateGamificationGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationGoalRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - GamificationGoals
+      summary: Update GamificationGoal (partial)
+      operationId: patchGamificationGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchGamificationGoalRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - GamificationGoals
+      summary: Delete GamificationGoal (soft)
+      operationId: deleteGamificationGoal
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_goals/bulk:
+    post:
+      tags:
+        - GamificationGoals
+      summary: Bulk create GamificationGoals
+      operationId: bulkCreateGamificationGoals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateGamificationGoalRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamificationGoal'
+    put:
+      tags:
+        - GamificationGoals
+      summary: Bulk update GamificationGoals (full, atomic)
+      operationId: bulkUpdateGamificationGoals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateGamificationGoalRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - GamificationGoals
+      summary: Bulk partial-update GamificationGoals (atomic)
+      operationId: bulkPatchGamificationGoals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goals/upsert:
+    post:
+      tags:
+        - GamificationGoals
+      summary: Upsert GamificationGoal
+      operationId: upsertGamificationGoal
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGamificationGoalRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+
+  /api/v1/gamification_goals/trash:
+    get:
+      tags:
+        - GamificationGoals
+      summary: List deleted GamificationGoals
+      operationId: listDeletedGamificationGoals
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalList'
+
+  /api/v1/gamification_goals/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - GamificationGoals
+      summary: Restore deleted GamificationGoal
+      operationId: restoreGamificationGoal
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/gamification_goals/empty:
+    delete:
+      tags:
+        - GamificationGoals
+      summary: Empty trash for GamificationGoals
+      operationId: emptyTrashGamificationGoals
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/gamification_goals/delete/bulk:
+    post:
+      tags:
+        - GamificationGoals
+      summary: Bulk soft-delete GamificationGoals by ids (atomic)
+      operationId: bulkDeleteGamificationGoals
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goals/restore/bulk:
+    post:
+      tags:
+        - GamificationGoals
+      summary: Bulk restore GamificationGoals by ids (atomic)
+      operationId: bulkRestoreGamificationGoals
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamificationGoalBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/gamification_goals/restore/all:
+    post:
+      tags:
+        - GamificationGoals
+      summary: Restore all soft-deleted GamificationGoals
+      operationId: restoreAllGamificationGoals
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/gamification_goals/trash/bulk:
+    delete:
+      tags:
+        - GamificationGoals
+      summary: Bulk permanently-delete GamificationGoals from trash by ids (atomic)
+      operationId: bulkPermanentDeleteGamificationGoals
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/v1/engagement_link_trackers:
     get:
       tags:
@@ -741,6 +4055,372 @@ paths:
         - EngagementLinkTrackerClicks
       summary: Bulk permanently-delete EngagementLinkTrackerClicks from trash by ids (atomic)
       operationId: bulkPermanentDeleteEngagementLinkTrackerClicks
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/engagement_ratings:
+    get:
+      tags:
+        - EngagementRatings
+      summary: List EngagementRatings
+      description: Get a paginated list of EngagementRatings with optional filtering and sorting
+      operationId: listEngagementRatings
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRatingList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - EngagementRatings
+      summary: Create EngagementRating
+      description: Create a new EngagementRating
+      operationId: createEngagementRating
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEngagementRatingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/engagement_ratings/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - EngagementRatings
+      summary: Get EngagementRating by ID
+      operationId: getEngagementRating
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - EngagementRatings
+      summary: Update EngagementRating (full)
+      operationId: updateEngagementRating
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEngagementRatingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - EngagementRatings
+      summary: Update EngagementRating (partial)
+      operationId: patchEngagementRating
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchEngagementRatingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - EngagementRatings
+      summary: Delete EngagementRating (soft)
+      operationId: deleteEngagementRating
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/engagement_ratings/bulk:
+    post:
+      tags:
+        - EngagementRatings
+      summary: Bulk create EngagementRatings
+      operationId: bulkCreateEngagementRatings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateEngagementRatingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EngagementRating'
+    put:
+      tags:
+        - EngagementRatings
+      summary: Bulk update EngagementRatings (full, atomic)
+      operationId: bulkUpdateEngagementRatings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateEngagementRatingRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRatingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - EngagementRatings
+      summary: Bulk partial-update EngagementRatings (atomic)
+      operationId: bulkPatchEngagementRatings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRatingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/engagement_ratings/upsert:
+    post:
+      tags:
+        - EngagementRatings
+      summary: Upsert EngagementRating
+      operationId: upsertEngagementRating
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEngagementRatingRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+
+  /api/v1/engagement_ratings/trash:
+    get:
+      tags:
+        - EngagementRatings
+      summary: List deleted EngagementRatings
+      operationId: listDeletedEngagementRatings
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRatingList'
+
+  /api/v1/engagement_ratings/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - EngagementRatings
+      summary: Restore deleted EngagementRating
+      operationId: restoreEngagementRating
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/engagement_ratings/empty:
+    delete:
+      tags:
+        - EngagementRatings
+      summary: Empty trash for EngagementRatings
+      operationId: emptyTrashEngagementRatings
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/engagement_ratings/delete/bulk:
+    post:
+      tags:
+        - EngagementRatings
+      summary: Bulk soft-delete EngagementRatings by ids (atomic)
+      operationId: bulkDeleteEngagementRatings
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/engagement_ratings/restore/bulk:
+    post:
+      tags:
+        - EngagementRatings
+      summary: Bulk restore EngagementRatings by ids (atomic)
+      operationId: bulkRestoreEngagementRatings
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementRatingBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/engagement_ratings/restore/all:
+    post:
+      tags:
+        - EngagementRatings
+      summary: Restore all soft-deleted EngagementRatings
+      operationId: restoreAllEngagementRatings
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/engagement_ratings/trash/bulk:
+    delete:
+      tags:
+        - EngagementRatings
+      summary: Bulk permanently-delete EngagementRatings from trash by ids (atomic)
+      operationId: bulkPermanentDeleteEngagementRatings
       requestBody:
         $ref: '#/components/requestBodies/BatchIds'
       responses:
@@ -1855,6 +5535,1556 @@ paths:
 
 components:
   schemas:
+    GamificationBadge:
+      type: object
+      required:
+        - id
+        - name
+        - active
+        - rule_auth
+        - rule_auth_user_ids
+        - rule_auth_badge_ids
+        - rule_max
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        active:
+          type: boolean
+        level:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        rule_auth:
+          type: string
+        rule_auth_user_ids:
+          type: object
+        rule_auth_badge_ids:
+          type: object
+        rule_max:
+          type: boolean
+        rule_max_number:
+          nullable: true
+          type: integer
+          format: int32
+        metadata:
+          type: object
+
+    GamificationBadgeBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationBadge'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationBadgeRequest:
+      type: object
+      required:
+        - name
+        - active
+        - rule_auth
+        - rule_auth_user_ids
+        - rule_auth_badge_ids
+        - rule_max
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        active:
+          type: boolean
+        level:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        rule_auth:
+          type: string
+        rule_auth_user_ids:
+          type: object
+        rule_auth_badge_ids:
+          type: object
+        rule_max:
+          type: boolean
+        rule_max_number:
+          nullable: true
+          type: integer
+          format: int32
+        metadata:
+          type: object
+
+    UpdateGamificationBadgeRequest:
+      type: object
+      required:
+        - name
+        - active
+        - rule_auth
+        - rule_auth_user_ids
+        - rule_auth_badge_ids
+        - rule_max
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        active:
+          type: boolean
+        level:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        rule_auth:
+          type: string
+        rule_auth_user_ids:
+          type: object
+        rule_auth_badge_ids:
+          type: object
+        rule_max:
+          type: boolean
+        rule_max_number:
+          nullable: true
+          type: integer
+          format: int32
+        metadata:
+          type: object
+
+    PatchGamificationBadgeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        active:
+          type: boolean
+        level:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+        rule_auth:
+          type: string
+        rule_auth_user_ids:
+          type: object
+        rule_auth_badge_ids:
+          type: object
+        rule_max:
+          type: boolean
+        rule_max_number:
+          nullable: true
+          type: integer
+          format: int32
+        metadata:
+          type: object
+
+    GamificationBadgeList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationBadge'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationBadgeUser:
+      type: object
+      required:
+        - id
+        - badge_id
+        - recipient_user_id
+        - grant_kind
+        - granted_at
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        badge_id:
+          type: string
+          format: uuid
+        recipient_user_id:
+          type: string
+          format: uuid
+        sender_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        grant_kind:
+          type: string
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        comment:
+          nullable: true
+          type: string
+        level:
+          nullable: true
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        grant_key:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    GamificationBadgeUserBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationBadgeUser'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationBadgeUserRequest:
+      type: object
+      required:
+        - badge_id
+        - recipient_user_id
+        - grant_kind
+        - granted_at
+        - metadata
+      properties:
+        badge_id:
+          type: string
+          format: uuid
+        recipient_user_id:
+          type: string
+          format: uuid
+        sender_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        grant_kind:
+          type: string
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        comment:
+          nullable: true
+          type: string
+        level:
+          nullable: true
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        grant_key:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    UpdateGamificationBadgeUserRequest:
+      type: object
+      required:
+        - badge_id
+        - recipient_user_id
+        - grant_kind
+        - granted_at
+        - metadata
+      properties:
+        badge_id:
+          type: string
+          format: uuid
+        recipient_user_id:
+          type: string
+          format: uuid
+        sender_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        grant_kind:
+          type: string
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        comment:
+          nullable: true
+          type: string
+        level:
+          nullable: true
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        grant_key:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    PatchGamificationBadgeUserRequest:
+      type: object
+      properties:
+        badge_id:
+          type: string
+          format: uuid
+        recipient_user_id:
+          type: string
+          format: uuid
+        sender_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        grant_kind:
+          type: string
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        comment:
+          nullable: true
+          type: string
+        level:
+          nullable: true
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+        grant_key:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    GamificationBadgeUserList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationBadgeUser'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationKarmaTracking:
+      type: object
+      required:
+        - id
+        - user_id
+        - old_value
+        - new_value
+        - tracking_date
+        - reason
+        - origin_kind
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        old_value:
+          type: integer
+          format: int32
+        new_value:
+          type: integer
+          format: int32
+        tracking_date:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        origin_kind:
+          type: string
+          maxLength: 40
+        origin_id:
+          nullable: true
+          type: string
+          format: uuid
+        origin_label:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    GamificationKarmaTrackingBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationKarmaTracking'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationKarmaTrackingRequest:
+      type: object
+      required:
+        - user_id
+        - old_value
+        - new_value
+        - tracking_date
+        - reason
+        - origin_kind
+        - metadata
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        old_value:
+          type: integer
+          format: int32
+        new_value:
+          type: integer
+          format: int32
+        tracking_date:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        origin_kind:
+          type: string
+          maxLength: 40
+        origin_id:
+          nullable: true
+          type: string
+          format: uuid
+        origin_label:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    UpdateGamificationKarmaTrackingRequest:
+      type: object
+      required:
+        - user_id
+        - old_value
+        - new_value
+        - tracking_date
+        - reason
+        - origin_kind
+        - metadata
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        old_value:
+          type: integer
+          format: int32
+        new_value:
+          type: integer
+          format: int32
+        tracking_date:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        origin_kind:
+          type: string
+          maxLength: 40
+        origin_id:
+          nullable: true
+          type: string
+          format: uuid
+        origin_label:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    PatchGamificationKarmaTrackingRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        old_value:
+          type: integer
+          format: int32
+        new_value:
+          type: integer
+          format: int32
+        tracking_date:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        origin_kind:
+          type: string
+          maxLength: 40
+        origin_id:
+          nullable: true
+          type: string
+          format: uuid
+        origin_label:
+          nullable: true
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+
+    GamificationKarmaTrackingList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationKarmaTracking'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationKarmaRank:
+      type: object
+      required:
+        - id
+        - name
+        - karma_min
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        karma_min:
+          type: integer
+          format: int32
+        description:
+          nullable: true
+          type: string
+        motivational_text:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    GamificationKarmaRankBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationKarmaRank'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationKarmaRankRequest:
+      type: object
+      required:
+        - name
+        - karma_min
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        karma_min:
+          type: integer
+          format: int32
+        description:
+          nullable: true
+          type: string
+        motivational_text:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    UpdateGamificationKarmaRankRequest:
+      type: object
+      required:
+        - name
+        - karma_min
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        karma_min:
+          type: integer
+          format: int32
+        description:
+          nullable: true
+          type: string
+        motivational_text:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    PatchGamificationKarmaRankRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        karma_min:
+          type: integer
+          format: int32
+        description:
+          nullable: true
+          type: string
+        motivational_text:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    GamificationKarmaRankList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationKarmaRank'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationChallenge:
+      type: object
+      required:
+        - id
+        - name
+        - state
+        - period
+        - visibility_mode
+        - reward_failure
+        - reward_realtime
+        - report_frequency
+        - user_ids
+        - include_all_users
+        - include_badge_ids
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        state:
+          type: string
+        manager_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        period:
+          type: string
+        start_date:
+          nullable: true
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        visibility_mode:
+          type: string
+        reward_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_first_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_second_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_third_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_failure:
+          type: boolean
+        reward_realtime:
+          type: boolean
+        report_frequency:
+          type: string
+        last_report_date:
+          nullable: true
+          type: string
+          format: date
+        next_report_date:
+          nullable: true
+          type: string
+          format: date
+        remind_update_delay:
+          nullable: true
+          type: integer
+          format: int32
+        user_ids:
+          type: object
+        include_all_users:
+          type: boolean
+        include_badge_ids:
+          type: object
+        metadata:
+          type: object
+
+    GamificationChallengeBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallenge'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationChallengeRequest:
+      type: object
+      required:
+        - name
+        - state
+        - period
+        - visibility_mode
+        - reward_failure
+        - reward_realtime
+        - report_frequency
+        - user_ids
+        - include_all_users
+        - include_badge_ids
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        state:
+          type: string
+        manager_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        period:
+          type: string
+        start_date:
+          nullable: true
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        visibility_mode:
+          type: string
+        reward_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_first_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_second_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_third_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_failure:
+          type: boolean
+        reward_realtime:
+          type: boolean
+        report_frequency:
+          type: string
+        last_report_date:
+          nullable: true
+          type: string
+          format: date
+        next_report_date:
+          nullable: true
+          type: string
+          format: date
+        remind_update_delay:
+          nullable: true
+          type: integer
+          format: int32
+        user_ids:
+          type: object
+        include_all_users:
+          type: boolean
+        include_badge_ids:
+          type: object
+        metadata:
+          type: object
+
+    UpdateGamificationChallengeRequest:
+      type: object
+      required:
+        - name
+        - state
+        - period
+        - visibility_mode
+        - reward_failure
+        - reward_realtime
+        - report_frequency
+        - user_ids
+        - include_all_users
+        - include_badge_ids
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        state:
+          type: string
+        manager_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        period:
+          type: string
+        start_date:
+          nullable: true
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        visibility_mode:
+          type: string
+        reward_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_first_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_second_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_third_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_failure:
+          type: boolean
+        reward_realtime:
+          type: boolean
+        report_frequency:
+          type: string
+        last_report_date:
+          nullable: true
+          type: string
+          format: date
+        next_report_date:
+          nullable: true
+          type: string
+          format: date
+        remind_update_delay:
+          nullable: true
+          type: integer
+          format: int32
+        user_ids:
+          type: object
+        include_all_users:
+          type: boolean
+        include_badge_ids:
+          type: object
+        metadata:
+          type: object
+
+    PatchGamificationChallengeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        state:
+          type: string
+        manager_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        period:
+          type: string
+        start_date:
+          nullable: true
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        visibility_mode:
+          type: string
+        reward_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_first_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_second_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_third_badge_id:
+          nullable: true
+          type: string
+          format: uuid
+        reward_failure:
+          type: boolean
+        reward_realtime:
+          type: boolean
+        report_frequency:
+          type: string
+        last_report_date:
+          nullable: true
+          type: string
+          format: date
+        next_report_date:
+          nullable: true
+          type: string
+          format: date
+        remind_update_delay:
+          nullable: true
+          type: integer
+          format: int32
+        user_ids:
+          type: object
+        include_all_users:
+          type: boolean
+        include_badge_ids:
+          type: object
+        metadata:
+          type: object
+
+    GamificationChallengeList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallenge'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationChallengeMembership:
+      type: object
+      required:
+        - id
+        - challenge_id
+        - user_id
+        - source
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        challenge_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+        metadata:
+          type: object
+
+    GamificationChallengeMembershipBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallengeMembership'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationChallengeMembershipRequest:
+      type: object
+      required:
+        - challenge_id
+        - user_id
+        - source
+        - metadata
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+        metadata:
+          type: object
+
+    UpdateGamificationChallengeMembershipRequest:
+      type: object
+      required:
+        - challenge_id
+        - user_id
+        - source
+        - metadata
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+        metadata:
+          type: object
+
+    PatchGamificationChallengeMembershipRequest:
+      type: object
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        source:
+          type: string
+        metadata:
+          type: object
+
+    GamificationChallengeMembershipList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallengeMembership'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationChallengeLine:
+      type: object
+      required:
+        - id
+        - challenge_id
+        - definition_id
+        - sequence
+        - target_goal
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        challenge_id:
+          type: string
+          format: uuid
+        definition_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int32
+        target_goal:
+          type: string
+        metadata:
+          type: object
+
+    GamificationChallengeLineBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallengeLine'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationChallengeLineRequest:
+      type: object
+      required:
+        - challenge_id
+        - definition_id
+        - sequence
+        - target_goal
+        - metadata
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        definition_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int32
+        target_goal:
+          type: string
+        metadata:
+          type: object
+
+    UpdateGamificationChallengeLineRequest:
+      type: object
+      required:
+        - challenge_id
+        - definition_id
+        - sequence
+        - target_goal
+        - metadata
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        definition_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int32
+        target_goal:
+          type: string
+        metadata:
+          type: object
+
+    PatchGamificationChallengeLineRequest:
+      type: object
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        definition_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int32
+        target_goal:
+          type: string
+        metadata:
+          type: object
+
+    GamificationChallengeLineList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationChallengeLine'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationGoalDefinition:
+      type: object
+      required:
+        - id
+        - name
+        - monetary
+        - computation_mode
+        - condition
+        - display_mode
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        description:
+          nullable: true
+          type: string
+        suffix:
+          nullable: true
+          type: string
+          maxLength: 40
+        monetary:
+          type: boolean
+        computation_mode:
+          type: string
+        metric_key:
+          nullable: true
+          type: string
+          maxLength: 120
+        condition:
+          type: string
+        display_mode:
+          type: string
+        metadata:
+          type: object
+
+    GamificationGoalDefinitionBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationGoalDefinition'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationGoalDefinitionRequest:
+      type: object
+      required:
+        - name
+        - monetary
+        - computation_mode
+        - condition
+        - display_mode
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        description:
+          nullable: true
+          type: string
+        suffix:
+          nullable: true
+          type: string
+          maxLength: 40
+        monetary:
+          type: boolean
+        computation_mode:
+          type: string
+        metric_key:
+          nullable: true
+          type: string
+          maxLength: 120
+        condition:
+          type: string
+        display_mode:
+          type: string
+        metadata:
+          type: object
+
+    UpdateGamificationGoalDefinitionRequest:
+      type: object
+      required:
+        - name
+        - monetary
+        - computation_mode
+        - condition
+        - display_mode
+        - metadata
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        description:
+          nullable: true
+          type: string
+        suffix:
+          nullable: true
+          type: string
+          maxLength: 40
+        monetary:
+          type: boolean
+        computation_mode:
+          type: string
+        metric_key:
+          nullable: true
+          type: string
+          maxLength: 120
+        condition:
+          type: string
+        display_mode:
+          type: string
+        metadata:
+          type: object
+
+    PatchGamificationGoalDefinitionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        description:
+          nullable: true
+          type: string
+        suffix:
+          nullable: true
+          type: string
+          maxLength: 40
+        monetary:
+          type: boolean
+        computation_mode:
+          type: string
+        metric_key:
+          nullable: true
+          type: string
+          maxLength: 120
+        condition:
+          type: string
+        display_mode:
+          type: string
+        metadata:
+          type: object
+
+    GamificationGoalDefinitionList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationGoalDefinition'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    GamificationGoal:
+      type: object
+      required:
+        - id
+        - definition_id
+        - user_id
+        - start_date
+        - target
+        - current
+        - state
+        - to_update
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        definition_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        line_id:
+          nullable: true
+          type: string
+          format: uuid
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        target:
+          type: string
+        current:
+          type: string
+        state:
+          type: string
+        to_update:
+          type: boolean
+        last_update:
+          nullable: true
+          type: string
+          format: date
+        metadata:
+          type: object
+
+    GamificationGoalBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationGoal'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateGamificationGoalRequest:
+      type: object
+      required:
+        - definition_id
+        - user_id
+        - start_date
+        - target
+        - current
+        - state
+        - to_update
+        - metadata
+      properties:
+        definition_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        line_id:
+          nullable: true
+          type: string
+          format: uuid
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        target:
+          type: string
+        current:
+          type: string
+        state:
+          type: string
+        to_update:
+          type: boolean
+        last_update:
+          nullable: true
+          type: string
+          format: date
+        metadata:
+          type: object
+
+    UpdateGamificationGoalRequest:
+      type: object
+      required:
+        - definition_id
+        - user_id
+        - start_date
+        - target
+        - current
+        - state
+        - to_update
+        - metadata
+      properties:
+        definition_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        line_id:
+          nullable: true
+          type: string
+          format: uuid
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        target:
+          type: string
+        current:
+          type: string
+        state:
+          type: string
+        to_update:
+          type: boolean
+        last_update:
+          nullable: true
+          type: string
+          format: date
+        metadata:
+          type: object
+
+    PatchGamificationGoalRequest:
+      type: object
+      properties:
+        definition_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        line_id:
+          nullable: true
+          type: string
+          format: uuid
+        challenge_id:
+          nullable: true
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          nullable: true
+          type: string
+          format: date
+        target:
+          type: string
+        current:
+          type: string
+        state:
+          type: string
+        to_update:
+          type: boolean
+        last_update:
+          nullable: true
+          type: string
+          format: date
+        metadata:
+          type: object
+
+    GamificationGoalList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GamificationGoal'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
     EngagementLinkTracker:
       type: object
       required:
@@ -2168,6 +7398,302 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EngagementLinkTrackerClick'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    EngagementRating:
+      type: object
+      required:
+        - id
+        - rated_model
+        - rated_record_id
+        - consumed
+        - token_nonce
+        - token_expires_at
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        rated_model:
+          type: string
+          maxLength: 120
+        rated_record_id:
+          type: string
+          format: uuid
+        parent_rated_model:
+          nullable: true
+          type: string
+          maxLength: 120
+        parent_rated_record_id:
+          nullable: true
+          type: string
+          format: uuid
+        rated_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_email:
+          nullable: true
+          type: string
+          maxLength: 320
+        rating_value:
+          nullable: true
+          type: integer
+          format: int32
+        feedback:
+          nullable: true
+          type: string
+        consumed:
+          type: boolean
+        rated_on:
+          nullable: true
+          type: string
+          format: date-time
+        token_nonce:
+          type: string
+          maxLength: 64
+        token_expires_at:
+          type: string
+          format: date-time
+        publisher_comment:
+          nullable: true
+          type: string
+        publisher_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        publisher_replied_at:
+          nullable: true
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    EngagementRatingBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EngagementRating'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateEngagementRatingRequest:
+      type: object
+      required:
+        - rated_model
+        - rated_record_id
+        - consumed
+        - token_nonce
+        - token_expires_at
+        - metadata
+      properties:
+        rated_model:
+          type: string
+          maxLength: 120
+        rated_record_id:
+          type: string
+          format: uuid
+        parent_rated_model:
+          nullable: true
+          type: string
+          maxLength: 120
+        parent_rated_record_id:
+          nullable: true
+          type: string
+          format: uuid
+        rated_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_email:
+          nullable: true
+          type: string
+          maxLength: 320
+        rating_value:
+          nullable: true
+          type: integer
+          format: int32
+        feedback:
+          nullable: true
+          type: string
+        consumed:
+          type: boolean
+        rated_on:
+          nullable: true
+          type: string
+          format: date-time
+        token_nonce:
+          type: string
+          maxLength: 64
+        token_expires_at:
+          type: string
+          format: date-time
+        publisher_comment:
+          nullable: true
+          type: string
+        publisher_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        publisher_replied_at:
+          nullable: true
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    UpdateEngagementRatingRequest:
+      type: object
+      required:
+        - rated_model
+        - rated_record_id
+        - consumed
+        - token_nonce
+        - token_expires_at
+        - metadata
+      properties:
+        rated_model:
+          type: string
+          maxLength: 120
+        rated_record_id:
+          type: string
+          format: uuid
+        parent_rated_model:
+          nullable: true
+          type: string
+          maxLength: 120
+        parent_rated_record_id:
+          nullable: true
+          type: string
+          format: uuid
+        rated_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_email:
+          nullable: true
+          type: string
+          maxLength: 320
+        rating_value:
+          nullable: true
+          type: integer
+          format: int32
+        feedback:
+          nullable: true
+          type: string
+        consumed:
+          type: boolean
+        rated_on:
+          nullable: true
+          type: string
+          format: date-time
+        token_nonce:
+          type: string
+          maxLength: 64
+        token_expires_at:
+          type: string
+          format: date-time
+        publisher_comment:
+          nullable: true
+          type: string
+        publisher_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        publisher_replied_at:
+          nullable: true
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    PatchEngagementRatingRequest:
+      type: object
+      properties:
+        rated_model:
+          type: string
+          maxLength: 120
+        rated_record_id:
+          type: string
+          format: uuid
+        parent_rated_model:
+          nullable: true
+          type: string
+          maxLength: 120
+        parent_rated_record_id:
+          nullable: true
+          type: string
+          format: uuid
+        rated_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        rater_email:
+          nullable: true
+          type: string
+          maxLength: 320
+        rating_value:
+          nullable: true
+          type: integer
+          format: int32
+        feedback:
+          nullable: true
+          type: string
+        consumed:
+          type: boolean
+        rated_on:
+          nullable: true
+          type: string
+          format: date-time
+        token_nonce:
+          type: string
+          maxLength: 64
+        token_expires_at:
+          type: string
+          format: date-time
+        publisher_comment:
+          nullable: true
+          type: string
+        publisher_user_id:
+          nullable: true
+          type: string
+          format: uuid
+        publisher_replied_at:
+          nullable: true
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    EngagementRatingList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EngagementRating'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 

@@ -9,16 +9,36 @@ use axum::Router;
 use std::sync::Arc;
 
 use super::{
+    gamification_badge_handler::create_gamification_badge_routes,
+    gamification_badge_user_handler::create_gamification_badge_user_read_routes,
+    gamification_karma_tracking_handler::create_gamification_karma_tracking_read_routes,
+    gamification_karma_rank_handler::create_gamification_karma_rank_routes,
+    gamification_challenge_handler::create_gamification_challenge_routes,
+    gamification_challenge_membership_handler::create_gamification_challenge_membership_read_routes,
+    gamification_challenge_line_handler::create_gamification_challenge_line_routes,
+    gamification_goal_definition_handler::create_gamification_goal_definition_routes,
+    gamification_goal_handler::create_gamification_goal_read_routes,
     engagement_link_tracker_handler::create_engagement_link_tracker_routes,
     engagement_link_tracker_click_handler::create_engagement_link_tracker_click_routes,
+    engagement_rating_handler::create_engagement_rating_read_routes,
     engagement_campaign_handler::create_engagement_campaign_routes,
     engagement_source_handler::create_engagement_source_routes,
     engagement_medium_handler::create_engagement_medium_routes,
 };
 
 use crate::application::service::{
+    GamificationBadgeService,
+    GamificationBadgeUserService,
+    GamificationKarmaTrackingService,
+    GamificationKarmaRankService,
+    GamificationChallengeService,
+    GamificationChallengeMembershipService,
+    GamificationChallengeLineService,
+    GamificationGoalDefinitionService,
+    GamificationGoalService,
     EngagementLinkTrackerService,
     EngagementLinkTrackerClickService,
+    EngagementRatingService,
     EngagementCampaignService,
     EngagementSourceService,
     EngagementMediumService,
@@ -26,8 +46,18 @@ use crate::application::service::{
 
 /// Services collection for all CRUD endpoints
 pub struct HttpServices {
+    pub gamification_badge: Arc<GamificationBadgeService>,
+    pub gamification_badge_user: Arc<GamificationBadgeUserService>,
+    pub gamification_karma_tracking: Arc<GamificationKarmaTrackingService>,
+    pub gamification_karma_rank: Arc<GamificationKarmaRankService>,
+    pub gamification_challenge: Arc<GamificationChallengeService>,
+    pub gamification_challenge_membership: Arc<GamificationChallengeMembershipService>,
+    pub gamification_challenge_line: Arc<GamificationChallengeLineService>,
+    pub gamification_goal_definition: Arc<GamificationGoalDefinitionService>,
+    pub gamification_goal: Arc<GamificationGoalService>,
     pub engagement_link_tracker: Arc<EngagementLinkTrackerService>,
     pub engagement_link_tracker_click: Arc<EngagementLinkTrackerClickService>,
+    pub engagement_rating: Arc<EngagementRatingService>,
     pub engagement_campaign: Arc<EngagementCampaignService>,
     pub engagement_source: Arc<EngagementSourceService>,
     pub engagement_medium: Arc<EngagementMediumService>,
@@ -50,10 +80,30 @@ pub struct HttpServices {
 /// 12. GET /api/v1/{collection}/:id/deleted - Get deleted by ID
 pub fn configure_routes(services: HttpServices) -> Router {
     Router::new()
+        // GamificationBadge routes (12 Backbone endpoints)
+        .merge(create_gamification_badge_routes(services.gamification_badge))
+        // GamificationBadgeUser routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
+        .merge(create_gamification_badge_user_read_routes(services.gamification_badge_user))
+        // GamificationKarmaTracking routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
+        .merge(create_gamification_karma_tracking_read_routes(services.gamification_karma_tracking))
+        // GamificationKarmaRank routes (12 Backbone endpoints)
+        .merge(create_gamification_karma_rank_routes(services.gamification_karma_rank))
+        // GamificationChallenge routes (12 Backbone endpoints)
+        .merge(create_gamification_challenge_routes(services.gamification_challenge))
+        // GamificationChallengeMembership routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
+        .merge(create_gamification_challenge_membership_read_routes(services.gamification_challenge_membership))
+        // GamificationChallengeLine routes (12 Backbone endpoints)
+        .merge(create_gamification_challenge_line_routes(services.gamification_challenge_line))
+        // GamificationGoalDefinition routes (12 Backbone endpoints)
+        .merge(create_gamification_goal_definition_routes(services.gamification_goal_definition))
+        // GamificationGoal routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
+        .merge(create_gamification_goal_read_routes(services.gamification_goal))
         // EngagementLinkTracker routes (12 Backbone endpoints)
         .merge(create_engagement_link_tracker_routes(services.engagement_link_tracker))
         // EngagementLinkTrackerClick routes (12 Backbone endpoints)
         .merge(create_engagement_link_tracker_click_routes(services.engagement_link_tracker_click))
+        // EngagementRating routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
+        .merge(create_engagement_rating_read_routes(services.engagement_rating))
         // EngagementCampaign routes (12 Backbone endpoints)
         .merge(create_engagement_campaign_routes(services.engagement_campaign))
         // EngagementSource routes (12 Backbone endpoints)
@@ -66,12 +116,52 @@ pub fn configure_routes(services: HttpServices) -> Router {
 pub mod individual {
     use super::*;
 
+    pub fn gamification_badge_routes(service: Arc<GamificationBadgeService>) -> Router {
+        create_gamification_badge_routes(service)
+    }
+
+    pub fn gamification_badge_user_routes(service: Arc<GamificationBadgeUserService>) -> Router {
+        create_gamification_badge_user_routes(service)
+    }
+
+    pub fn gamification_karma_tracking_routes(service: Arc<GamificationKarmaTrackingService>) -> Router {
+        create_gamification_karma_tracking_routes(service)
+    }
+
+    pub fn gamification_karma_rank_routes(service: Arc<GamificationKarmaRankService>) -> Router {
+        create_gamification_karma_rank_routes(service)
+    }
+
+    pub fn gamification_challenge_routes(service: Arc<GamificationChallengeService>) -> Router {
+        create_gamification_challenge_routes(service)
+    }
+
+    pub fn gamification_challenge_membership_routes(service: Arc<GamificationChallengeMembershipService>) -> Router {
+        create_gamification_challenge_membership_routes(service)
+    }
+
+    pub fn gamification_challenge_line_routes(service: Arc<GamificationChallengeLineService>) -> Router {
+        create_gamification_challenge_line_routes(service)
+    }
+
+    pub fn gamification_goal_definition_routes(service: Arc<GamificationGoalDefinitionService>) -> Router {
+        create_gamification_goal_definition_routes(service)
+    }
+
+    pub fn gamification_goal_routes(service: Arc<GamificationGoalService>) -> Router {
+        create_gamification_goal_routes(service)
+    }
+
     pub fn engagement_link_tracker_routes(service: Arc<EngagementLinkTrackerService>) -> Router {
         create_engagement_link_tracker_routes(service)
     }
 
     pub fn engagement_link_tracker_click_routes(service: Arc<EngagementLinkTrackerClickService>) -> Router {
         create_engagement_link_tracker_click_routes(service)
+    }
+
+    pub fn engagement_rating_routes(service: Arc<EngagementRatingService>) -> Router {
+        create_engagement_rating_routes(service)
     }
 
     pub fn engagement_campaign_routes(service: Arc<EngagementCampaignService>) -> Router {

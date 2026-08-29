@@ -36,7 +36,7 @@ impl Seeder for SeedEngagementLinkTrackerClickSeeder {
     }
 
     fn order(&self) -> i32 {
-        2
+        11
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {

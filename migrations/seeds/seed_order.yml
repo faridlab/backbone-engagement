@@ -12,3 +12,15 @@
 - engagement_campaign_seed
 - engagement_source_seed
 - engagement_medium_seed
+
+# Newly added seeds (preserve manual order above):
+- gamification_goal_seed
+- gamification_badge_seed
+- gamification_challenge_seed
+- engagement_rating_seed
+- gamification_karma_tracking_seed
+- gamification_badge_user_seed
+- gamification_karma_rank_seed
+- gamification_challenge_line_seed
+- gamification_goal_definition_seed
+- gamification_challenge_membership_seed

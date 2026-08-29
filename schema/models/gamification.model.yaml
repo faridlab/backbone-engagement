@@ -1,0 +1,769 @@
+# =============================================================================
+# engagement — gamification: the karma ledger, badges, challenges and goals
+#   (gamification + the survey certification grant contract). Split into two
+#   comment sections mirroring the spec source: karma-badges (the currency)
+#   and challenges-goals (the assignment engine).
+#
+# PORT DECISIONS (source: docs/odoo/foundation/engagement/_extraction_gamification.md):
+#  - Entity names keep the Gamification* prefix verbatim (a Goal sibling
+#    exists in backbone-performance; the prefix avoids the collision).
+#  - Karma balance is a PROJECTION, never a column (EN-60/64 resolved ONE
+#    way): no sapiens.User overlay, no karma column anywhere, no write
+#    interception to port. balance(user) = latest ledger row by
+#    (tracking_date DESC, id DESC) — the upstream DISTINCT ON semantics kept
+#    as a read. Leaderboards rank by THE SAME projection; the upstream
+#    SUM-window leaderboards are the dropped half of the two-semantics
+#    conflict (D-5). No gain column, no consolidated flag, no consolidation
+#    cron (EN-62's history rewrite is banned — D-6).
+#  - The ledger is APPEND-ONLY (D-6): a hand-written migration installs a
+#    BEFORE UPDATE OR DELETE trigger that raises — covering soft-delete
+#    writes too. The ONLY writer is the typed append verb (rule R-G9).
+#    read_only over HTTP: no generic mutation exists at all.
+#  - Badge grants: TWO verbs, no silent bypass (D-11). grant_peer enforces
+#    the rule_auth ladder (everyone/users/having/nobody) + monthly cap +
+#    self-grant refusal; grant_system (challenge/event kinds) is keyed by a
+#    caller-supplied grant_key whose partial UNIQUE index makes the grant
+#    exactly-once under at-least-once delivery (rule R-G1 — the M-4
+#    certification contract's dedup). The upstream is_admin ladder
+#    short-circuit does not port; peer grants carry NULL keys and stay
+#    repeatable-under-cap. Badge level is SNAPSHOTTED on the grant row
+#    (upstream related-stores it; a snapshot keeps historical counts
+#    stable — D-22).
+#  - goal_definition_ids (the dead "rewarded by" M2M, EN-68) is NOT ported;
+#    its help-text promise must not be implemented.
+#  - Membership is DECLARATIVE (EN-81): user_ids + include_all_users +
+#    include_badge_ids — typed fields expanded by the daily check. NO stored
+#    domain text, no eval, ever (the python/count/sum computation modes and
+#    every expression column are BANNED — EN-83, D-8). Definitions cite
+#    metric_key strings resolved against a builder-registered metric
+#    registry (code, not data).
+#  - Goals start at current = 0 with an explicit first evaluation — the
+#    upstream always-dirty seeding trick does not port (EN-84, D-9). The
+#    presence gate is dropped (EN-82, D-7). The leaver sweep CANCELS goals,
+#    never unlinks them (D-14).
+#  - Lifecycle declarations (ADR-0016): challenge.state and goal.state are
+#    hand_set machines declared in schema/hooks/engagement.hook.yaml; every
+#    stateless entity here carries lifecycle none by declaration (comment +
+#    hooks note) — silence must not read "nobody decided".
+#  - NO seed data (D-24): ranks, badges, onboarding challenges and the
+#    sale_crm definition pack are host data, not schema.
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # SECTION 1 — karma + badges (the currency)
+  # ===========================================================================
+
+  - name: GamificationBadge
+    collection: gamification_badges
+    description: "gamification.badge — the non-numerical reward definition. Carries the grant ladder (rule_auth everyone/users/having/nobody with json allowlists) and the optional monthly peer-grant cap. Grant counts and monthly-send counts are read-side service computes (ONE grouped query — the upstream per-badge owner loop's N+1 is a recorded fix); no owner_ids/challenge_ids/stat_* columns."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(200)"]
+        description: "Badge name."
+
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag (inactive badges drop out of grantable lists)."
+
+      level:
+        type: BadgeLevel?
+        description: "bronze/silver/gold — the forum badge level. Optional on the definition (a levelless badge is legal); SNAPSHOT onto the grant row at grant time."
+
+      description:
+        type: string?
+        description: "What the badge recognizes."
+
+      rule_auth:
+        type: BadgeRuleAuth
+        description: "The grant ladder (EN-66): everyone | users (allowlist) | having (badge prereqs) | nobody (challenge/event-assigned only). No admin bypass exists — system grants are a different verb, not a bypassed ladder (D-11)."
+
+      rule_auth_user_ids:
+        type: json
+        attributes: ["@default('[]')"]
+        description: "The 'users' allowlist — a json array of sapiens.User uuids, validated by the grant verb (the no-SQL-FK house style for M2M-shaped refs)."
+
+      rule_auth_badge_ids:
+        type: json
+        attributes: ["@default('[]')"]
+        description: "The 'having' prerequisite badges — a json array of GamificationBadge uuids, validated by the grant verb."
+
+      rule_max:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Monthly per-sender peer-grant cap toggle."
+
+      rule_max_number:
+        type: integer?
+        description: "The cap value — grants per sender per month when rule_max is on (counted by ONE grouped query — D-23)."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [name]
+        description: "Grantable-badge lookup by name"
+
+  - name: GamificationBadgeUser
+    collection: gamification_badge_users
+    read_only: true
+    description: "gamification.badge.user — ONE grant row. Peer grants ride the typed grant_peer verb (ladder + cap + self-grant refusal); challenge/event grants ride the service-only grant_system verb keyed by grant_key (exactly-once under at-least-once delivery — the M-4 certification contract). No generic HTTP mutation exists (read_only); certification grants carry NO challenge_id so challenge deletion can never silently stop them (EN-88)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      badge_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(GamificationBadge.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The granted badge # logical FK GamificationBadge.id"
+
+      recipient_user_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Who receives the badge # logical FK sapiens.User.id"
+
+      sender_user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Peer-grant sender # logical FK sapiens.User.id — NULL on challenge/event grants."
+
+      grant_kind:
+        type: BadgeGrantKind
+        attributes: ["@default(peer)"]
+        description: "peer (the HTTP verb, ladder-governed) | challenge (reward grants) | event (certification and other host-composed occurrences)."
+
+      challenge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationChallenge.id)", "@exclude_from_foreign_key_check"]
+        description: "Set on challenge reward grants # logical FK GamificationChallenge.id — deliberately NULL on certification/event grants (EN-88: no challenge-coupled hidden stop)."
+
+      comment:
+        type: string?
+        description: "Peer message carried with the grant."
+
+      level:
+        type: BadgeLevel?
+        description: "Badge level SNAPSHOT at grant time (D-22) — keeps historical level counts stable when the definition's level is edited later. NULLABLE because the definition's own level is optional (a levelless badge grants a levelless row)."
+
+      granted_at:
+        type: datetime
+        attributes: ["@default(now)"]
+        description: "Grant timestamp."
+
+      grant_key:
+        type: string?
+        attributes: ["@max(200)"]
+        description: "THE idempotency key for system grants (deterministically derived occurrence id, caller-supplied — e.g. 'challenge:{id}:{badge}:{user}' or 'event:certification:{ref}:{attempt}'). Partial-UNIQUE among live rows makes grant_system exactly-once (rule R-G1); peer grants carry NULL and stay repeatable-under-cap."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [grant_key]
+        where: "grant_key IS NOT NULL AND deleted_at IS NULL"
+        description: "Exactly-once system grants — one live row per idempotency key (EN-86 + the M-4 certification contract)"
+      - type: index
+        fields: [recipient_user_id, granted_at]
+        description: "Per-recipient badge listing and level counts"
+      - type: index
+        fields: [badge_id, sender_user_id, granted_at]
+        description: "The monthly peer-cap counting arm (one grouped query — D-23)"
+
+  - name: GamificationKarmaTracking
+    collection: gamification_karma_trackings
+    read_only: true
+    description: "gamification.karma.tracking — THE append-only karma ledger (EN-60..63). balance(user) is a projection over this table (latest row by tracking_date DESC, id DESC — never a sum, never a column). UPDATE and DELETE are refused by a DB trigger (soft-delete writes included); the ONLY writer is the typed append verb. No consolidated flag, no consolidation cron, no gain column (derived new - old read-side)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      user_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Whose balance changed # logical FK sapiens.User.id"
+
+      old_value:
+        type: integer
+        attributes: ["@required"]
+        description: "Balance before the append (read from the projection at append time)."
+
+      new_value:
+        type: integer
+        attributes: ["@required"]
+        description: "Balance after the append — the projection source (latest row wins)."
+
+      tracking_date:
+        type: datetime
+        attributes: ["@default(now)"]
+        description: "Append timestamp (the projection's ordering key)."
+
+      reason:
+        type: string
+        attributes: ["@required"]
+        description: "Why the balance moved — free text; the append verb's default is 'manual adjustment' (the default lives in the verb: this table has exactly one writer)."
+
+      origin_kind:
+        type: string
+        attributes: ["@required", "@max(40)"]
+        description: "Registered origin vocabulary: manual | badge | challenge | certification | host — validated by the append verb (extensible without schema change)."
+
+      origin_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Optional id of the originating row (badge grant, challenge, certification record) — polymorphic by origin_kind, so no single FK target exists."
+
+      origin_label:
+        type: string?
+        attributes: ["@max(200)"]
+        description: "Optional human label for the origin (display-only)."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [user_id, tracking_date]
+        description: "The balance projection arm — latest row per user by (tracking_date DESC, id DESC); backward scan serves the DESC order"
+
+  - name: GamificationKarmaRank
+    collection: gamification_karma_ranks
+    description: "gamification.karma.rank — the threshold ladder. rank_for_balance(balance) walks karma_min DESC (ONE read-side derivation — the upstream dual recompute paths do not port); the next rank derives the same way. Rank-change notification is outbound event vocabulary (RankChanged), declared not coded. NO seed data — hosts seed their ladder (D-24)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(200)"]
+        description: "Rank name (e.g. Newbie, Legend)."
+
+      karma_min:
+        type: integer
+        attributes: ["@default(1)"]
+        description: "Minimum balance for the rank — DB CHECK (karma_min > 0) (EN-69, rule R-G2; the strict CHECK is installed by the hand-written hardening migration — the generic non-negative attribute only expresses >= 0)."
+
+      description:
+        type: string?
+        description: "What the rank means."
+
+      motivational_text:
+        type: string?
+        description: "Profile-page motivational line (upstream description_motivational)."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [karma_min]
+        description: "The ladder walk arm (rank_for_balance orders karma_min DESC)"
+
+  # ===========================================================================
+  # SECTION 2 — challenges + goals (the assignment engine)
+  # ===========================================================================
+
+  - name: GamificationChallenge
+    collection: gamification_challenges
+    description: "gamification.challenge — machine #1 (ADR-0016 hand_set, challenge_state). Periodic goal assignment with badge rewards. Membership is DECLARATIVE (user_ids + include_all_users + include_badge_ids — zero expression columns, EN-81) and materialized into gamification_challenge_memberships by the daily check; goal windows derive from period like upstream start_end_date_for_period. Reports ride outbound events (ChallengeReportDue) — no mail coupling."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(200)"]
+        description: "Challenge name."
+
+      state:
+        type: ChallengeState
+        attributes: ["@default(draft)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: challenge_state
+        description: "draft → inprogress → done (machine challenge_state in schema/hooks/engagement.hook.yaml). Hand-set through transition verbs; the daily check moves the same edges by dates THROUGH those verbs, never raw writes. Reset to draft is refused while any live goal is inprogress (rule R-G8)."
+
+      manager_user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Responsible manager # logical FK sapiens.User.id"
+
+      period:
+        type: ChallengePeriod
+        attributes: ["@default(once)"]
+        description: "Goal window grain — once/daily/weekly/monthly/yearly; windows computed like upstream start_end_date_for_period at goal generation."
+
+      start_date:
+        type: date?
+        description: "The daily check starts draft challenges when start_date <= today (through the start transition)."
+
+      end_date:
+        type: date?
+        description: "The daily check closes inprogress challenges the day after end_date passes (through the close transition). NULL = never rewarded."
+
+      visibility_mode:
+        type: ChallengeVisibilityMode
+        attributes: ["@default(personal)"]
+        description: "personal | ranking — report shape; ranking exposes co-participant standings in reports."
+
+      reward_badge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationBadge.id)", "@exclude_from_foreign_key_check"]
+        description: "Badge granted to every fully-succeeding user # logical FK GamificationBadge.id (via grant_system, deduped by grant_key)."
+
+      reward_first_badge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationBadge.id)", "@exclude_from_foreign_key_check"]
+        description: "Podium first-place badge # logical FK GamificationBadge.id"
+
+      reward_second_badge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationBadge.id)", "@exclude_from_foreign_key_check"]
+        description: "Podium second-place badge # logical FK GamificationBadge.id"
+
+      reward_third_badge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationBadge.id)", "@exclude_from_foreign_key_check"]
+        description: "Podium third-place badge # logical FK GamificationBadge.id"
+
+      reward_failure:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Reward podium bests even when nobody fully succeeded."
+
+      reward_realtime:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Grant reward_badge on first full success (deduped per user by grant_key — realtime and podium dedup are ONE mechanism)."
+
+      report_frequency:
+        type: ReportFrequency
+        attributes: ["@default(never)"]
+        description: "Report cadence — never/daily/weekly/monthly/yearly. The 'onchange' trigger-class value does not port (D-20); due reports are ChallengeReportDue events."
+
+      last_report_date:
+        type: date?
+        description: "When the last report was emitted."
+
+      next_report_date:
+        type: date?
+        description: "Stored due date — advanced by the daily check (upstream computed it; here it is plain stored state the check owns)."
+
+      remind_update_delay:
+        type: integer?
+        description: "Days before manual-goal reminders (0/NULL = never)."
+
+      user_ids:
+        type: json
+        attributes: ["@default('[]')"]
+        description: "EXPLICIT participants — a json array of sapiens.User uuids, validated by the write service. The DECLARATIVE membership rule (EN-81): no stored domain text, no eval."
+
+      include_all_users:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Membership rule: expand to every user at reconciliation time."
+
+      include_badge_ids:
+        type: json
+        attributes: ["@default('[]')"]
+        description: "Membership rule: expand to holders of these badges — a json array of GamificationBadge uuids, validated by the write service."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [state, start_date]
+        description: "The daily check's claim arm — due draft challenges by start_date"
+      - type: index
+        fields: [state, end_date]
+        description: "The daily check's close arm — due inprogress challenges by end_date"
+      - type: index
+        fields: [next_report_date]
+        description: "Due-report lookup (the cadence sweep)"
+
+  - name: GamificationChallengeMembership
+    collection: gamification_challenge_memberships
+    read_only: true
+    description: "The MATERIALIZED membership ledger — one live row per (challenge, user), reconciled against the challenge's declarative rules (user_ids + include_all_users + include_badge_ids) by the daily check and the start fan-out. No generic mutation (read_only): only the reconciliation writes it. The leaver sweep CANCELS the leaver's goals, never unlinks them (D-14)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      challenge_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(GamificationChallenge.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The challenge # logical FK GamificationChallenge.id"
+
+      user_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The member # logical FK sapiens.User.id"
+
+      source:
+        type: MembershipSource
+        attributes: ["@default(explicit)"]
+        description: "explicit (listed in user_ids) | rule_expansion (matched by include_all_users / include_badge_ids at reconciliation)."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [challenge_id, user_id]
+        where: "deleted_at IS NULL"
+        description: "One live membership per (challenge, user) — the reconciliation's convergence key"
+      - type: index
+        fields: [user_id]
+        description: "Per-user challenge listing (and the leaver sweep's claim arm)"
+
+  - name: GamificationChallengeLine
+    collection: gamification_challenge_lines
+    description: "gamification.challenge.line — the pure join row: challenge x goal definition x target. The display name is derived read-side from the definition (no stored related column)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      challenge_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(GamificationChallenge.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The challenge # logical FK GamificationChallenge.id"
+
+      definition_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(GamificationGoalDefinition.id)", "@exclude_from_foreign_key_check"]
+        description: "The measured goal # logical FK GamificationGoalDefinition.id"
+
+      sequence:
+        type: integer
+        attributes: ["@default(1)"]
+        description: "Display order."
+
+      target_goal:
+        type: decimal
+        attributes: ["@required"]
+        description: "The target value this challenge asks of the definition."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [challenge_id, definition_id]
+        description: "The start fan-out's per-line goal generation arm"
+
+  - name: GamificationGoalDefinition
+    collection: gamification_goal_definitions
+    description: "gamification.goal.definition — the reusable measurement contract, DSL-shaped (EN-83). Computation is manual OR registered_metric: metric_key cites a builder-registered name→compute-fn map in the write service (the KPI-registry precedent) — compute functions are code registered at composition, definitions cite the key, unknown keys get a typed 422 at write (rule R-G10). The python/count/sum modes and every expression column (domain, compute_code, batch_*, model/field refs) are BANNED and absent."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      name:
+        type: string
+        attributes: ["@required", "@max(200)"]
+        description: "Definition name."
+
+      description:
+        type: string?
+        description: "What the definition measures."
+
+      suffix:
+        type: string?
+        attributes: ["@max(40)"]
+        description: "Display suffix for progress values."
+
+      monetary:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Render values as currency (display-only)."
+
+      computation_mode:
+        type: GoalComputationMode
+        attributes: ["@default(manual)"]
+        description: "manual (reminder-driven, human-entered values) | registered_metric (computed by a registry function — the ONLY computed mode; eval surfaces are banned)."
+
+      metric_key:
+        type: string?
+        attributes: ["@max(120)"]
+        description: "Required iff computation_mode = registered_metric — must exist in the GamificationMetricRegistry at write time (typed 422 on unknown key — rule R-G10)."
+
+      condition:
+        type: GoalCondition
+        attributes: ["@default(higher)"]
+        description: "higher (completeness = min(current/target, 1) x 100) | lower (binary 0-or-100 — all-or-nothing)."
+
+      display_mode:
+        type: GoalDisplayMode
+        attributes: ["@default(progress)"]
+        description: "progress | boolean — presentation shape."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [computation_mode, metric_key]
+        description: "The registry-resolution lookup arm"
+
+  - name: GamificationGoal
+    collection: gamification_goals
+    read_only: true
+    description: "gamification.goal — machine #2 (ADR-0016 hand_set, goal_state): a user's instance of a definition over a window. Generated at current = 0 with an EXPLICIT first evaluation (no dirty seeding — EN-84, D-9); state moves only through the transition verbs (manual_reach is validated and refused loudly when unmet — no silent revert, D-16; the leaver sweep rides cancel). Completeness is a read-side derivation — no column. No closed flag (state failed is terminal — D-15). No presence gate (EN-82 dropped — D-7)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      definition_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(GamificationGoalDefinition.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The measurement contract # logical FK GamificationGoalDefinition.id — frozen once the goal starts (rule R-G7)."
+
+      user_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Whose goal # logical FK sapiens.User.id — frozen once the goal starts (rule R-G7)."
+
+      line_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationChallengeLine.id)", "@exclude_from_foreign_key_check"]
+        description: "The challenge line that generated the goal # logical FK GamificationChallengeLine.id"
+
+      challenge_id:
+        type: uuid?
+        attributes: ["@foreign_key(GamificationChallenge.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "DENORMALIZED at generation from the line's challenge # logical FK GamificationChallenge.id — the sweep and reward arms read it without joining."
+
+      start_date:
+        type: date
+        attributes: ["@required"]
+        description: "Window start — stamped today at generation by the verb (no column default: this table's only writers are the machine's verbs)."
+
+      end_date:
+        type: date?
+        description: "Window end — NULL = open (never window-closed)."
+
+      target:
+        type: decimal
+        attributes: ["@required"]
+        description: "The target value (from the challenge line or manual creation)."
+
+      current:
+        type: decimal
+        attributes: ["@default(0)"]
+        description: "The current value — 0 at generation with an EXPLICIT first evaluation to follow (D-9); updated by the evaluation verbs, never seeded dirty."
+
+      state:
+        type: GoalState
+        attributes: ["@default(draft)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: goal_state
+        description: "draft → inprogress → reached | failed | canceled (machine goal_state in schema/hooks/engagement.hook.yaml). manual_reach is validated against the metric and refused loudly; window_close lands failed; the leaver sweep rides cancel."
+
+      to_update:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Manual-goal reminder flag (set by the reminder sweep, cleared by a value update)."
+
+      last_update:
+        type: date?
+        description: "The reminder clock — stamped on every value write."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: index
+        fields: [challenge_id, user_id]
+        description: "The generation dedup + leaver-sweep arm (per challenge x user)"
+      - type: index
+        fields: [definition_id, user_id]
+        description: "The evaluation claim arm (registered_metric evaluation per user goal)"
+      - type: index
+        fields: [user_id, state]
+        description: "Per-user goal listing by state"
+
+# =============================================================================
+# Enums (gamification)
+# =============================================================================
+
+enums:
+  - name: BadgeLevel
+    description: "Badge tier — 'Forum Badge Level'; snapshotted onto grant rows at grant time"
+    variants:
+      - name: bronze
+        description: "Bronze tier"
+        default: true
+      - name: silver
+        description: "Silver tier"
+      - name: gold
+        description: "Gold tier"
+
+  - name: BadgeRuleAuth
+    description: "The grant ladder (EN-66) — who may grant a badge to a peer. No admin bypass: system grants are a separate keyed verb, not a bypassed ladder"
+    variants:
+      - name: everyone
+        description: "Any authenticated sender may grant"
+        default: true
+      - name: users
+        description: "Only senders in rule_auth_user_ids"
+      - name: having
+        description: "Only senders holding every badge in rule_auth_badge_ids"
+      - name: nobody
+        description: "Never peer-grantable — challenge/event verbs only"
+
+  - name: BadgeGrantKind
+    description: "How a grant row was minted — the two-verb contract (peer via HTTP ladder; challenge/event via keyed system verb)"
+    variants:
+      - name: peer
+        description: "Peer recognition through grant_peer (ladder + cap + self-grant refusal)"
+        default: true
+      - name: challenge
+        description: "Challenge reward through grant_system (grant_key = challenge:{id}:{badge}:{user})"
+      - name: event
+        description: "Host-composed occurrence (e.g. survey certification) through grant_system (grant_key = event:...)"
+
+  - name: ChallengeState
+    description: "Challenge lifecycle (EN-S1) — hand-set; the daily check moves the same edges by dates through the transition verbs"
+    variants:
+      - name: draft
+        description: "Being prepared (lines authored, membership rules declared)"
+        default: true
+      - name: inprogress
+        description: "Running — membership materialized, goals generated"
+      - name: done
+        description: "Closed — podium rewards forced"
+
+  - name: ChallengePeriod
+    description: "Goal window grain — windows computed like upstream start_end_date_for_period"
+    variants:
+      - name: once
+        description: "One fixed window (start to end)"
+        default: true
+      - name: daily
+        description: "A fresh window each day"
+      - name: weekly
+        description: "Week windows (week starts Monday)"
+      - name: monthly
+        description: "Calendar-month windows"
+      - name: yearly
+        description: "Calendar-year windows"
+
+  - name: ChallengeVisibilityMode
+    description: "Report shape — personal per-user digests vs ranking standings"
+    variants:
+      - name: personal
+        description: "Per-user personal report"
+        default: true
+      - name: ranking
+        description: "Ranked standings across participants"
+
+  - name: ReportFrequency
+    description: "Report cadence (the upstream 'onchange' trigger-class value does not port — D-20)"
+    variants:
+      - name: never
+        description: "No reports"
+        default: true
+      - name: daily
+        description: "Daily digest"
+      - name: weekly
+        description: "Weekly digest"
+      - name: monthly
+        description: "Monthly digest"
+      - name: yearly
+        description: "Yearly digest"
+
+  - name: MembershipSource
+    description: "How a materialized membership row came to be"
+    variants:
+      - name: explicit
+        description: "The user is listed in the challenge's user_ids"
+        default: true
+      - name: rule_expansion
+        description: "Matched by include_all_users / include_badge_ids at reconciliation"
+
+  - name: GoalComputationMode
+    description: "The two permitted modes — manual values or a registered metric function. The upstream python/count/sum eval ladder is BANNED (EN-83)"
+    variants:
+      - name: manual
+        description: "Reminder-driven, human-entered values"
+        default: true
+      - name: registered_metric
+        description: "Computed by a builder-registered metric function cited by metric_key"
+
+  - name: GoalCondition
+    description: "Direction of success — higher (more is better) or lower (fewer is better)"
+    variants:
+      - name: higher
+        description: "Reached when current >= target (completeness = min(current/target, 1) x 100)"
+        default: true
+      - name: lower
+        description: "Reached when current <= target (binary 0-or-100 completeness)"
+
+  - name: GoalDisplayMode
+    description: "Presentation shape for progress surfaces"
+    variants:
+      - name: progress
+        description: "Progress bar toward the target"
+        default: true
+      - name: boolean
+        description: "Done / not-done"
+
+  - name: GoalState
+    description: "Goal lifecycle (EN-S2) — hand-set machine; manual_reach validated, window_close derived, leaver sweep rides cancel"
+    variants:
+      - name: draft
+        description: "Generated, not yet started"
+        default: true
+      - name: inprogress
+        description: "Being evaluated"
+      - name: reached
+        description: "Target met (validated)"
+      - name: failed
+        description: "Window closed unmet — terminal (no closed flag — D-15)"
+      - name: canceled
+        description: "Canceled (e.g. the leaver sweep) — rows stay, never unlinked (D-14)"

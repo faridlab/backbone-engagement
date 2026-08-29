@@ -8,7 +8,565 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use chrono::{DateTime, Utc, NaiveDate};
+use rust_decimal::Decimal;
 use crate::domain::entity::*;
+
+// ============================================================================
+// GAMIFICATIONBADGE TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationBadge
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationBadgeId(pub Uuid);
+
+impl GamificationBadgeId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationBadgeId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationBadgeId> for Uuid {
+    fn from(id: GamificationBadgeId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationBadge
+///
+/// This is the public representation of GamificationBadge for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeDto {
+    pub id: GamificationBadgeId,
+    pub name: String,
+    pub active: bool,
+    pub level: Option<BadgeLevel>,
+    pub description: Option<String>,
+    pub rule_auth: BadgeRuleAuth,
+    pub rule_auth_user_ids: serde_json::Value,
+    pub rule_auth_badge_ids: serde_json::Value,
+    pub rule_max: bool,
+    pub rule_max_number: Option<i32>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationBadge for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeSummary {
+    pub id: GamificationBadgeId,
+    pub name: String,
+}
+
+/// Reference to GamificationBadge for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeRef {
+    pub id: GamificationBadgeId,
+}
+
+// ============================================================================
+// GAMIFICATIONBADGEUSER TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationBadgeUser
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationBadgeUserId(pub Uuid);
+
+impl GamificationBadgeUserId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationBadgeUserId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationBadgeUserId> for Uuid {
+    fn from(id: GamificationBadgeUserId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationBadgeUser
+///
+/// This is the public representation of GamificationBadgeUser for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserDto {
+    pub id: GamificationBadgeUserId,
+    pub badge_id: Uuid,
+    pub recipient_user_id: Uuid,
+    pub sender_user_id: Option<Uuid>,
+    pub grant_kind: BadgeGrantKind,
+    pub challenge_id: Option<Uuid>,
+    pub comment: Option<String>,
+    pub level: Option<BadgeLevel>,
+    pub granted_at: DateTime<Utc>,
+    pub grant_key: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationBadgeUser for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserSummary {
+    pub id: GamificationBadgeUserId,
+}
+
+/// Reference to GamificationBadgeUser for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserRef {
+    pub id: GamificationBadgeUserId,
+}
+
+// ============================================================================
+// GAMIFICATIONKARMATRACKING TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationKarmaTracking
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingId(pub Uuid);
+
+impl GamificationKarmaTrackingId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationKarmaTrackingId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationKarmaTrackingId> for Uuid {
+    fn from(id: GamificationKarmaTrackingId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationKarmaTracking
+///
+/// This is the public representation of GamificationKarmaTracking for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingDto {
+    pub id: GamificationKarmaTrackingId,
+    pub user_id: Uuid,
+    pub old_value: i32,
+    pub new_value: i32,
+    pub tracking_date: DateTime<Utc>,
+    pub reason: String,
+    pub origin_kind: String,
+    pub origin_id: Option<Uuid>,
+    pub origin_label: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationKarmaTracking for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingSummary {
+    pub id: GamificationKarmaTrackingId,
+}
+
+/// Reference to GamificationKarmaTracking for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingRef {
+    pub id: GamificationKarmaTrackingId,
+}
+
+// ============================================================================
+// GAMIFICATIONKARMARANK TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationKarmaRank
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationKarmaRankId(pub Uuid);
+
+impl GamificationKarmaRankId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationKarmaRankId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationKarmaRankId> for Uuid {
+    fn from(id: GamificationKarmaRankId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationKarmaRank
+///
+/// This is the public representation of GamificationKarmaRank for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankDto {
+    pub id: GamificationKarmaRankId,
+    pub name: String,
+    pub karma_min: i32,
+    pub description: Option<String>,
+    pub motivational_text: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationKarmaRank for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankSummary {
+    pub id: GamificationKarmaRankId,
+    pub name: String,
+}
+
+/// Reference to GamificationKarmaRank for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankRef {
+    pub id: GamificationKarmaRankId,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGE TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationChallenge
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationChallengeId(pub Uuid);
+
+impl GamificationChallengeId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationChallengeId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationChallengeId> for Uuid {
+    fn from(id: GamificationChallengeId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationChallenge
+///
+/// This is the public representation of GamificationChallenge for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeDto {
+    pub id: GamificationChallengeId,
+    pub name: String,
+    pub state: ChallengeState,
+    pub manager_user_id: Option<Uuid>,
+    pub period: ChallengePeriod,
+    pub start_date: Option<NaiveDate>,
+    pub end_date: Option<NaiveDate>,
+    pub visibility_mode: ChallengeVisibilityMode,
+    pub reward_badge_id: Option<Uuid>,
+    pub reward_first_badge_id: Option<Uuid>,
+    pub reward_second_badge_id: Option<Uuid>,
+    pub reward_third_badge_id: Option<Uuid>,
+    pub reward_failure: bool,
+    pub reward_realtime: bool,
+    pub report_frequency: ReportFrequency,
+    pub last_report_date: Option<NaiveDate>,
+    pub next_report_date: Option<NaiveDate>,
+    pub remind_update_delay: Option<i32>,
+    pub user_ids: serde_json::Value,
+    pub include_all_users: bool,
+    pub include_badge_ids: serde_json::Value,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationChallenge for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeSummary {
+    pub id: GamificationChallengeId,
+    pub name: String,
+}
+
+/// Reference to GamificationChallenge for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeRef {
+    pub id: GamificationChallengeId,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGEMEMBERSHIP TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationChallengeMembership
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipId(pub Uuid);
+
+impl GamificationChallengeMembershipId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationChallengeMembershipId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationChallengeMembershipId> for Uuid {
+    fn from(id: GamificationChallengeMembershipId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationChallengeMembership
+///
+/// This is the public representation of GamificationChallengeMembership for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipDto {
+    pub id: GamificationChallengeMembershipId,
+    pub challenge_id: Uuid,
+    pub user_id: Uuid,
+    pub source: MembershipSource,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationChallengeMembership for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipSummary {
+    pub id: GamificationChallengeMembershipId,
+}
+
+/// Reference to GamificationChallengeMembership for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipRef {
+    pub id: GamificationChallengeMembershipId,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGELINE TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationChallengeLine
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationChallengeLineId(pub Uuid);
+
+impl GamificationChallengeLineId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationChallengeLineId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationChallengeLineId> for Uuid {
+    fn from(id: GamificationChallengeLineId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationChallengeLine
+///
+/// This is the public representation of GamificationChallengeLine for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineDto {
+    pub id: GamificationChallengeLineId,
+    pub challenge_id: Uuid,
+    pub definition_id: Uuid,
+    pub sequence: i32,
+    pub target_goal: Decimal,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationChallengeLine for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineSummary {
+    pub id: GamificationChallengeLineId,
+}
+
+/// Reference to GamificationChallengeLine for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineRef {
+    pub id: GamificationChallengeLineId,
+}
+
+// ============================================================================
+// GAMIFICATIONGOALDEFINITION TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationGoalDefinition
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionId(pub Uuid);
+
+impl GamificationGoalDefinitionId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationGoalDefinitionId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationGoalDefinitionId> for Uuid {
+    fn from(id: GamificationGoalDefinitionId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationGoalDefinition
+///
+/// This is the public representation of GamificationGoalDefinition for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionDto {
+    pub id: GamificationGoalDefinitionId,
+    pub name: String,
+    pub description: Option<String>,
+    pub suffix: Option<String>,
+    pub monetary: bool,
+    pub computation_mode: GoalComputationMode,
+    pub metric_key: Option<String>,
+    pub condition: GoalCondition,
+    pub display_mode: GoalDisplayMode,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationGoalDefinition for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionSummary {
+    pub id: GamificationGoalDefinitionId,
+    pub name: String,
+}
+
+/// Reference to GamificationGoalDefinition for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionRef {
+    pub id: GamificationGoalDefinitionId,
+}
+
+// ============================================================================
+// GAMIFICATIONGOAL TYPES
+// ============================================================================
+
+/// Type-safe ID for GamificationGoal
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct GamificationGoalId(pub Uuid);
+
+impl GamificationGoalId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for GamificationGoalId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<GamificationGoalId> for Uuid {
+    fn from(id: GamificationGoalId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for GamificationGoal
+///
+/// This is the public representation of GamificationGoal for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDto {
+    pub id: GamificationGoalId,
+    pub definition_id: Uuid,
+    pub user_id: Uuid,
+    pub line_id: Option<Uuid>,
+    pub challenge_id: Option<Uuid>,
+    pub start_date: NaiveDate,
+    pub end_date: Option<NaiveDate>,
+    pub target: Decimal,
+    pub current: Decimal,
+    pub state: GoalState,
+    pub to_update: bool,
+    pub last_update: Option<NaiveDate>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of GamificationGoal for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalSummary {
+    pub id: GamificationGoalId,
+}
+
+/// Reference to GamificationGoal for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalRef {
+    pub id: GamificationGoalId,
+}
 
 // ============================================================================
 // ENGAGEMENTLINKTRACKER TYPES
@@ -128,6 +686,75 @@ pub struct EngagementLinkTrackerClickSummary {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EngagementLinkTrackerClickRef {
     pub id: EngagementLinkTrackerClickId,
+}
+
+// ============================================================================
+// ENGAGEMENTRATING TYPES
+// ============================================================================
+
+/// Type-safe ID for EngagementRating
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct EngagementRatingId(pub Uuid);
+
+impl EngagementRatingId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for EngagementRatingId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<EngagementRatingId> for Uuid {
+    fn from(id: EngagementRatingId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for EngagementRating
+///
+/// This is the public representation of EngagementRating for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingDto {
+    pub id: EngagementRatingId,
+    pub rated_model: String,
+    pub rated_record_id: Uuid,
+    pub parent_rated_model: Option<String>,
+    pub parent_rated_record_id: Option<Uuid>,
+    pub rated_user_id: Option<Uuid>,
+    pub rater_user_id: Option<Uuid>,
+    pub rater_email: Option<String>,
+    pub rating_value: Option<i32>,
+    pub feedback: Option<String>,
+    pub consumed: bool,
+    pub rated_on: Option<DateTime<Utc>>,
+    pub token_nonce: String,
+    pub token_expires_at: DateTime<Utc>,
+    pub publisher_comment: Option<String>,
+    pub publisher_user_id: Option<Uuid>,
+    pub publisher_replied_at: Option<DateTime<Utc>>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of EngagementRating for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingSummary {
+    pub id: EngagementRatingId,
+}
+
+/// Reference to EngagementRating for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingRef {
+    pub id: EngagementRatingId,
 }
 
 // ============================================================================

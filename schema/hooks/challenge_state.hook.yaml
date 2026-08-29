@@ -1,0 +1,39 @@
+# =============================================================================
+# challenge_state — GamificationChallenge.state (machine #1, EN-S1; ADR-0016
+# hand_set). Split into its own per-entity hook file because the validator
+# resolves a field's `state_machine:` ref against per-entity hook names.
+#
+# HAND-SET lifecycle: start/close are operator verbs; the daily challenge
+# check moves the SAME edges by dates THROUGH these transitions, never via
+# raw state writes. Behavior spec lives in the typed verbs (the write
+# service) — this file is the declaration.
+#
+# reset (done → draft) is refused while any live goal of the challenge is
+# inprogress (rule R-G8) — the guard is procedural (cross-table), so the
+# transition is declared and the verb enforces.
+# =============================================================================
+
+name: challenge_state
+model: GamificationChallenge
+
+states:
+  field: state
+  values:
+    draft:
+      initial: true
+    inprogress: {}
+    done:
+      final: true   # a resting state, not a dead end — reset below still exits it (the mail 'sent' precedent)
+  transitions:
+    start:
+      from: draft
+      to: inprogress
+      message: "Challenge starts — membership materializes from the declarative rules (user_ids + include_all_users + include_badge_ids) and goals generate at current = 0 with an explicit first evaluation"
+    close:
+      from: inprogress
+      to: done
+      message: "Challenge closes — the forced reward check runs (podium; realtime reward grants already landed keyed)"
+    reset:
+      from: done
+      to: draft
+      message: "Back to draft — REFUSED while any live goal of the challenge is inprogress (no silent goal loss; rule R-G8)"

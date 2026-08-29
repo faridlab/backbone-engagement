@@ -28,12 +28,25 @@ pub mod exports;
 // Re-exports for convenience - Domain entities
 pub use domain::entity::*;
 
+// Re-exports - State Machine
+pub use domain::state_machine::*;
+
 // Re-exports - Infrastructure
 pub use infrastructure::persistence::*;
 
 // Re-exports - Application services
+pub use application::service::GamificationBadgeService;
+pub use application::service::GamificationBadgeUserService;
+pub use application::service::GamificationKarmaTrackingService;
+pub use application::service::GamificationKarmaRankService;
+pub use application::service::GamificationChallengeService;
+pub use application::service::GamificationChallengeMembershipService;
+pub use application::service::GamificationChallengeLineService;
+pub use application::service::GamificationGoalDefinitionService;
+pub use application::service::GamificationGoalService;
 pub use application::service::EngagementLinkTrackerService;
 pub use application::service::EngagementLinkTrackerClickService;
+pub use application::service::EngagementRatingService;
 pub use application::service::EngagementCampaignService;
 pub use application::service::EngagementSourceService;
 pub use application::service::EngagementMediumService;
@@ -55,14 +68,30 @@ use sqlx::PgPool;
 /// let router = engagement.all_crud_routes();
 /// ```
 pub struct EngagementModule {
+    pub(crate) gamification_badge_service: Arc<GamificationBadgeService>,
+    pub(crate) gamification_badge_user_service: Arc<GamificationBadgeUserService>,
+    pub(crate) gamification_karma_tracking_service: Arc<GamificationKarmaTrackingService>,
+    pub(crate) gamification_karma_rank_service: Arc<GamificationKarmaRankService>,
+    pub(crate) gamification_challenge_service: Arc<GamificationChallengeService>,
+    pub(crate) gamification_challenge_membership_service: Arc<GamificationChallengeMembershipService>,
+    pub(crate) gamification_challenge_line_service: Arc<GamificationChallengeLineService>,
+    pub(crate) gamification_goal_definition_service: Arc<GamificationGoalDefinitionService>,
+    pub(crate) gamification_goal_service: Arc<GamificationGoalService>,
     pub(crate) engagement_link_tracker_service: Arc<EngagementLinkTrackerService>,
     pub(crate) engagement_link_tracker_click_service: Arc<EngagementLinkTrackerClickService>,
+    pub(crate) engagement_rating_service: Arc<EngagementRatingService>,
     pub(crate) engagement_campaign_service: Arc<EngagementCampaignService>,
     pub(crate) engagement_source_service: Arc<EngagementSourceService>,
     pub(crate) engagement_medium_service: Arc<EngagementMediumService>,
     // <<< CUSTOM FIELDS
     pub(crate) engagement_write_service: std::sync::Arc<
         application::service::engagement_write_service::EngagementWriteService,
+    >,
+    pub(crate) rating_write_service: std::sync::Arc<
+        application::service::rating_write_service::RatingWriteService,
+    >,
+    pub(crate) gamification_write_service: std::sync::Arc<
+        application::service::gamification_write_service::GamificationWriteService,
     >,
     // END CUSTOM
 }
@@ -80,16 +109,36 @@ impl EngagementModule {
     /// real deployment; use this only in trusted/admin/seeding contexts.
     pub fn all_crud_routes(&self) -> Router {
         use presentation::http::{
+            create_gamification_badge_routes,
+            create_gamification_badge_user_read_routes,
+            create_gamification_karma_tracking_read_routes,
+            create_gamification_karma_rank_routes,
+            create_gamification_challenge_routes,
+            create_gamification_challenge_membership_read_routes,
+            create_gamification_challenge_line_routes,
+            create_gamification_goal_definition_routes,
+            create_gamification_goal_read_routes,
             create_engagement_link_tracker_routes,
             create_engagement_link_tracker_click_routes,
+            create_engagement_rating_read_routes,
             create_engagement_campaign_routes,
             create_engagement_source_routes,
             create_engagement_medium_routes,
         };
 
         Router::new()
+            .merge(create_gamification_badge_routes(self.gamification_badge_service.clone()))
+            .merge(create_gamification_badge_user_read_routes(self.gamification_badge_user_service.clone()))
+            .merge(create_gamification_karma_tracking_read_routes(self.gamification_karma_tracking_service.clone()))
+            .merge(create_gamification_karma_rank_routes(self.gamification_karma_rank_service.clone()))
+            .merge(create_gamification_challenge_routes(self.gamification_challenge_service.clone()))
+            .merge(create_gamification_challenge_membership_read_routes(self.gamification_challenge_membership_service.clone()))
+            .merge(create_gamification_challenge_line_routes(self.gamification_challenge_line_service.clone()))
+            .merge(create_gamification_goal_definition_routes(self.gamification_goal_definition_service.clone()))
+            .merge(create_gamification_goal_read_routes(self.gamification_goal_service.clone()))
             .merge(create_engagement_link_tracker_routes(self.engagement_link_tracker_service.clone()))
             .merge(create_engagement_link_tracker_click_routes(self.engagement_link_tracker_click_service.clone()))
+            .merge(create_engagement_rating_read_routes(self.engagement_rating_service.clone()))
             .merge(create_engagement_campaign_routes(self.engagement_campaign_service.clone()))
             .merge(create_engagement_source_routes(self.engagement_source_service.clone()))
             .merge(create_engagement_medium_routes(self.engagement_medium_service.clone()))
@@ -112,16 +161,36 @@ impl EngagementModule {
     /// merge validated write routes (or a write service's HTTP layer) onto it.
     pub fn readonly_routes(&self) -> Router {
         use presentation::http::{
+            create_gamification_badge_read_routes,
+            create_gamification_badge_user_read_routes,
+            create_gamification_karma_tracking_read_routes,
+            create_gamification_karma_rank_read_routes,
+            create_gamification_challenge_read_routes,
+            create_gamification_challenge_membership_read_routes,
+            create_gamification_challenge_line_read_routes,
+            create_gamification_goal_definition_read_routes,
+            create_gamification_goal_read_routes,
             create_engagement_link_tracker_read_routes,
             create_engagement_link_tracker_click_read_routes,
+            create_engagement_rating_read_routes,
             create_engagement_campaign_read_routes,
             create_engagement_source_read_routes,
             create_engagement_medium_read_routes,
         };
 
         Router::new()
+            .merge(create_gamification_badge_read_routes(self.gamification_badge_service.clone()))
+            .merge(create_gamification_badge_user_read_routes(self.gamification_badge_user_service.clone()))
+            .merge(create_gamification_karma_tracking_read_routes(self.gamification_karma_tracking_service.clone()))
+            .merge(create_gamification_karma_rank_read_routes(self.gamification_karma_rank_service.clone()))
+            .merge(create_gamification_challenge_read_routes(self.gamification_challenge_service.clone()))
+            .merge(create_gamification_challenge_membership_read_routes(self.gamification_challenge_membership_service.clone()))
+            .merge(create_gamification_challenge_line_read_routes(self.gamification_challenge_line_service.clone()))
+            .merge(create_gamification_goal_definition_read_routes(self.gamification_goal_definition_service.clone()))
+            .merge(create_gamification_goal_read_routes(self.gamification_goal_service.clone()))
             .merge(create_engagement_link_tracker_read_routes(self.engagement_link_tracker_service.clone()))
             .merge(create_engagement_link_tracker_click_read_routes(self.engagement_link_tracker_click_service.clone()))
+            .merge(create_engagement_rating_read_routes(self.engagement_rating_service.clone()))
             .merge(create_engagement_campaign_read_routes(self.engagement_campaign_service.clone()))
             .merge(create_engagement_source_read_routes(self.engagement_source_service.clone()))
             .merge(create_engagement_medium_read_routes(self.engagement_medium_service.clone()))
@@ -149,12 +218,53 @@ impl EngagementModule {
     pub fn redirect_routes(self: &Arc<Self>) -> Router {
         presentation::http::redirect_routes::composer().with_state(Arc::clone(self))
     }
+
+    /// The validated rating path (issue / rotate / reset / publisher reply /
+    /// stats / the single-use submit) — the service behind the public and
+    /// guarded rating route groups.
+    pub fn rating_write_service(
+        &self,
+    ) -> &std::sync::Arc<application::service::rating_write_service::RatingWriteService> {
+        &self.rating_write_service
+    }
+
+    /// The PUBLIC rating submit (`POST /rate/:token/submit`) — a BARE,
+    /// throttled mount (ADR-0019 action_link class: the HMAC'd capability
+    /// link is the auth). Mount at the site root; never behind auth.
+    pub fn rating_public_routes(self: &Arc<Self>) -> Router {
+        presentation::http::rating_routes::public_composer().with_state(Arc::clone(self))
+    }
+
+    /// Guarded rating management: the validated operator seams only (no
+    /// generic rating mutation anywhere). Mount behind the host's
+    /// authenticated tree.
+    pub fn rating_guarded_routes(self: &Arc<Self>) -> Router {
+        presentation::http::rating_routes::guarded_composer(Arc::clone(self))
+    }
+
+    /// The validated gamification path (the append-only karma ledger, the
+    /// two badge-grant verbs, the certification inbound contract, both
+    /// state machines, and the daily challenge check).
+    pub fn gamification_write_service(
+        &self,
+    ) -> &std::sync::Arc<
+        application::service::gamification_write_service::GamificationWriteService,
+    > {
+        &self.gamification_write_service
+    }
     // END CUSTOM
 }
 
 /// Builder for EngagementModule
 pub struct EngagementModuleBuilder {
     db_pool: Option<PgPool>,
+    // <<< CUSTOM - custom builder fields
+    rating_secret: Option<Vec<u8>>,
+    rated_types: Vec<(String, Option<String>)>,
+    metrics: Vec<(String, application::service::gamification_write_service::MetricFn)>,
+    user_directory:
+        Option<application::service::gamification_write_service::UserDirectory>,
+    // END CUSTOM
 }
 
 impl EngagementModuleBuilder {
@@ -162,6 +272,12 @@ impl EngagementModuleBuilder {
     pub fn new() -> Self {
         Self {
             db_pool: None,
+            // <<< CUSTOM
+            rating_secret: None,
+            rated_types: Vec::new(),
+            metrics: Vec::new(),
+            user_directory: None,
+            // END CUSTOM
         }
     }
 
@@ -172,12 +288,88 @@ impl EngagementModuleBuilder {
     }
 
     // <<< CUSTOM - custom builder methods
+    /// Override the rating-token HMAC secret (tests and explicit
+    /// composition; the default reads
+    /// [`application::service::rating_write_service::RATING_TOKEN_SECRET_ENV`]
+    /// — an unset variable leaves the secret empty and every issue/verify
+    /// refuses with a typed 500).
+    pub fn with_rating_secret(mut self, secret: impl Into<Vec<u8>>) -> Self {
+        self.rating_secret = Some(secret.into());
+        self
+    }
+
+    /// Register a rated target type (composition-time code, never free
+    /// text): the entity name a rating may target, plus the optional
+    /// parent model label for the rollup pair.
+    pub fn with_rated_type(mut self, model: &str, parent_model: Option<&str>) -> Self {
+        self.rated_types
+            .push((model.to_string(), parent_model.map(String::from)));
+        self
+    }
+
+    /// Register a goal metric (the name goal definitions cite; the compute
+    /// function is code — the only computed mode).
+    pub fn with_metric(
+        mut self,
+        key: &str,
+        compute: application::service::gamification_write_service::MetricFn,
+    ) -> Self {
+        self.metrics.push((key.to_string(), compute));
+        self
+    }
+
+    /// Register the user directory supplying the `include_all_users`
+    /// expansion (the user table lives in another module — the host wires
+    /// the listing).
+    pub fn with_user_directory(
+        mut self,
+        directory: application::service::gamification_write_service::UserDirectory,
+    ) -> Self {
+        self.user_directory = Some(directory);
+        self
+    }
     // END CUSTOM
 
     /// Build the module with configured dependencies
     pub fn build(self) -> anyhow::Result<EngagementModule> {
         let db_pool = self.db_pool
             .ok_or_else(|| anyhow::anyhow!("Database pool not configured"))?;
+
+        // GamificationBadge service
+        let gamification_badge_repository = Arc::new(GamificationBadgeRepository::new(db_pool.clone()));
+        let gamification_badge_service = Arc::new(GamificationBadgeService::with_repository(gamification_badge_repository.clone()));
+
+        // GamificationBadgeUser service
+        let gamification_badge_user_repository = Arc::new(GamificationBadgeUserRepository::new(db_pool.clone()));
+        let gamification_badge_user_service = Arc::new(GamificationBadgeUserService::with_repository(gamification_badge_user_repository.clone()));
+
+        // GamificationKarmaTracking service
+        let gamification_karma_tracking_repository = Arc::new(GamificationKarmaTrackingRepository::new(db_pool.clone()));
+        let gamification_karma_tracking_service = Arc::new(GamificationKarmaTrackingService::with_repository(gamification_karma_tracking_repository.clone()));
+
+        // GamificationKarmaRank service
+        let gamification_karma_rank_repository = Arc::new(GamificationKarmaRankRepository::new(db_pool.clone()));
+        let gamification_karma_rank_service = Arc::new(GamificationKarmaRankService::with_repository(gamification_karma_rank_repository.clone()));
+
+        // GamificationChallenge service
+        let gamification_challenge_repository = Arc::new(GamificationChallengeRepository::new(db_pool.clone()));
+        let gamification_challenge_service = Arc::new(GamificationChallengeService::with_repository(gamification_challenge_repository.clone()));
+
+        // GamificationChallengeMembership service
+        let gamification_challenge_membership_repository = Arc::new(GamificationChallengeMembershipRepository::new(db_pool.clone()));
+        let gamification_challenge_membership_service = Arc::new(GamificationChallengeMembershipService::with_repository(gamification_challenge_membership_repository.clone()));
+
+        // GamificationChallengeLine service
+        let gamification_challenge_line_repository = Arc::new(GamificationChallengeLineRepository::new(db_pool.clone()));
+        let gamification_challenge_line_service = Arc::new(GamificationChallengeLineService::with_repository(gamification_challenge_line_repository.clone()));
+
+        // GamificationGoalDefinition service
+        let gamification_goal_definition_repository = Arc::new(GamificationGoalDefinitionRepository::new(db_pool.clone()));
+        let gamification_goal_definition_service = Arc::new(GamificationGoalDefinitionService::with_repository(gamification_goal_definition_repository.clone()));
+
+        // GamificationGoal service
+        let gamification_goal_repository = Arc::new(GamificationGoalRepository::new(db_pool.clone()));
+        let gamification_goal_service = Arc::new(GamificationGoalService::with_repository(gamification_goal_repository.clone()));
 
         // EngagementLinkTracker service
         let engagement_link_tracker_repository = Arc::new(EngagementLinkTrackerRepository::new(db_pool.clone()));
@@ -186,6 +378,10 @@ impl EngagementModuleBuilder {
         // EngagementLinkTrackerClick service
         let engagement_link_tracker_click_repository = Arc::new(EngagementLinkTrackerClickRepository::new(db_pool.clone()));
         let engagement_link_tracker_click_service = Arc::new(EngagementLinkTrackerClickService::with_repository(engagement_link_tracker_click_repository.clone()));
+
+        // EngagementRating service
+        let engagement_rating_repository = Arc::new(EngagementRatingRepository::new(db_pool.clone()));
+        let engagement_rating_service = Arc::new(EngagementRatingService::with_repository(engagement_rating_repository.clone()));
 
         // EngagementCampaign service
         let engagement_campaign_repository = Arc::new(EngagementCampaignRepository::new(db_pool.clone()));
@@ -205,16 +401,62 @@ impl EngagementModuleBuilder {
                 db_pool.clone(),
             ),
         );
+        let rating_write_service = {
+            let secret = self.rating_secret.unwrap_or_else(|| {
+                std::env::var(
+                    application::service::rating_write_service::RATING_TOKEN_SECRET_ENV,
+                )
+                .unwrap_or_default()
+                .into_bytes()
+            });
+            let mut registry =
+                application::service::rating_write_service::RatedTypeRegistry::new();
+            for (model, parent) in &self.rated_types {
+                registry.register(model, parent.as_deref());
+            }
+            std::sync::Arc::new(
+                application::service::rating_write_service::RatingWriteService::with_config(
+                    db_pool.clone(),
+                    &secret,
+                    registry,
+                ),
+            )
+        };
+        let gamification_write_service = {
+            let mut service =
+                application::service::gamification_write_service::GamificationWriteService::new(
+                    db_pool.clone(),
+                );
+            for (key, compute) in &self.metrics {
+                service.register_metric(key, compute.clone());
+            }
+            if let Some(directory) = &self.user_directory {
+                service.set_user_directory(directory.clone());
+            }
+            std::sync::Arc::new(service)
+        };
         // END CUSTOM
 
         Ok(EngagementModule {
+            gamification_badge_service,
+            gamification_badge_user_service,
+            gamification_karma_tracking_service,
+            gamification_karma_rank_service,
+            gamification_challenge_service,
+            gamification_challenge_membership_service,
+            gamification_challenge_line_service,
+            gamification_goal_definition_service,
+            gamification_goal_service,
             engagement_link_tracker_service,
             engagement_link_tracker_click_service,
+            engagement_rating_service,
             engagement_campaign_service,
             engagement_source_service,
             engagement_medium_service,
             // <<< CUSTOM
             engagement_write_service,
+            rating_write_service,
+            gamification_write_service,
             // END CUSTOM
         })
     }

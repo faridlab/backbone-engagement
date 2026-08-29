@@ -6,13 +6,77 @@
 //! Implementations should be in the infrastructure layer.
 
 
+pub mod gamification_badge_repository;
+pub mod gamification_badge_user_repository;
+pub mod gamification_karma_tracking_repository;
+pub mod gamification_karma_rank_repository;
+pub mod gamification_challenge_repository;
+pub mod gamification_challenge_membership_repository;
+pub mod gamification_challenge_line_repository;
+pub mod gamification_goal_definition_repository;
+pub mod gamification_goal_repository;
 pub mod engagement_link_tracker_repository;
 pub mod engagement_link_tracker_click_repository;
+pub mod engagement_rating_repository;
 pub mod engagement_campaign_repository;
 pub mod engagement_source_repository;
 pub mod engagement_medium_repository;
 
 // Re-exports
+pub use gamification_badge_repository::{
+    GamificationBadgeRepository,
+    GamificationBadgePaginationParams,
+    GamificationBadgePaginatedResult,
+    GamificationBadgeFilter,
+};
+pub use gamification_badge_user_repository::{
+    GamificationBadgeUserRepository,
+    GamificationBadgeUserPaginationParams,
+    GamificationBadgeUserPaginatedResult,
+    GamificationBadgeUserFilter,
+};
+pub use gamification_karma_tracking_repository::{
+    GamificationKarmaTrackingRepository,
+    GamificationKarmaTrackingPaginationParams,
+    GamificationKarmaTrackingPaginatedResult,
+    GamificationKarmaTrackingFilter,
+};
+pub use gamification_karma_rank_repository::{
+    GamificationKarmaRankRepository,
+    GamificationKarmaRankPaginationParams,
+    GamificationKarmaRankPaginatedResult,
+    GamificationKarmaRankFilter,
+};
+pub use gamification_challenge_repository::{
+    GamificationChallengeRepository,
+    GamificationChallengePaginationParams,
+    GamificationChallengePaginatedResult,
+    GamificationChallengeFilter,
+};
+pub use gamification_challenge_membership_repository::{
+    GamificationChallengeMembershipRepository,
+    GamificationChallengeMembershipPaginationParams,
+    GamificationChallengeMembershipPaginatedResult,
+    GamificationChallengeMembershipFilter,
+};
+pub use gamification_challenge_line_repository::{
+    GamificationChallengeLineRepository,
+    GamificationChallengeLinePaginationParams,
+    GamificationChallengeLinePaginatedResult,
+    GamificationChallengeLineFilter,
+};
+pub use gamification_goal_definition_repository::{
+    GamificationGoalDefinitionRepository,
+    GamificationGoalDefinitionPaginationParams,
+    GamificationGoalDefinitionPaginatedResult,
+    GamificationGoalDefinitionFilter,
+};
+pub use gamification_goal_repository::{
+    GamificationGoalRepository,
+    GamificationGoalPaginationParams,
+    GamificationGoalPaginatedResult,
+    GamificationGoalFilter,
+};
 pub use engagement_link_tracker_repository::{
     EngagementLinkTrackerRepository,
     EngagementLinkTrackerPaginationParams,
@@ -24,6 +88,12 @@ pub use engagement_link_tracker_click_repository::{
     EngagementLinkTrackerClickPaginationParams,
     EngagementLinkTrackerClickPaginatedResult,
     EngagementLinkTrackerClickFilter,
+};
+pub use engagement_rating_repository::{
+    EngagementRatingRepository,
+    EngagementRatingPaginationParams,
+    EngagementRatingPaginatedResult,
+    EngagementRatingFilter,
 };
 pub use engagement_campaign_repository::{
     EngagementCampaignRepository,

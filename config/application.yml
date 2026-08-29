@@ -55,6 +55,76 @@ entities:
     pagination:
       default_limit: 20
       max_limit: 100
+  gamification_badge:
+    collection: gamification_badges
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_badge_user:
+    collection: gamification_badge_users
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_karma_tracking:
+    collection: gamification_karma_trackings
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_karma_rank:
+    collection: gamification_karma_ranks
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_challenge:
+    collection: gamification_challenges
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_challenge_membership:
+    collection: gamification_challenge_memberships
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_challenge_line:
+    collection: gamification_challenge_lines
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_goal_definition:
+    collection: gamification_goal_definitions
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  gamification_goal:
+    collection: gamification_goals
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  engagement_rating:
+    collection: engagement_ratings
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
 tracing:
   enabled: true
   exporter: otlp

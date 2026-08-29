@@ -12,8 +12,18 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 // Import seeders
+use backbone_engagement::seeders::SeedGamificationBadgeSeeder;
+use backbone_engagement::seeders::SeedGamificationBadgeUserSeeder;
+use backbone_engagement::seeders::SeedGamificationKarmaTrackingSeeder;
+use backbone_engagement::seeders::SeedGamificationKarmaRankSeeder;
+use backbone_engagement::seeders::SeedGamificationChallengeSeeder;
+use backbone_engagement::seeders::SeedGamificationChallengeMembershipSeeder;
+use backbone_engagement::seeders::SeedGamificationChallengeLineSeeder;
+use backbone_engagement::seeders::SeedGamificationGoalDefinitionSeeder;
+use backbone_engagement::seeders::SeedGamificationGoalSeeder;
 use backbone_engagement::seeders::SeedEngagementLinkTrackerSeeder;
 use backbone_engagement::seeders::SeedEngagementLinkTrackerClickSeeder;
+use backbone_engagement::seeders::SeedEngagementRatingSeeder;
 use backbone_engagement::seeders::SeedEngagementCampaignSeeder;
 use backbone_engagement::seeders::SeedEngagementSourceSeeder;
 use backbone_engagement::seeders::SeedEngagementMediumSeeder;
@@ -45,8 +55,18 @@ async fn main() -> Result<()> {
 
     // Register seeders in order
     let mut seeders: Vec<Box<dyn Seeder + Send + Sync>> = Vec::new();
+    seeders.push(Box::new(SeedGamificationBadgeSeeder::new()));
+    seeders.push(Box::new(SeedGamificationBadgeUserSeeder::new()));
+    seeders.push(Box::new(SeedGamificationKarmaTrackingSeeder::new()));
+    seeders.push(Box::new(SeedGamificationKarmaRankSeeder::new()));
+    seeders.push(Box::new(SeedGamificationChallengeSeeder::new()));
+    seeders.push(Box::new(SeedGamificationChallengeMembershipSeeder::new()));
+    seeders.push(Box::new(SeedGamificationChallengeLineSeeder::new()));
+    seeders.push(Box::new(SeedGamificationGoalDefinitionSeeder::new()));
+    seeders.push(Box::new(SeedGamificationGoalSeeder::new()));
     seeders.push(Box::new(SeedEngagementLinkTrackerSeeder::new()));
     seeders.push(Box::new(SeedEngagementLinkTrackerClickSeeder::new()));
+    seeders.push(Box::new(SeedEngagementRatingSeeder::new()));
     seeders.push(Box::new(SeedEngagementCampaignSeeder::new()));
     seeders.push(Box::new(SeedEngagementSourceSeeder::new()));
     seeders.push(Box::new(SeedEngagementMediumSeeder::new()));

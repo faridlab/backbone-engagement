@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "backbone-engagement"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -271,6 +271,7 @@ dependencies = [
  "backbone-rate-limit",
  "chrono",
  "config",
+ "hmac",
  "jsonwebtoken",
  "mockall",
  "pretty_assertions",
@@ -282,6 +283,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
+ "sha2",
  "sqlx",
  "tempfile",
  "thiserror 1.0.69",

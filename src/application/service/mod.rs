@@ -7,24 +7,53 @@
 pub mod error;
 pub use error::{ServiceError, ServiceResult};
 
+pub mod gamification_badge_service;
+pub mod gamification_badge_user_service;
+pub mod gamification_karma_tracking_service;
+pub mod gamification_karma_rank_service;
+pub mod gamification_challenge_service;
+pub mod gamification_challenge_membership_service;
+pub mod gamification_challenge_line_service;
+pub mod gamification_goal_definition_service;
+pub mod gamification_goal_service;
 pub mod engagement_link_tracker_service;
 pub mod engagement_link_tracker_click_service;
+pub mod engagement_rating_service;
 pub mod engagement_campaign_service;
 pub mod engagement_source_service;
 pub mod engagement_medium_service;
 
 // <<< CUSTOM
-// Hand-authored validated write path (user-owned; see metaphor.codegen.yaml).
+// Hand-authored validated write paths (user-owned; see metaphor.codegen.yaml).
 pub mod engagement_write_service;
+pub mod rating_write_service;
+pub mod gamification_write_service;
 // END CUSTOM
 
+pub use gamification_badge_service::GamificationBadgeService;
+pub use gamification_badge_user_service::GamificationBadgeUserService;
+pub use gamification_karma_tracking_service::GamificationKarmaTrackingService;
+pub use gamification_karma_rank_service::GamificationKarmaRankService;
+pub use gamification_challenge_service::GamificationChallengeService;
+pub use gamification_challenge_membership_service::GamificationChallengeMembershipService;
+pub use gamification_challenge_line_service::GamificationChallengeLineService;
+pub use gamification_goal_definition_service::GamificationGoalDefinitionService;
+pub use gamification_goal_service::GamificationGoalService;
 pub use engagement_link_tracker_service::EngagementLinkTrackerService;
 pub use engagement_link_tracker_click_service::EngagementLinkTrackerClickService;
+pub use engagement_rating_service::EngagementRatingService;
 pub use engagement_campaign_service::EngagementCampaignService;
 pub use engagement_source_service::EngagementSourceService;
 pub use engagement_medium_service::EngagementMediumService;
 // <<< CUSTOM
 pub use engagement_write_service::{
     AttributionInput, AttributionRefs, EngagementError, EngagementWriteService, TrackerView,
+};
+pub use rating_write_service::{
+    RatedType, RatedTypeRegistry, RatingError, RatingStats, RatingTokenView, RatingWriteService,
+};
+pub use gamification_write_service::{
+    CertificationGrantView, DailyCheckReport, GamificationError, GamificationMetricRegistry,
+    GamificationWriteService, KarmaAppendView, LeaderboardEntry, MetricFn, RankInfo, UserDirectory,
 };
 // END CUSTOM

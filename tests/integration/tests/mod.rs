@@ -6,16 +6,36 @@
 
 pub mod crud_test_base;
 
+pub mod gamification_badge_api_test;
+pub mod gamification_badge_user_api_test;
+pub mod gamification_karma_tracking_api_test;
+pub mod gamification_karma_rank_api_test;
+pub mod gamification_challenge_api_test;
+pub mod gamification_challenge_membership_api_test;
+pub mod gamification_challenge_line_api_test;
+pub mod gamification_goal_definition_api_test;
+pub mod gamification_goal_api_test;
 pub mod engagement_link_tracker_api_test;
 pub mod engagement_link_tracker_click_api_test;
+pub mod engagement_rating_api_test;
 pub mod engagement_campaign_api_test;
 pub mod engagement_source_api_test;
 pub mod engagement_medium_api_test;
 
 // Re-exports for convenience
 pub use crud_test_base::*;
+pub use gamification_badge_api_test::*;
+pub use gamification_badge_user_api_test::*;
+pub use gamification_karma_tracking_api_test::*;
+pub use gamification_karma_rank_api_test::*;
+pub use gamification_challenge_api_test::*;
+pub use gamification_challenge_membership_api_test::*;
+pub use gamification_challenge_line_api_test::*;
+pub use gamification_goal_definition_api_test::*;
+pub use gamification_goal_api_test::*;
 pub use engagement_link_tracker_api_test::*;
 pub use engagement_link_tracker_click_api_test::*;
+pub use engagement_rating_api_test::*;
 pub use engagement_campaign_api_test::*;
 pub use engagement_source_api_test::*;
 pub use engagement_medium_api_test::*;

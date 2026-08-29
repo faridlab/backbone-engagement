@@ -12,7 +12,7 @@
 module: engagement
 version: 2
 schema: engagement
-description: "engagement — the attribution floor: UTM masters (campaign/source/medium) + the short-link tracker and its click ledger (Odoo utm + link_tracker port)"
+description: "engagement — attribution (UTM masters + short-link tracker + click ledger), customer rating (the token-ferried 1..10 substrate), and gamification (karma ledger, badges, challenges, goals)"
 
 # ADR-0014 company fence: the Odoo engagement stack ships NO company column
 # and zero ir.rules (posture 4 — the ADR names utm/link_tracker's family
@@ -74,6 +74,8 @@ shared_types:
 imports:
   - utm-attribution.model.yaml
   - link-tracker.model.yaml
+  - rating.model.yaml
+  - gamification.model.yaml
 
 # =============================================================================
 # FLAG-ID COVERAGE — docs/odoo/foundation/engagement port (this module closes):
@@ -125,7 +127,75 @@ imports:
 #                              302 (target edits must propagate — upstream's
 #                              301 would freeze a rewritten target client-side)
 #
-# Out of scope by decision (later waves own them): rating + portal_rating,
-# gamification + karma, utm.stage/tag, mail.render.mixin link rewriting
-# (W6 mass mailing calls this module's search_or_create seam instead).
+# Out of scope by decision (later waves own them): utm.stage/tag,
+# mail.render.mixin link rewriting (W6 mass mailing calls this module's
+# search_or_create seam instead), portal rating surfaces (W7).
+#
+# rating + portal_rating (docs/odoo/foundation/engagement/_extraction_rating.md):
+#   rating.rating        → EngagementRating              rating.model.yaml
+#                         (house prefix vs the spec source's RatingRating —
+#                         recorded naming delta D-25)
+#   portal_rating trio   → publisher_comment/publisher_user_id/
+#                         publisher_replied_at ON EngagementRating (the
+#                         reply trio is typed-verb-written only)
+#   EN-01/02/06 token    → REPLACED by a Tier A HMAC capability:
+#                         token_nonce selector + mandatory token_expires_at,
+#                         MAC over (id, nonce, grant, exp) recomputed at
+#                         verify; rotation = rotate_token/reset (D-3)
+#   EN-03 scale          → 1..10 integers (forced {1,3,5} dropped);
+#                         bands top>=8/ok>=5/ko<=4 derived read-side (D-1)
+#   EN-04/05 single-use  → submit is ONE conditional UPDATE; no anonymous
+#                         re-submission/edit window; reset + re-solicit is
+#                         the correction path (D-2)
+#   EN-07/09 publish     → ONE publish rule: stats exposed ONLY through the
+#                         guarded management composition this wave; no
+#                         public/portal stats endpoint (D-4)
+#   EN-08 parent rollup  → denormalized parent pair filled at issue from
+#                         the rated-type registry's declared parent field
+#   EN-10 ACL shape      → guarded routes: reads + typed verbs only
+#   rating.mixin / parent.mixin / mail overlays → NOT entities: the stats
+#                         engine is the write service's rating_stats read
+#                         (one aggregated query + its parent-rollup twin)
+#   DROPPED (D-19):      message_id, is_internal, rating_image*,
+#                         resource_ref, res_model_id M2O, chatter cascade
+#
+# gamification (docs/odoo/foundation/engagement/_extraction_gamification.md):
+#   gamification.badge        → GamificationBadge          gamification.model.yaml
+#   gamification.badge.user   → GamificationBadgeUser      (grant_key partial
+#                              UNIQUE = the exactly-once idempotency key,
+#                              EN-86 + the survey certification contract)
+#   gamification.karma.tracking→ GamificationKarmaTracking (append-only:
+#                              UPDATE/DELETE refused by a DB trigger; balance
+#                              = latest-row projection, never a sum — EN-60)
+#   gamification.karma.rank   → GamificationKarmaRank      (karma_min > 0
+#                              DB CHECK, EN-69; no seed data — D-24)
+#   gamification.challenge    → GamificationChallenge      (machine #1,
+#                              EN-S1; declarative membership — EN-81)
+#   challenge line            → GamificationChallengeLine
+#   (membership materialized) → GamificationChallengeMembership (the daily
+#                              check reconciles it; leavers' goals CANCEL,
+#                              never unlink — D-14)
+#   gamification.goal.definition→ GamificationGoalDefinition (manual |
+#                              registered_metric ONLY; metric_key validated
+#                              against the builder-registered registry —
+#                              EN-83, zero expression columns)
+#   gamification.goal         → GamificationGoal            (machine #2,
+#                              EN-S2; explicit first evaluation — EN-84;
+#                              presence gate dropped — EN-82)
+#   res.users karma overlay   → NOT ported (no karma column, no write
+#                              interception — D-18); balance/rank/next-rank/
+#                              completeness/gain are read projections
+#   EN-62 consolidation cron  → NOT ported (history-rewrite ban — D-6)
+#   EN-61 re-entrancy guard   → moot (nothing ever unlinks ledger rows)
+#   EN-64 leaderboard         → ranks by the balance projection; the
+#                              SUM-window leaderboards are dropped (D-5)
+#   EN-66 admin bypass        → NOT ported (system grants are a keyed verb,
+#                              not a bypassed ladder — D-11)
+#   EN-68 goal_definition_ids → NOT ported (dead upstream; its help-text
+#                              promise must not be implemented — D-13)
+#   EN-83 eval surfaces       → BANNED (python/count/sum modes, domain,
+#                              compute_code, batch_* columns all absent — D-8)
+#   crons                     → ONE ports: gamification-daily-challenge-check
+#                              (schema/hooks/index.hook.yaml); the
+#                              consolidation cron does not port
 # =============================================================================

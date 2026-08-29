@@ -4,16 +4,29 @@
 # Module-level configuration for hooks (lifecycle behaviors).
 # Hooks define: state machines, rules, permissions, triggers, computed fields.
 #
-# No hook files yet: the ported surface (UTM masters + link tracker + click
-# ledger) carries no state machines — invariants live in the hand-written
-# write service (engagement_write_service) and the click dedup/cap rules.
-# Rating/gamification (the cohort's machine-bearing addons) are later waves.
+# Hook files:
+#   engagement.hook.yaml        the R-R*/R-G* rules with enforcement loci and
+#                               the lifecycle-none declarations for every
+#                               stateless entity.
+#   challenge_state.hook.yaml   machine #1 — GamificationChallenge.state
+#                               (per-entity file: the validator resolves a
+#                               field's state_machine ref against hook names)
+#   goal_state.hook.yaml        machine #2 — GamificationGoal.state
+#
+# This index carries: audit critical events, the shared event vocabulary
+# (inbound certification contract + outbound notification facts — pinned
+# ahead of their consumers per the mail precedent), and the ONE scheduled
+# job (the daily challenge check).
 
 module: engagement
 version: 2
 
-# Import all hook files.
-imports: []
+# Import all hook files (informational — discovery is a recursive glob,
+# but keeping the list accurate helps readers).
+imports:
+  - engagement.hook.yaml
+  - challenge_state.hook.yaml
+  - goal_state.hook.yaml
 
 # =============================================================================
 # Module-level configuration
@@ -22,7 +35,16 @@ config:
   audit:
     retention_days: 365
     archive_after_days: 90
-    critical_events: []
+    critical_events:
+      - karma_ledger_write        # every append — a mint outside the verb is currency forgery
+      - badge_granted             # carries kind + grant_key (the exactly-once observable)
+      - rating_issued
+      - rating_token_rotated
+      - rating_submitted_via_token
+      - publisher_reply_written
+      - challenge_membership_recomputed
+      - goal_evaluated
+      - rating_token_verify_failed  # throttle-adjacent observable
 
   notifications:
     email_enabled: false
@@ -32,9 +54,113 @@ config:
 # =============================================================================
 # Shared domain events
 # =============================================================================
-events: {}
+# Two vocabularies, pinned now:
+#  - INBOUND CertificationPassed: the M-4 survey consumer's completion fact.
+#    Declared ahead of its consumer (the mail precedent of pinning contracts
+#    before models): engagement's handler maps it to grant_system(kind=event,
+#    grant_key="event:certification:{certification_ref}:{attempt_ref}") —
+#    the grant_key partial UNIQUE (rule R-G1) answers the certification DoD
+#    leg ("grants its badge exactly once via the event path").
+#  - OUTBOUND BadgeGranted / KarmaLedgerAppended / RankChanged /
+#    ChallengeReportDue: notification FACTS for the host to relay — this
+#    module sends no mail (D-17); emission wiring is host composition.
+events:
+
+  CertificationPassed:
+    description: "INBOUND (the M-4 consumer's completion fact): a survey certification was passed and its badge is due. Pinned now so the survey seat and this module build against one contract; consumed at M-4. Mapped to grant_system(kind=event) with grant_key 'event:certification:{certification_ref}:{attempt_ref}' — exactly-once under at-least-once delivery."
+    aggregate: GamificationBadgeUser
+    version: 1
+    storage:
+      store: false
+    fields:
+      - { name: certification_ref, type: string, description: "The certification's own id (the occurrence's logical parent)" }
+      - { name: survey_ref, type: "uuid?", description: "The survey that issued the certification, when known" }
+      - { name: attempt_ref, type: string, description: "The occurrence id — the idempotency input alongside certification_ref" }
+      - { name: recipient_user_id, type: uuid, description: "The certified user who earns the badge" }
+      - { name: badge_key, type: string, description: "The badge's stable key/name — resolved to a GamificationBadge by the handler" }
+
+  BadgeGranted:
+    description: "OUTBOUND: a badge grant row was minted (peer, challenge, or event kind). The notification fact the host relays to the recipient (upstream's badge-received email, delivered as an event — D-17)."
+    aggregate: GamificationBadgeUser
+    version: 1
+    storage:
+      store: true
+      retention: "365_days"
+      index_fields: [grant_row_id, badge_id, recipient_user_id]
+    fields:
+      - { name: grant_row_id, type: uuid, description: "The GamificationBadgeUser row id" }
+      - { name: badge_id, type: uuid, description: "The granted badge" }
+      - { name: badge_name, type: string, description: "Badge name snapshot (relay payloads are self-contained)" }
+      - { name: recipient_user_id, type: uuid, description: "Who earned it" }
+      - { name: grant_kind, type: string, description: "peer | challenge | event" }
+      - { name: grant_key, type: "string?", description: "The idempotency key (NULL on peer grants)" }
+      - { name: challenge_id, type: "uuid?", description: "The granting challenge, when kind=challenge" }
+
+  KarmaLedgerAppended:
+    description: "OUTBOUND: a karma ledger row was appended (the balance moved). The currency-mint observable — pairs with the karma_ledger_write critical audit event."
+    aggregate: GamificationKarmaTracking
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      index_fields: [tracking_row_id, user_id]
+    fields:
+      - { name: tracking_row_id, type: uuid, description: "The appended GamificationKarmaTracking row id" }
+      - { name: user_id, type: uuid, description: "Whose balance moved" }
+      - { name: delta, type: integer, description: "new_value - old_value (derived at emission)" }
+      - { name: new_value, type: integer, description: "The new balance (the projection's value)" }
+      - { name: origin_kind, type: string, description: "manual | badge | challenge | certification | host" }
+      - { name: reason, type: string, description: "Why the balance moved" }
+
+  RankChanged:
+    description: "OUTBOUND: a user's rank changed (the balance crossed a karma_min threshold — EN-65's declarative rank-change notification). Upstream emailed the new-rank template in-module; here it is a host-relayed fact (D-17)."
+    aggregate: GamificationKarmaRank
+    version: 1
+    storage:
+      store: true
+      retention: "180_days"
+      index_fields: [user_id]
+    fields:
+      - { name: user_id, type: uuid, description: "Whose rank changed" }
+      - { name: from_rank_id, type: "uuid?", description: "The prior rank (NULL on first ranking)" }
+      - { name: to_rank_id, type: "uuid?", description: "The new rank (NULL on falling below every threshold)" }
+      - { name: from_rank_name, type: "string?", description: "Prior rank name snapshot" }
+      - { name: to_rank_name, type: "string?", description: "New rank name snapshot" }
+
+  ChallengeReportDue:
+    description: "OUTBOUND: a challenge's report cadence came due (the daily check advanced next_report_date). The payload summary is computed; DELIVERY is the host's (no mail template, no channel coupling — D-17/D-20)."
+    aggregate: GamificationChallenge
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      index_fields: [challenge_id]
+    fields:
+      - { name: challenge_id, type: uuid, description: "The reporting challenge" }
+      - { name: mode, type: string, description: "personal | ranking (the challenge's visibility_mode)" }
+      - { name: summary, type: json, description: "The computed report payload (per-user digests or ranked standings)" }
 
 # =============================================================================
-# Scheduled jobs
+# Scheduled jobs (ADR-0020 postures)
 # =============================================================================
-scheduled_jobs: {}
+# Exactly ONE job ports. Odoo's second cron (the monthly karma consolidation)
+# is NOT ported — it rewrote ledger history (EN-62's ban, D-6). Survey's
+# inline invocation of the challenge cron is also not ported (EN-88) — the
+# certification path is the CertificationPassed event contract above.
+#
+# Step order (each step idempotent): (1) claim due challenges FOR UPDATE
+# SKIP LOCKED; (2) move date-driven state edges THROUGH the transition verbs
+# (start drafts whose start_date <= today; close inprogress whose end_date
+# passed); (3) reconcile membership from the declarative rules (leaver goals
+# → canceled); (4) generate missing goals at current = 0 (explicit first
+# evaluation); (5) evaluate registered_metric goals (NO presence gate —
+# EN-82 dropped, D-7); (6) realtime reward check via grant_system; (7)
+# advance next_report_date + emit ChallengeReportDue.
+scheduled_jobs:
+
+  gamification-daily-challenge-check:
+    schedule: "0 5 * * *"          # the daily 05:00 check
+    handler: "gamification::daily_challenge_check"
+    posture: pull                  # interval-driven upstream; no arming event exists by construction
+    commit_policy: commit_per_batch   # per-challenge batches; every effect idempotent (grant_key, conditional writes) — bounds the replay window (EN-85's replacement, D-10)
+    pickup_lock: true              # claims due challenges FOR UPDATE SKIP LOCKED — two workers must not double-run rewards

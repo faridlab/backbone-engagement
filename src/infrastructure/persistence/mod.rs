@@ -4,21 +4,43 @@
 //!
 //! Uses backbone-orm's `DatabaseOperations<T>` trait.
 
+mod gamification_badge_repository;
+mod gamification_badge_user_repository;
+mod gamification_karma_tracking_repository;
+mod gamification_karma_rank_repository;
+mod gamification_challenge_repository;
+mod gamification_challenge_membership_repository;
+mod gamification_challenge_line_repository;
+mod gamification_goal_definition_repository;
+mod gamification_goal_repository;
 mod engagement_link_tracker_repository;
 mod engagement_link_tracker_click_repository;
+mod engagement_rating_repository;
 mod engagement_campaign_repository;
 mod engagement_source_repository;
 mod engagement_medium_repository;
 
 // Custom persistence modules
 // <<< CUSTOM
-// Hand-written engagement SQL (services orchestrate, repositories hold SQL).
+// Hand-written SQL (services orchestrate, repositories hold SQL).
 pub mod engagement_repository;
+pub mod rating_repository;
+pub mod gamification_repository;
 // END CUSTOM
 
 // Re-exports
+pub use gamification_badge_repository::GamificationBadgeRepository;
+pub use gamification_badge_user_repository::GamificationBadgeUserRepository;
+pub use gamification_karma_tracking_repository::GamificationKarmaTrackingRepository;
+pub use gamification_karma_rank_repository::GamificationKarmaRankRepository;
+pub use gamification_challenge_repository::GamificationChallengeRepository;
+pub use gamification_challenge_membership_repository::GamificationChallengeMembershipRepository;
+pub use gamification_challenge_line_repository::GamificationChallengeLineRepository;
+pub use gamification_goal_definition_repository::GamificationGoalDefinitionRepository;
+pub use gamification_goal_repository::GamificationGoalRepository;
 pub use engagement_link_tracker_repository::EngagementLinkTrackerRepository;
 pub use engagement_link_tracker_click_repository::EngagementLinkTrackerClickRepository;
+pub use engagement_rating_repository::EngagementRatingRepository;
 pub use engagement_campaign_repository::EngagementCampaignRepository;
 pub use engagement_source_repository::EngagementSourceRepository;
 pub use engagement_medium_repository::EngagementMediumRepository;
@@ -33,4 +55,6 @@ pub use backbone_orm::repository::{
 // Re-export custom persistence types
 // <<< CUSTOM
 pub use engagement_repository::EngagementRepository;
+pub use rating_repository::RatingRepository;
+pub use gamification_repository::GamificationRepository;
 // END CUSTOM

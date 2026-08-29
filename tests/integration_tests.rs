@@ -11,6 +11,132 @@ mod integration;
 use integration::tests::*;
 
 #[tokio::test]
+async fn test_gamification_badge_api() {
+    let mut test = GamificationBadgeApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_badge_user_api() {
+    let mut test = GamificationBadgeUserApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_karma_tracking_api() {
+    let mut test = GamificationKarmaTrackingApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_karma_rank_api() {
+    let mut test = GamificationKarmaRankApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_challenge_api() {
+    let mut test = GamificationChallengeApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_challenge_membership_api() {
+    let mut test = GamificationChallengeMembershipApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_challenge_line_api() {
+    let mut test = GamificationChallengeLineApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_goal_definition_api() {
+    let mut test = GamificationGoalDefinitionApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_gamification_goal_api() {
+    let mut test = GamificationGoalApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
 async fn test_engagement_link_tracker_api() {
     let mut test = EngagementLinkTrackerApiTest::new();
     let results = test.run_all().await;
@@ -27,6 +153,20 @@ async fn test_engagement_link_tracker_api() {
 #[tokio::test]
 async fn test_engagement_link_tracker_click_api() {
     let mut test = EngagementLinkTrackerClickApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_engagement_rating_api() {
+    let mut test = EngagementRatingApiTest::new();
     let results = test.run_all().await;
 
     let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();

@@ -8,7 +8,7 @@
 //! ## Usage from other modules
 //!
 //! ```text
-//! use engagement::exports::{EngagementLinkTrackerDto};
+//! use engagement::exports::{GamificationBadgeDto};
 //! ```
 
 mod types;
@@ -27,12 +27,42 @@ pub use events::*;
 /// Summary of what this module exports
 ///
 /// ## Public Types
+/// - `GamificationBadgeDto` - Data transfer object for GamificationBadge
+/// - `GamificationBadgeSummary` - Summary view of GamificationBadge
+/// - `GamificationBadgeId` - Type-safe ID wrapper
+/// - `GamificationBadgeUserDto` - Data transfer object for GamificationBadgeUser
+/// - `GamificationBadgeUserSummary` - Summary view of GamificationBadgeUser
+/// - `GamificationBadgeUserId` - Type-safe ID wrapper
+/// - `GamificationKarmaTrackingDto` - Data transfer object for GamificationKarmaTracking
+/// - `GamificationKarmaTrackingSummary` - Summary view of GamificationKarmaTracking
+/// - `GamificationKarmaTrackingId` - Type-safe ID wrapper
+/// - `GamificationKarmaRankDto` - Data transfer object for GamificationKarmaRank
+/// - `GamificationKarmaRankSummary` - Summary view of GamificationKarmaRank
+/// - `GamificationKarmaRankId` - Type-safe ID wrapper
+/// - `GamificationChallengeDto` - Data transfer object for GamificationChallenge
+/// - `GamificationChallengeSummary` - Summary view of GamificationChallenge
+/// - `GamificationChallengeId` - Type-safe ID wrapper
+/// - `GamificationChallengeMembershipDto` - Data transfer object for GamificationChallengeMembership
+/// - `GamificationChallengeMembershipSummary` - Summary view of GamificationChallengeMembership
+/// - `GamificationChallengeMembershipId` - Type-safe ID wrapper
+/// - `GamificationChallengeLineDto` - Data transfer object for GamificationChallengeLine
+/// - `GamificationChallengeLineSummary` - Summary view of GamificationChallengeLine
+/// - `GamificationChallengeLineId` - Type-safe ID wrapper
+/// - `GamificationGoalDefinitionDto` - Data transfer object for GamificationGoalDefinition
+/// - `GamificationGoalDefinitionSummary` - Summary view of GamificationGoalDefinition
+/// - `GamificationGoalDefinitionId` - Type-safe ID wrapper
+/// - `GamificationGoalDto` - Data transfer object for GamificationGoal
+/// - `GamificationGoalSummary` - Summary view of GamificationGoal
+/// - `GamificationGoalId` - Type-safe ID wrapper
 /// - `EngagementLinkTrackerDto` - Data transfer object for EngagementLinkTracker
 /// - `EngagementLinkTrackerSummary` - Summary view of EngagementLinkTracker
 /// - `EngagementLinkTrackerId` - Type-safe ID wrapper
 /// - `EngagementLinkTrackerClickDto` - Data transfer object for EngagementLinkTrackerClick
 /// - `EngagementLinkTrackerClickSummary` - Summary view of EngagementLinkTrackerClick
 /// - `EngagementLinkTrackerClickId` - Type-safe ID wrapper
+/// - `EngagementRatingDto` - Data transfer object for EngagementRating
+/// - `EngagementRatingSummary` - Summary view of EngagementRating
+/// - `EngagementRatingId` - Type-safe ID wrapper
 /// - `EngagementCampaignDto` - Data transfer object for EngagementCampaign
 /// - `EngagementCampaignSummary` - Summary view of EngagementCampaign
 /// - `EngagementCampaignId` - Type-safe ID wrapper
@@ -44,12 +74,42 @@ pub use events::*;
 /// - `EngagementMediumId` - Type-safe ID wrapper
 ///
 /// ## Public Events
+/// - `GamificationBadgeCreatedEvent` - Published when GamificationBadge is created
+/// - `GamificationBadgeUpdatedEvent` - Published when GamificationBadge is updated
+/// - `GamificationBadgeDeletedEvent` - Published when GamificationBadge is deleted
+/// - `GamificationBadgeUserCreatedEvent` - Published when GamificationBadgeUser is created
+/// - `GamificationBadgeUserUpdatedEvent` - Published when GamificationBadgeUser is updated
+/// - `GamificationBadgeUserDeletedEvent` - Published when GamificationBadgeUser is deleted
+/// - `GamificationKarmaTrackingCreatedEvent` - Published when GamificationKarmaTracking is created
+/// - `GamificationKarmaTrackingUpdatedEvent` - Published when GamificationKarmaTracking is updated
+/// - `GamificationKarmaTrackingDeletedEvent` - Published when GamificationKarmaTracking is deleted
+/// - `GamificationKarmaRankCreatedEvent` - Published when GamificationKarmaRank is created
+/// - `GamificationKarmaRankUpdatedEvent` - Published when GamificationKarmaRank is updated
+/// - `GamificationKarmaRankDeletedEvent` - Published when GamificationKarmaRank is deleted
+/// - `GamificationChallengeCreatedEvent` - Published when GamificationChallenge is created
+/// - `GamificationChallengeUpdatedEvent` - Published when GamificationChallenge is updated
+/// - `GamificationChallengeDeletedEvent` - Published when GamificationChallenge is deleted
+/// - `GamificationChallengeMembershipCreatedEvent` - Published when GamificationChallengeMembership is created
+/// - `GamificationChallengeMembershipUpdatedEvent` - Published when GamificationChallengeMembership is updated
+/// - `GamificationChallengeMembershipDeletedEvent` - Published when GamificationChallengeMembership is deleted
+/// - `GamificationChallengeLineCreatedEvent` - Published when GamificationChallengeLine is created
+/// - `GamificationChallengeLineUpdatedEvent` - Published when GamificationChallengeLine is updated
+/// - `GamificationChallengeLineDeletedEvent` - Published when GamificationChallengeLine is deleted
+/// - `GamificationGoalDefinitionCreatedEvent` - Published when GamificationGoalDefinition is created
+/// - `GamificationGoalDefinitionUpdatedEvent` - Published when GamificationGoalDefinition is updated
+/// - `GamificationGoalDefinitionDeletedEvent` - Published when GamificationGoalDefinition is deleted
+/// - `GamificationGoalCreatedEvent` - Published when GamificationGoal is created
+/// - `GamificationGoalUpdatedEvent` - Published when GamificationGoal is updated
+/// - `GamificationGoalDeletedEvent` - Published when GamificationGoal is deleted
 /// - `EngagementLinkTrackerCreatedEvent` - Published when EngagementLinkTracker is created
 /// - `EngagementLinkTrackerUpdatedEvent` - Published when EngagementLinkTracker is updated
 /// - `EngagementLinkTrackerDeletedEvent` - Published when EngagementLinkTracker is deleted
 /// - `EngagementLinkTrackerClickCreatedEvent` - Published when EngagementLinkTrackerClick is created
 /// - `EngagementLinkTrackerClickUpdatedEvent` - Published when EngagementLinkTrackerClick is updated
 /// - `EngagementLinkTrackerClickDeletedEvent` - Published when EngagementLinkTrackerClick is deleted
+/// - `EngagementRatingCreatedEvent` - Published when EngagementRating is created
+/// - `EngagementRatingUpdatedEvent` - Published when EngagementRating is updated
+/// - `EngagementRatingDeletedEvent` - Published when EngagementRating is deleted
 /// - `EngagementCampaignCreatedEvent` - Published when EngagementCampaign is created
 /// - `EngagementCampaignUpdatedEvent` - Published when EngagementCampaign is updated
 /// - `EngagementCampaignDeletedEvent` - Published when EngagementCampaign is deleted

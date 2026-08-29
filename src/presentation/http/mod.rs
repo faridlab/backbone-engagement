@@ -5,22 +5,44 @@
 //! These handlers use Axum and backbone-core's BackboneCrudHandler
 //! to provide all 12 standard Backbone CRUD endpoints.
 
+pub mod gamification_badge_handler;
+pub mod gamification_badge_user_handler;
+pub mod gamification_karma_tracking_handler;
+pub mod gamification_karma_rank_handler;
+pub mod gamification_challenge_handler;
+pub mod gamification_challenge_membership_handler;
+pub mod gamification_challenge_line_handler;
+pub mod gamification_goal_definition_handler;
+pub mod gamification_goal_handler;
 pub mod engagement_link_tracker_handler;
 pub mod engagement_link_tracker_click_handler;
+pub mod engagement_rating_handler;
 pub mod engagement_campaign_handler;
 pub mod engagement_source_handler;
 pub mod engagement_medium_handler;
 
 // <<< CUSTOM
 // Hand-written route groups (user-owned; survive regen): the guarded
-// management composition and the public /r/<code> redirect.
+// management composition, the public /r/<code> redirect, and the public +
+// guarded rating groups.
 pub mod guarded_routes;
 pub mod redirect_routes;
+pub mod rating_routes;
 // END CUSTOM
 
 // Re-exports
+pub use gamification_badge_handler::{create_gamification_badge_routes, create_gamification_badge_read_routes, create_gamification_badge_write_routes};
+pub use gamification_badge_user_handler::{create_gamification_badge_user_routes, create_gamification_badge_user_read_routes, create_gamification_badge_user_write_routes};
+pub use gamification_karma_tracking_handler::{create_gamification_karma_tracking_routes, create_gamification_karma_tracking_read_routes, create_gamification_karma_tracking_write_routes};
+pub use gamification_karma_rank_handler::{create_gamification_karma_rank_routes, create_gamification_karma_rank_read_routes, create_gamification_karma_rank_write_routes};
+pub use gamification_challenge_handler::{create_gamification_challenge_routes, create_gamification_challenge_read_routes, create_gamification_challenge_write_routes};
+pub use gamification_challenge_membership_handler::{create_gamification_challenge_membership_routes, create_gamification_challenge_membership_read_routes, create_gamification_challenge_membership_write_routes};
+pub use gamification_challenge_line_handler::{create_gamification_challenge_line_routes, create_gamification_challenge_line_read_routes, create_gamification_challenge_line_write_routes};
+pub use gamification_goal_definition_handler::{create_gamification_goal_definition_routes, create_gamification_goal_definition_read_routes, create_gamification_goal_definition_write_routes};
+pub use gamification_goal_handler::{create_gamification_goal_routes, create_gamification_goal_read_routes, create_gamification_goal_write_routes};
 pub use engagement_link_tracker_handler::{create_engagement_link_tracker_routes, create_engagement_link_tracker_read_routes, create_engagement_link_tracker_write_routes};
 pub use engagement_link_tracker_click_handler::{create_engagement_link_tracker_click_routes, create_engagement_link_tracker_click_read_routes, create_engagement_link_tracker_click_write_routes};
+pub use engagement_rating_handler::{create_engagement_rating_routes, create_engagement_rating_read_routes, create_engagement_rating_write_routes};
 pub use engagement_campaign_handler::{create_engagement_campaign_routes, create_engagement_campaign_read_routes, create_engagement_campaign_write_routes};
 pub use engagement_source_handler::{create_engagement_source_routes, create_engagement_source_read_routes, create_engagement_source_write_routes};
 pub use engagement_medium_handler::{create_engagement_medium_routes, create_engagement_medium_read_routes, create_engagement_medium_write_routes};

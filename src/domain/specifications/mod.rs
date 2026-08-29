@@ -6,8 +6,18 @@
 
 pub use backbone_core::{Specification, AndSpecification, OrSpecification, NotSpecification};
 
+pub mod gamification_badge_specification;
+pub mod gamification_badge_user_specification;
+pub mod gamification_karma_tracking_specification;
+pub mod gamification_karma_rank_specification;
+pub mod gamification_challenge_specification;
+pub mod gamification_challenge_membership_specification;
+pub mod gamification_challenge_line_specification;
+pub mod gamification_goal_definition_specification;
+pub mod gamification_goal_specification;
 pub mod engagement_link_tracker_specification;
 pub mod engagement_link_tracker_click_specification;
+pub mod engagement_rating_specification;
 pub mod engagement_campaign_specification;
 pub mod engagement_source_specification;
 pub mod engagement_medium_specification;

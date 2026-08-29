@@ -11,6 +11,249 @@ use chrono::{DateTime, Utc};
 use super::types::*;
 
 // ============================================================================
+// GAMIFICATIONBADGE EVENTS
+// ============================================================================
+
+/// Event published when a GamificationBadge is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeCreatedEvent {
+    pub id: GamificationBadgeId,
+    pub data: GamificationBadgeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationBadge is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUpdatedEvent {
+    pub id: GamificationBadgeId,
+    pub data: GamificationBadgeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationBadge is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeDeletedEvent {
+    pub id: GamificationBadgeId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONBADGEUSER EVENTS
+// ============================================================================
+
+/// Event published when a GamificationBadgeUser is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserCreatedEvent {
+    pub id: GamificationBadgeUserId,
+    pub data: GamificationBadgeUserDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationBadgeUser is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserUpdatedEvent {
+    pub id: GamificationBadgeUserId,
+    pub data: GamificationBadgeUserDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationBadgeUser is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationBadgeUserDeletedEvent {
+    pub id: GamificationBadgeUserId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONKARMATRACKING EVENTS
+// ============================================================================
+
+/// Event published when a GamificationKarmaTracking is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingCreatedEvent {
+    pub id: GamificationKarmaTrackingId,
+    pub data: GamificationKarmaTrackingDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationKarmaTracking is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingUpdatedEvent {
+    pub id: GamificationKarmaTrackingId,
+    pub data: GamificationKarmaTrackingDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationKarmaTracking is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaTrackingDeletedEvent {
+    pub id: GamificationKarmaTrackingId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONKARMARANK EVENTS
+// ============================================================================
+
+/// Event published when a GamificationKarmaRank is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankCreatedEvent {
+    pub id: GamificationKarmaRankId,
+    pub data: GamificationKarmaRankDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationKarmaRank is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankUpdatedEvent {
+    pub id: GamificationKarmaRankId,
+    pub data: GamificationKarmaRankDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationKarmaRank is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationKarmaRankDeletedEvent {
+    pub id: GamificationKarmaRankId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGE EVENTS
+// ============================================================================
+
+/// Event published when a GamificationChallenge is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeCreatedEvent {
+    pub id: GamificationChallengeId,
+    pub data: GamificationChallengeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallenge is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeUpdatedEvent {
+    pub id: GamificationChallengeId,
+    pub data: GamificationChallengeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallenge is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeDeletedEvent {
+    pub id: GamificationChallengeId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGEMEMBERSHIP EVENTS
+// ============================================================================
+
+/// Event published when a GamificationChallengeMembership is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipCreatedEvent {
+    pub id: GamificationChallengeMembershipId,
+    pub data: GamificationChallengeMembershipDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallengeMembership is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipUpdatedEvent {
+    pub id: GamificationChallengeMembershipId,
+    pub data: GamificationChallengeMembershipDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallengeMembership is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeMembershipDeletedEvent {
+    pub id: GamificationChallengeMembershipId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONCHALLENGELINE EVENTS
+// ============================================================================
+
+/// Event published when a GamificationChallengeLine is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineCreatedEvent {
+    pub id: GamificationChallengeLineId,
+    pub data: GamificationChallengeLineDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallengeLine is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineUpdatedEvent {
+    pub id: GamificationChallengeLineId,
+    pub data: GamificationChallengeLineDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationChallengeLine is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationChallengeLineDeletedEvent {
+    pub id: GamificationChallengeLineId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONGOALDEFINITION EVENTS
+// ============================================================================
+
+/// Event published when a GamificationGoalDefinition is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionCreatedEvent {
+    pub id: GamificationGoalDefinitionId,
+    pub data: GamificationGoalDefinitionDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationGoalDefinition is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionUpdatedEvent {
+    pub id: GamificationGoalDefinitionId,
+    pub data: GamificationGoalDefinitionDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationGoalDefinition is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDefinitionDeletedEvent {
+    pub id: GamificationGoalDefinitionId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// GAMIFICATIONGOAL EVENTS
+// ============================================================================
+
+/// Event published when a GamificationGoal is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalCreatedEvent {
+    pub id: GamificationGoalId,
+    pub data: GamificationGoalDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationGoal is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalUpdatedEvent {
+    pub id: GamificationGoalId,
+    pub data: GamificationGoalDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a GamificationGoal is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GamificationGoalDeletedEvent {
+    pub id: GamificationGoalId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
 // ENGAGEMENTLINKTRACKER EVENTS
 // ============================================================================
 
@@ -61,6 +304,33 @@ pub struct EngagementLinkTrackerClickUpdatedEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EngagementLinkTrackerClickDeletedEvent {
     pub id: EngagementLinkTrackerClickId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// ENGAGEMENTRATING EVENTS
+// ============================================================================
+
+/// Event published when a EngagementRating is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingCreatedEvent {
+    pub id: EngagementRatingId,
+    pub data: EngagementRatingDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a EngagementRating is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingUpdatedEvent {
+    pub id: EngagementRatingId,
+    pub data: EngagementRatingDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a EngagementRating is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EngagementRatingDeletedEvent {
+    pub id: EngagementRatingId,
     pub occurred_at: DateTime<Utc>,
 }
 
@@ -153,12 +423,42 @@ pub struct EngagementMediumDeletedEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum EngagementEvent {
+    GamificationBadgeCreated(GamificationBadgeCreatedEvent),
+    GamificationBadgeUpdated(GamificationBadgeUpdatedEvent),
+    GamificationBadgeDeleted(GamificationBadgeDeletedEvent),
+    GamificationBadgeUserCreated(GamificationBadgeUserCreatedEvent),
+    GamificationBadgeUserUpdated(GamificationBadgeUserUpdatedEvent),
+    GamificationBadgeUserDeleted(GamificationBadgeUserDeletedEvent),
+    GamificationKarmaTrackingCreated(GamificationKarmaTrackingCreatedEvent),
+    GamificationKarmaTrackingUpdated(GamificationKarmaTrackingUpdatedEvent),
+    GamificationKarmaTrackingDeleted(GamificationKarmaTrackingDeletedEvent),
+    GamificationKarmaRankCreated(GamificationKarmaRankCreatedEvent),
+    GamificationKarmaRankUpdated(GamificationKarmaRankUpdatedEvent),
+    GamificationKarmaRankDeleted(GamificationKarmaRankDeletedEvent),
+    GamificationChallengeCreated(GamificationChallengeCreatedEvent),
+    GamificationChallengeUpdated(GamificationChallengeUpdatedEvent),
+    GamificationChallengeDeleted(GamificationChallengeDeletedEvent),
+    GamificationChallengeMembershipCreated(GamificationChallengeMembershipCreatedEvent),
+    GamificationChallengeMembershipUpdated(GamificationChallengeMembershipUpdatedEvent),
+    GamificationChallengeMembershipDeleted(GamificationChallengeMembershipDeletedEvent),
+    GamificationChallengeLineCreated(GamificationChallengeLineCreatedEvent),
+    GamificationChallengeLineUpdated(GamificationChallengeLineUpdatedEvent),
+    GamificationChallengeLineDeleted(GamificationChallengeLineDeletedEvent),
+    GamificationGoalDefinitionCreated(GamificationGoalDefinitionCreatedEvent),
+    GamificationGoalDefinitionUpdated(GamificationGoalDefinitionUpdatedEvent),
+    GamificationGoalDefinitionDeleted(GamificationGoalDefinitionDeletedEvent),
+    GamificationGoalCreated(GamificationGoalCreatedEvent),
+    GamificationGoalUpdated(GamificationGoalUpdatedEvent),
+    GamificationGoalDeleted(GamificationGoalDeletedEvent),
     EngagementLinkTrackerCreated(EngagementLinkTrackerCreatedEvent),
     EngagementLinkTrackerUpdated(EngagementLinkTrackerUpdatedEvent),
     EngagementLinkTrackerDeleted(EngagementLinkTrackerDeletedEvent),
     EngagementLinkTrackerClickCreated(EngagementLinkTrackerClickCreatedEvent),
     EngagementLinkTrackerClickUpdated(EngagementLinkTrackerClickUpdatedEvent),
     EngagementLinkTrackerClickDeleted(EngagementLinkTrackerClickDeletedEvent),
+    EngagementRatingCreated(EngagementRatingCreatedEvent),
+    EngagementRatingUpdated(EngagementRatingUpdatedEvent),
+    EngagementRatingDeleted(EngagementRatingDeletedEvent),
     EngagementCampaignCreated(EngagementCampaignCreatedEvent),
     EngagementCampaignUpdated(EngagementCampaignUpdatedEvent),
     EngagementCampaignDeleted(EngagementCampaignDeletedEvent),

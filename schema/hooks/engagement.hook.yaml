@@ -1,0 +1,133 @@
+# =============================================================================
+# engagement hooks (rating + gamification) — the write-path rules with
+#   enforcement loci (ADR-0015) and the lifecycle-none declarations for every
+#   stateless entity.
+#
+# Spec of behavior: the typed verbs in the rating/gamification write services
+# (src/application/service/, hand-authored) + the daily challenge check. The
+# machines are DECLARATIONS — the transition verbs are the only writers of
+# state, including the daily check's date-driven edges (never raw writes).
+#
+# The two hand-set machines (ADR-0016) live in their own per-entity hook
+# files, where the schema validator resolves a field's `state_machine:` ref:
+#   challenge_state.hook.yaml   GamificationChallenge.state (EN-S1)
+#   goal_state.hook.yaml        GamificationGoal.state (EN-S2)
+#
+# Lifecycle declarations (ADR-0016 — silence must not read "nobody decided"):
+#   hand_set machines: GamificationChallenge.state (challenge_state),
+#                      GamificationGoal.state (goal_state) — the two files
+#                      above.
+#   lifecycle none:    EngagementRating (consumed is a FLAG, not a machine —
+#                      submit is one conditional UPDATE keyed on it),
+#                      GamificationBadge, GamificationBadgeUser,
+#                      GamificationKarmaTracking (append-only ledger),
+#                      GamificationKarmaRank, GamificationChallengeMembership
+#                      (reconciled projection), GamificationChallengeLine,
+#                      GamificationGoalDefinition.
+# =============================================================================
+
+module: engagement
+version: 2
+
+rules:
+
+  # ---- rating: bounds, single-use, idempotent issuance -----------------------
+
+  - id: R-R1
+    name: rating_value_bounds
+    when: submit
+    assert: "rating_value BETWEEN 1 AND 10 (EN-03/10 — the recorded 1..10 deviation; out-of-range is a typed 422, never a raw 500)"
+    error_code: rating_out_of_range
+    enforcement: both
+    # The DB CHECK backstop is installed by the hand-written hardening migration
+    # (the generic non-negative attribute cannot express a 1..10 band).
+  - id: R-R2
+    name: single_use_submit
+    when: submit
+    assert: "submit executes as ONE conditional UPDATE (SET consumed = true ... WHERE consumed = false AND token_nonce = $ AND token_expires_at > now()); zero rows → typed 409 with a shared refusal shape (already-consumed / unknown / expired are indistinguishable — no oracle)"
+    error_code: rating_not_submittable
+    enforcement: service
+    # service-only justification: the atomic conditional update IS the mechanism —
+    # no row-level CHECK can express "exactly once per token".
+  - id: R-R3
+    name: idempotent_issuance
+    when: issue
+    assert: "one live unconsumed row per (rated_model, rated_record_id, rater_user_id) — the partial UNIQUE index backs the find-or-create (the upstream _rating_get_access_token reuse semantics, DB-backed)"
+    error_code: duplicate_live_rating
+    enforcement: db
+
+  # ---- gamification: exactly-once, append-only, ladder, freeze --------------
+
+  - id: R-G1
+    name: badge_grant_exactly_once
+    when: grant_system
+    assert: "a (grant_key) partial UNIQUE among live rows makes keyed grants exactly-once under at-least-once delivery (EN-86's search_count replaced; the survey certification DoD leg — an occurrence delivered twice grants once)"
+    error_code: badge_already_granted
+    enforcement: db
+  - id: R-G2
+    name: karma_min_positive
+    when: create, update rank
+    assert: "karma_min > 0 (EN-69)"
+    error_code: karma_min_not_positive
+    enforcement: db
+    # The strict CHECK (karma_min > 0) is installed by the hand-written hardening
+    # migration; @non_negative only expresses >= 0 (would admit 0).
+  - id: R-G3
+    name: karma_ledger_append_only
+    when: update, delete ledger row
+    assert: "a BEFORE UPDATE OR DELETE trigger on gamification_karma_trackings raises — UPDATE and DELETE never succeed, soft-delete writes included (EN-62's rewrite ban, enforced at the DB)"
+    error_code: karma_ledger_immutable
+    enforcement: db
+  - id: R-G4
+    name: badge_peer_grant_ladder
+    when: grant_peer
+    assert: "rule_auth governs: everyone | users (rule_auth_user_ids) | having (rule_auth_badge_ids) | nobody — NO admin bypass exists (the upstream is_admin short-circuit does not port — D-11); system grants are a different keyed verb, not a bypassed ladder"
+    error_code: badge_not_grantable
+    enforcement: service
+    # service-only justification: procedural policy over typed json columns and
+    # cross-row badge-holding checks — not expressible as a row-level CHECK.
+  - id: R-G5
+    name: badge_monthly_peer_cap
+    when: grant_peer
+    assert: "when rule_max: the sender's grants this month < rule_max_number — counted by ONE grouped query over gamification_badge_users (the upstream per-badge owner-loop N+1 is a recorded fix — D-23)"
+    error_code: badge_cap_reached
+    enforcement: service
+  - id: R-G6
+    name: badge_self_grant_refusal
+    when: grant_peer
+    assert: "a sender never grants to themselves — IN THE TYPED VERB (upstream guarded only the wizard — EN-67; every path here refuses)"
+    error_code: badge_self_grant
+    enforcement: service
+  - id: R-G7
+    name: started_goal_config_freeze
+    when: update goal
+    assert: "definition_id and user_id are immutable once state != draft (the kanban drag-and-drop guard, EN-R37)"
+    error_code: goal_config_frozen
+    enforcement: service
+    # service-only justification: cross-row procedural guard (the goal's own row
+    # cannot express "immutable-conditionally-on-prior-state" as a CHECK).
+  - id: R-G8
+    name: challenge_reset_refused_with_live_goals
+    when: reset challenge
+    assert: "done → draft is refused while any live goal of the challenge is inprogress (EN-80's refusal, kept)"
+    error_code: challenge_has_live_goals
+    enforcement: service
+    # service-only justification: cross-table guard (goals of the challenge).
+  - id: R-G9
+    name: ledger_single_writer
+    when: write ledger
+    assert: "ledger rows are written ONLY by the typed append_karma verb (INSERT); no update path exists at any layer — the R-G3 trigger is the backstop"
+    error_code: null
+    enforcement: both
+  - id: R-G10
+    name: metric_key_registered
+    when: create, update goal definition
+    assert: "metric_key must exist in the GamificationMetricRegistry when computation_mode = registered_metric (typed 422 on unknown key — the write-time validation that replaces every eval surface, EN-83)"
+    error_code: metric_key_unknown
+    enforcement: service
+    # service-only justification: the registry is code (a builder-registered
+    # name → compute-fn map); membership cannot be a DB constraint.
+
+triggers: []
+# (none — Odoo's gamification triggers were UI onchange handlers; the onchange
+#  report-frequency trigger class does not port, D-20. Reports ride events.)

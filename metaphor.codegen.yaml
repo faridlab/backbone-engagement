@@ -23,10 +23,26 @@ user_owned:
   - "src/presentation/http/guarded_routes.rs"
   - "src/presentation/http/redirect_routes.rs"
 
+  # Hand-authored validated write path for the rating substrate (token
+  # issue/submit/rotate/reset, publisher reply, stats aggregation) and the
+  # gamification engines (metric registry, both grant verbs, karma append,
+  # the daily challenge check). Declared before the files land.
+  - "src/application/service/rating_write_service.rs"
+  - "src/application/service/gamification_write_service.rs"
+  - "src/infrastructure/persistence/rating_repository.rs"
+  - "src/infrastructure/persistence/gamification_repository.rs"
+  - "src/presentation/http/rating_routes.rs"
+
+  # Hand-written DB hardening: the karma-ledger immutability trigger
+  # (append-only — UPDATE/DELETE refused at the DB, soft-delete included).
+  - "migrations/*gamification*immutability*"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/features/**"
   - "tests/attribution_cases.rs"
   - "tests/link_tracker_cases.rs"
+  - "tests/rating_cases.rs"
+  - "tests/gamification_cases.rs"
 
   # Hand-authored module documentation.
   - "docs/**"

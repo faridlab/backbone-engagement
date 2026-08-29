@@ -5,14 +5,34 @@
 pub mod shared_types;
 pub use shared_types::{ValidationError, ValidationErrors, ValidationResult, EntityValidator};
 
+pub mod gamification_badge_validator;
+pub mod gamification_badge_user_validator;
+pub mod gamification_karma_tracking_validator;
+pub mod gamification_karma_rank_validator;
+pub mod gamification_challenge_validator;
+pub mod gamification_challenge_membership_validator;
+pub mod gamification_challenge_line_validator;
+pub mod gamification_goal_definition_validator;
+pub mod gamification_goal_validator;
 pub mod engagement_link_tracker_validator;
 pub mod engagement_link_tracker_click_validator;
+pub mod engagement_rating_validator;
 pub mod engagement_campaign_validator;
 pub mod engagement_source_validator;
 pub mod engagement_medium_validator;
 
+pub use gamification_badge_validator::{GamificationBadgeValidator, gamification_badge_validator};
+pub use gamification_badge_user_validator::{GamificationBadgeUserValidator, gamification_badge_user_validator};
+pub use gamification_karma_tracking_validator::{GamificationKarmaTrackingValidator, gamification_karma_tracking_validator};
+pub use gamification_karma_rank_validator::{GamificationKarmaRankValidator, gamification_karma_rank_validator};
+pub use gamification_challenge_validator::{GamificationChallengeValidator, gamification_challenge_validator};
+pub use gamification_challenge_membership_validator::{GamificationChallengeMembershipValidator, gamification_challenge_membership_validator};
+pub use gamification_challenge_line_validator::{GamificationChallengeLineValidator, gamification_challenge_line_validator};
+pub use gamification_goal_definition_validator::{GamificationGoalDefinitionValidator, gamification_goal_definition_validator};
+pub use gamification_goal_validator::{GamificationGoalValidator, gamification_goal_validator};
 pub use engagement_link_tracker_validator::{EngagementLinkTrackerValidator, engagement_link_tracker_validator};
 pub use engagement_link_tracker_click_validator::{EngagementLinkTrackerClickValidator, engagement_link_tracker_click_validator};
+pub use engagement_rating_validator::{EngagementRatingValidator, engagement_rating_validator};
 pub use engagement_campaign_validator::{EngagementCampaignValidator, engagement_campaign_validator};
 pub use engagement_source_validator::{EngagementSourceValidator, engagement_source_validator};
 pub use engagement_medium_validator::{EngagementMediumValidator, engagement_medium_validator};

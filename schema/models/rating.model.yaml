@@ -1,0 +1,151 @@
+# =============================================================================
+# engagement — the customer rating substrate (rating.rating + the
+#   portal_rating publisher-reply fields). One row per rating request/answer;
+#   a Tier A token ferries the public submit path. Rated targets are
+#   REGISTERED entity names resolved through the write service's rated-type
+#   registry — never free text, never an ir.model lookup.
+#
+# PORT DECISIONS (source: docs/odoo/foundation/engagement/_extraction_rating.md):
+#  - The entity takes the module's house prefix EngagementRating (the spec
+#    source names it RatingRating; recorded as a naming delta — D-25).
+#  - The upstream uuid4 access_token (the SOLE credential, never expiring,
+#    reusable after consumption — EN-01/02/05) is replaced by a Tier A
+#    capability: a random token_nonce selector plus a mandatory
+#    token_expires_at, with the authorization MAC computed over
+#    (id, nonce, grant, exp) by an HMAC the submit verify recomputes
+#    (D-3). Possession of the link is the auth, but a leaked row alone is
+#    inert — the nonce is not the capability without the server secret.
+#  - Scale is 1..10 integers (EN-03 recorded deviation, D-1): upstream forced
+#    the public route to {1,3,5} and lost out-of-range values to a raw 500.
+#    The write service returns a typed 422 and a DB CHECK backstops the
+#    bounds (rule R-R1, enforcement both). Bands are DERIVED read-side
+#    (top >= 8 / ok >= 5 / ko <= 4 / none — the 4/3/1 thresholds scaled x2);
+#    no rating_text column.
+#  - Single-use tokens (EN-04/05 decided, D-2): submit is ONE conditional
+#    UPDATE keyed on consumed = false; the anonymous re-submission and
+#    feedback-edit window does not port. The correction path is the issuer's
+#    reset (clears value + feedback, consumed = false, NEW nonce + expiry).
+#  - The polymorphic pair is (rated_model, rated_record_id) over uuids —
+#    no ir.model registry, no integer res_id. The parent pair
+#    (parent_rated_model, parent_rated_record_id) is denormalized at issue
+#    by the rated-type registry's declared parent field (the EN-08 rollup
+#    substrate), NOT kept warm by rated-record write hooks.
+#  - Chatter coupling is dropped (D-19): no message_id, no is_internal, no
+#    rating images, no resource_ref compute.
+#  - Lifecycle: NONE — consumed is a flag, not a state machine (declared in
+#    schema/hooks/engagement.hook.yaml).
+#  - read_only over HTTP: every write (issue, submit, rotate, reset,
+#    publisher reply) is a typed verb in the write service; generic mutation
+#    would bypass token discipline. Reads ride the guarded composition.
+# =============================================================================
+
+models:
+
+  - name: EngagementRating
+    collection: engagement_ratings
+    read_only: true
+    description: "rating.rating — one row per rating request/answer. Issued unconsumed against a registered rated type; submitted through a Tier A token (single-use, expiring); the publisher reply trio is written only by the typed reply verb. The 1..10 scale and band derivation are recorded deviations from the forced {1,3,5}."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique record id"
+
+      rated_model:
+        type: string
+        attributes: ["@required", "@max(120)", "@indexed"]
+        description: "Registered entity name of the rated record (e.g. support.Ticket) — validated against the write service's rated-type registry at issue; free text is refused (typed 422)."
+
+      rated_record_id:
+        type: uuid
+        attributes: ["@required", "@indexed", "@exclude_from_foreign_key_check"]
+        description: "The rated record # logical ref (no FK — the target lives in another module's schema; resolved through the rated-type registry at issue)."
+
+      parent_rated_model:
+        type: string?
+        attributes: ["@max(120)", "@indexed"]
+        description: "DENORMALIZED parent pair (the EN-08 rollup grain) — filled by the issue verb from the rated-type registry's declared parent field; not kept warm by rated-record writes."
+
+      parent_rated_record_id:
+        type: uuid?
+        attributes: ["@indexed", "@exclude_from_foreign_key_check"]
+        description: "Parent twin of parent_rated_model — same polymorphic-grain exemption (filled at issue by the rated-type registry)."
+
+      rated_user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Who/what is rated (the rated operator) # logical FK sapiens.User.id — resolved from the rated record's owner field at issue time."
+
+      rater_user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Who rates # logical FK sapiens.User.id — NULL for anonymous external raters."
+
+      rater_email:
+        type: string?
+        attributes: ["@max(320)"]
+        description: "External rater label for the anonymous email ferry (no partner model in scope; display-only, never an auth input)."
+
+      rating_value:
+        type: integer?
+        attributes: ["@indexed"]
+        description: "The answer, 1..10 (recorded deviation from the forced {1,3,5} — D-1). NULL while unconsumed; set once by the submit verb. Typed 422 out-of-range plus a DB CHECK backstop (rule R-R1)."
+
+      feedback:
+        type: string?
+        description: "Free comment submitted with the rating."
+
+      consumed:
+        type: boolean
+        attributes: ["@required", "@default(false)"]
+        description: "Filled-Rating flag — gates every stats domain. Single-use here (D-2): the submit conditional-UPDATE refuses a second answer; reset clears it for a new wave."
+
+      rated_on:
+        type: datetime?
+        description: "Stamped at submit."
+
+      token_nonce:
+        type: string
+        attributes: ["@required", "@max(64)", "@indexed"]
+        description: "128-bit hex selector of the Tier A capability — the public link carries {id}.{nonce}.{exp}.{mac}; the MAC is HMAC-SHA256 over (id, nonce, grant, exp) with a server secret (env-var reference). The nonce alone is not the capability."
+
+      token_expires_at:
+        type: datetime
+        attributes: ["@required"]
+        description: "Mandatory expiry (EN-06): stamped at issue (config TTL, default 30d), re-stamped on rotate/reset. Expired submits are refused with a typed 410."
+
+      publisher_comment:
+        type: string?
+        description: "The publisher's public reply (EN-09) — written ONLY by the typed reply verb, which forces the pair below. Never a generic write."
+
+      publisher_user_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Reply author # logical FK sapiens.User.id — server-forced to the acting operator."
+
+      publisher_replied_at:
+        type: datetime?
+        description: "Reply timestamp — server-forced."
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata"
+
+    indexes:
+      - type: unique
+        fields: [token_nonce]
+        where: "deleted_at IS NULL"
+        description: "One live row per minted nonce — the selector leg of the Tier A capability"
+      - type: unique
+        fields: [rated_model, rated_record_id, rater_user_id]
+        where: "consumed = false AND rater_user_id IS NOT NULL AND deleted_at IS NULL"
+        description: "Idempotent issuance — reuse the live unconsumed row per (rater, target); DB-backed find-or-create (rule R-R3)"
+      - type: index
+        fields: [rated_model, rated_record_id]
+        where: "consumed = true AND deleted_at IS NULL"
+        description: "The aggregate read path (per-record stats over consumed ratings)"
+      - type: index
+        fields: [parent_rated_model, parent_rated_record_id]
+        where: "consumed = true AND deleted_at IS NULL"
+        description: "The parent rollup read path (satisfaction aggregates over the denormalized parent pair)"

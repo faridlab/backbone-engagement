@@ -9,8 +9,18 @@
 use std::sync::Arc;
 
 // Import all services
+use crate::application::service::GamificationBadgeService;
+use crate::application::service::GamificationBadgeUserService;
+use crate::application::service::GamificationKarmaTrackingService;
+use crate::application::service::GamificationKarmaRankService;
+use crate::application::service::GamificationChallengeService;
+use crate::application::service::GamificationChallengeMembershipService;
+use crate::application::service::GamificationChallengeLineService;
+use crate::application::service::GamificationGoalDefinitionService;
+use crate::application::service::GamificationGoalService;
 use crate::application::service::EngagementLinkTrackerService;
 use crate::application::service::EngagementLinkTrackerClickService;
+use crate::application::service::EngagementRatingService;
 use crate::application::service::EngagementCampaignService;
 use crate::application::service::EngagementSourceService;
 use crate::application::service::EngagementMediumService;
@@ -33,10 +43,30 @@ use crate::application::service::EngagementMediumService;
 /// ```
 #[derive(Clone)]
 pub struct AppState {
+    /// GamificationBadge service
+    pub gamification_badge_service: Arc<GamificationBadgeService>,
+    /// GamificationBadgeUser service
+    pub gamification_badge_user_service: Arc<GamificationBadgeUserService>,
+    /// GamificationKarmaTracking service
+    pub gamification_karma_tracking_service: Arc<GamificationKarmaTrackingService>,
+    /// GamificationKarmaRank service
+    pub gamification_karma_rank_service: Arc<GamificationKarmaRankService>,
+    /// GamificationChallenge service
+    pub gamification_challenge_service: Arc<GamificationChallengeService>,
+    /// GamificationChallengeMembership service
+    pub gamification_challenge_membership_service: Arc<GamificationChallengeMembershipService>,
+    /// GamificationChallengeLine service
+    pub gamification_challenge_line_service: Arc<GamificationChallengeLineService>,
+    /// GamificationGoalDefinition service
+    pub gamification_goal_definition_service: Arc<GamificationGoalDefinitionService>,
+    /// GamificationGoal service
+    pub gamification_goal_service: Arc<GamificationGoalService>,
     /// EngagementLinkTracker service
     pub engagement_link_tracker_service: Arc<EngagementLinkTrackerService>,
     /// EngagementLinkTrackerClick service
     pub engagement_link_tracker_click_service: Arc<EngagementLinkTrackerClickService>,
+    /// EngagementRating service
+    pub engagement_rating_service: Arc<EngagementRatingService>,
     /// EngagementCampaign service
     pub engagement_campaign_service: Arc<EngagementCampaignService>,
     /// EngagementSource service
@@ -48,15 +78,35 @@ pub struct AppState {
 impl AppState {
     /// Create a new AppState with all services.
     pub fn new(
+        gamification_badge_service: Arc<GamificationBadgeService>,
+        gamification_badge_user_service: Arc<GamificationBadgeUserService>,
+        gamification_karma_tracking_service: Arc<GamificationKarmaTrackingService>,
+        gamification_karma_rank_service: Arc<GamificationKarmaRankService>,
+        gamification_challenge_service: Arc<GamificationChallengeService>,
+        gamification_challenge_membership_service: Arc<GamificationChallengeMembershipService>,
+        gamification_challenge_line_service: Arc<GamificationChallengeLineService>,
+        gamification_goal_definition_service: Arc<GamificationGoalDefinitionService>,
+        gamification_goal_service: Arc<GamificationGoalService>,
         engagement_link_tracker_service: Arc<EngagementLinkTrackerService>,
         engagement_link_tracker_click_service: Arc<EngagementLinkTrackerClickService>,
+        engagement_rating_service: Arc<EngagementRatingService>,
         engagement_campaign_service: Arc<EngagementCampaignService>,
         engagement_source_service: Arc<EngagementSourceService>,
         engagement_medium_service: Arc<EngagementMediumService>
     ) -> Self {
         Self {
+            gamification_badge_service,
+            gamification_badge_user_service,
+            gamification_karma_tracking_service,
+            gamification_karma_rank_service,
+            gamification_challenge_service,
+            gamification_challenge_membership_service,
+            gamification_challenge_line_service,
+            gamification_goal_definition_service,
+            gamification_goal_service,
             engagement_link_tracker_service,
             engagement_link_tracker_click_service,
+            engagement_rating_service,
             engagement_campaign_service,
             engagement_source_service,
             engagement_medium_service,
@@ -66,8 +116,18 @@ impl AppState {
     /// Create AppState from module instance.
     pub fn from_module(module: &crate::EngagementModule) -> Self {
         Self {
+            gamification_badge_service: module.gamification_badge_service.clone(),
+            gamification_badge_user_service: module.gamification_badge_user_service.clone(),
+            gamification_karma_tracking_service: module.gamification_karma_tracking_service.clone(),
+            gamification_karma_rank_service: module.gamification_karma_rank_service.clone(),
+            gamification_challenge_service: module.gamification_challenge_service.clone(),
+            gamification_challenge_membership_service: module.gamification_challenge_membership_service.clone(),
+            gamification_challenge_line_service: module.gamification_challenge_line_service.clone(),
+            gamification_goal_definition_service: module.gamification_goal_definition_service.clone(),
+            gamification_goal_service: module.gamification_goal_service.clone(),
             engagement_link_tracker_service: module.engagement_link_tracker_service.clone(),
             engagement_link_tracker_click_service: module.engagement_link_tracker_click_service.clone(),
+            engagement_rating_service: module.engagement_rating_service.clone(),
             engagement_campaign_service: module.engagement_campaign_service.clone(),
             engagement_source_service: module.engagement_source_service.clone(),
             engagement_medium_service: module.engagement_medium_service.clone(),
@@ -80,8 +140,18 @@ impl AppState {
 /// Allows incremental construction of AppState.
 #[derive(Default)]
 pub struct AppStateBuilder {
+    gamification_badge_service: Option<Arc<GamificationBadgeService>>,
+    gamification_badge_user_service: Option<Arc<GamificationBadgeUserService>>,
+    gamification_karma_tracking_service: Option<Arc<GamificationKarmaTrackingService>>,
+    gamification_karma_rank_service: Option<Arc<GamificationKarmaRankService>>,
+    gamification_challenge_service: Option<Arc<GamificationChallengeService>>,
+    gamification_challenge_membership_service: Option<Arc<GamificationChallengeMembershipService>>,
+    gamification_challenge_line_service: Option<Arc<GamificationChallengeLineService>>,
+    gamification_goal_definition_service: Option<Arc<GamificationGoalDefinitionService>>,
+    gamification_goal_service: Option<Arc<GamificationGoalService>>,
     engagement_link_tracker_service: Option<Arc<EngagementLinkTrackerService>>,
     engagement_link_tracker_click_service: Option<Arc<EngagementLinkTrackerClickService>>,
+    engagement_rating_service: Option<Arc<EngagementRatingService>>,
     engagement_campaign_service: Option<Arc<EngagementCampaignService>>,
     engagement_source_service: Option<Arc<EngagementSourceService>>,
     engagement_medium_service: Option<Arc<EngagementMediumService>>,
@@ -93,6 +163,60 @@ impl AppStateBuilder {
         Self::default()
     }
 
+    /// Set the GamificationBadge service.
+    pub fn with_gamification_badge_service(mut self, service: Arc<GamificationBadgeService>) -> Self {
+        self.gamification_badge_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationBadgeUser service.
+    pub fn with_gamification_badge_user_service(mut self, service: Arc<GamificationBadgeUserService>) -> Self {
+        self.gamification_badge_user_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationKarmaTracking service.
+    pub fn with_gamification_karma_tracking_service(mut self, service: Arc<GamificationKarmaTrackingService>) -> Self {
+        self.gamification_karma_tracking_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationKarmaRank service.
+    pub fn with_gamification_karma_rank_service(mut self, service: Arc<GamificationKarmaRankService>) -> Self {
+        self.gamification_karma_rank_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationChallenge service.
+    pub fn with_gamification_challenge_service(mut self, service: Arc<GamificationChallengeService>) -> Self {
+        self.gamification_challenge_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationChallengeMembership service.
+    pub fn with_gamification_challenge_membership_service(mut self, service: Arc<GamificationChallengeMembershipService>) -> Self {
+        self.gamification_challenge_membership_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationChallengeLine service.
+    pub fn with_gamification_challenge_line_service(mut self, service: Arc<GamificationChallengeLineService>) -> Self {
+        self.gamification_challenge_line_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationGoalDefinition service.
+    pub fn with_gamification_goal_definition_service(mut self, service: Arc<GamificationGoalDefinitionService>) -> Self {
+        self.gamification_goal_definition_service = Some(service);
+        self
+    }
+
+    /// Set the GamificationGoal service.
+    pub fn with_gamification_goal_service(mut self, service: Arc<GamificationGoalService>) -> Self {
+        self.gamification_goal_service = Some(service);
+        self
+    }
+
     /// Set the EngagementLinkTracker service.
     pub fn with_engagement_link_tracker_service(mut self, service: Arc<EngagementLinkTrackerService>) -> Self {
         self.engagement_link_tracker_service = Some(service);
@@ -102,6 +226,12 @@ impl AppStateBuilder {
     /// Set the EngagementLinkTrackerClick service.
     pub fn with_engagement_link_tracker_click_service(mut self, service: Arc<EngagementLinkTrackerClickService>) -> Self {
         self.engagement_link_tracker_click_service = Some(service);
+        self
+    }
+
+    /// Set the EngagementRating service.
+    pub fn with_engagement_rating_service(mut self, service: Arc<EngagementRatingService>) -> Self {
+        self.engagement_rating_service = Some(service);
         self
     }
 
@@ -130,8 +260,18 @@ impl AppStateBuilder {
     /// Panics if any required service is not set.
     pub fn build(self) -> AppState {
         AppState {
+            gamification_badge_service: self.gamification_badge_service.expect("gamification_badge_service is required"),
+            gamification_badge_user_service: self.gamification_badge_user_service.expect("gamification_badge_user_service is required"),
+            gamification_karma_tracking_service: self.gamification_karma_tracking_service.expect("gamification_karma_tracking_service is required"),
+            gamification_karma_rank_service: self.gamification_karma_rank_service.expect("gamification_karma_rank_service is required"),
+            gamification_challenge_service: self.gamification_challenge_service.expect("gamification_challenge_service is required"),
+            gamification_challenge_membership_service: self.gamification_challenge_membership_service.expect("gamification_challenge_membership_service is required"),
+            gamification_challenge_line_service: self.gamification_challenge_line_service.expect("gamification_challenge_line_service is required"),
+            gamification_goal_definition_service: self.gamification_goal_definition_service.expect("gamification_goal_definition_service is required"),
+            gamification_goal_service: self.gamification_goal_service.expect("gamification_goal_service is required"),
             engagement_link_tracker_service: self.engagement_link_tracker_service.expect("engagement_link_tracker_service is required"),
             engagement_link_tracker_click_service: self.engagement_link_tracker_click_service.expect("engagement_link_tracker_click_service is required"),
+            engagement_rating_service: self.engagement_rating_service.expect("engagement_rating_service is required"),
             engagement_campaign_service: self.engagement_campaign_service.expect("engagement_campaign_service is required"),
             engagement_source_service: self.engagement_source_service.expect("engagement_source_service is required"),
             engagement_medium_service: self.engagement_medium_service.expect("engagement_medium_service is required"),

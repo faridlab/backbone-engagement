@@ -5,13 +5,95 @@
 //! This module provides DTOs for the presentation layer,
 //! with validation and OpenAPI schema support.
 
+pub mod gamification_badge_dto;
+pub mod gamification_badge_user_dto;
+pub mod gamification_karma_tracking_dto;
+pub mod gamification_karma_rank_dto;
+pub mod gamification_challenge_dto;
+pub mod gamification_challenge_membership_dto;
+pub mod gamification_challenge_line_dto;
+pub mod gamification_goal_definition_dto;
+pub mod gamification_goal_dto;
 pub mod engagement_link_tracker_dto;
 pub mod engagement_link_tracker_click_dto;
+pub mod engagement_rating_dto;
 pub mod engagement_campaign_dto;
 pub mod engagement_source_dto;
 pub mod engagement_medium_dto;
 
 // Re-exports
+pub use gamification_badge_dto::{
+    CreateGamificationBadgeDto,
+    UpdateGamificationBadgeDto,
+    PatchGamificationBadgeDto,
+    GamificationBadgeResponseDto,
+    GamificationBadgeListResponseDto,
+    GamificationBadgeSummaryDto,
+};
+pub use gamification_badge_user_dto::{
+    CreateGamificationBadgeUserDto,
+    UpdateGamificationBadgeUserDto,
+    PatchGamificationBadgeUserDto,
+    GamificationBadgeUserResponseDto,
+    GamificationBadgeUserListResponseDto,
+    GamificationBadgeUserSummaryDto,
+};
+pub use gamification_karma_tracking_dto::{
+    CreateGamificationKarmaTrackingDto,
+    UpdateGamificationKarmaTrackingDto,
+    PatchGamificationKarmaTrackingDto,
+    GamificationKarmaTrackingResponseDto,
+    GamificationKarmaTrackingListResponseDto,
+    GamificationKarmaTrackingSummaryDto,
+};
+pub use gamification_karma_rank_dto::{
+    CreateGamificationKarmaRankDto,
+    UpdateGamificationKarmaRankDto,
+    PatchGamificationKarmaRankDto,
+    GamificationKarmaRankResponseDto,
+    GamificationKarmaRankListResponseDto,
+    GamificationKarmaRankSummaryDto,
+};
+pub use gamification_challenge_dto::{
+    CreateGamificationChallengeDto,
+    UpdateGamificationChallengeDto,
+    PatchGamificationChallengeDto,
+    GamificationChallengeResponseDto,
+    GamificationChallengeListResponseDto,
+    GamificationChallengeSummaryDto,
+};
+pub use gamification_challenge_membership_dto::{
+    CreateGamificationChallengeMembershipDto,
+    UpdateGamificationChallengeMembershipDto,
+    PatchGamificationChallengeMembershipDto,
+    GamificationChallengeMembershipResponseDto,
+    GamificationChallengeMembershipListResponseDto,
+    GamificationChallengeMembershipSummaryDto,
+};
+pub use gamification_challenge_line_dto::{
+    CreateGamificationChallengeLineDto,
+    UpdateGamificationChallengeLineDto,
+    PatchGamificationChallengeLineDto,
+    GamificationChallengeLineResponseDto,
+    GamificationChallengeLineListResponseDto,
+    GamificationChallengeLineSummaryDto,
+};
+pub use gamification_goal_definition_dto::{
+    CreateGamificationGoalDefinitionDto,
+    UpdateGamificationGoalDefinitionDto,
+    PatchGamificationGoalDefinitionDto,
+    GamificationGoalDefinitionResponseDto,
+    GamificationGoalDefinitionListResponseDto,
+    GamificationGoalDefinitionSummaryDto,
+};
+pub use gamification_goal_dto::{
+    CreateGamificationGoalDto,
+    UpdateGamificationGoalDto,
+    PatchGamificationGoalDto,
+    GamificationGoalResponseDto,
+    GamificationGoalListResponseDto,
+    GamificationGoalSummaryDto,
+};
 pub use engagement_link_tracker_dto::{
     CreateEngagementLinkTrackerDto,
     UpdateEngagementLinkTrackerDto,
@@ -27,6 +109,14 @@ pub use engagement_link_tracker_click_dto::{
     EngagementLinkTrackerClickResponseDto,
     EngagementLinkTrackerClickListResponseDto,
     EngagementLinkTrackerClickSummaryDto,
+};
+pub use engagement_rating_dto::{
+    CreateEngagementRatingDto,
+    UpdateEngagementRatingDto,
+    PatchEngagementRatingDto,
+    EngagementRatingResponseDto,
+    EngagementRatingListResponseDto,
+    EngagementRatingSummaryDto,
 };
 pub use engagement_campaign_dto::{
     CreateEngagementCampaignDto,
