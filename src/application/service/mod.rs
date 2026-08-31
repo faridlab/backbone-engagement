@@ -53,7 +53,8 @@ pub use rating_write_service::{
     RatedType, RatedTypeRegistry, RatingError, RatingStats, RatingTokenView, RatingWriteService,
 };
 pub use gamification_write_service::{
-    CertificationGrantView, DailyCheckReport, GamificationError, GamificationMetricRegistry,
-    GamificationWriteService, KarmaAppendView, LeaderboardEntry, MetricFn, RankInfo, UserDirectory,
+    CertificationGrantView, CertificationPassedFact, DailyCheckReport, GamificationError,
+    GamificationMetricRegistry, GamificationWriteService, KarmaAppendView, LeaderboardEntry,
+    MetricFn, RankInfo, UserDirectory,
 };
 // END CUSTOM

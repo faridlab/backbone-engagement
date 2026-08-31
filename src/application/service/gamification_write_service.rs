@@ -23,11 +23,13 @@
 //!   partial UNIQUE index makes the grant exactly-once under at-least-once
 //!   delivery — the survey certification contract's dedup. Badge level is
 //!   snapshotted onto the grant row.
-//! - **The certification inbound contract** (`on_certification_passed`)
-//!   maps the `CertificationPassed` fact to `grant_system(kind = event)`
-//!   with `grant_key = event:certification:{ref}:{attempt}` and NO
-//!   challenge coupling — deleting challenges can never stop a
-//!   certification grant.
+//! - **The certification inbound contract** (`certification_passed`, with
+//!   the argument-shaped alias `on_certification_passed`) maps a typed
+//!   `CertificationPassedFact` to `grant_system(kind = event)` with
+//!   `grant_key = event:certification:{ref}:{attempt}` and NO challenge
+//!   coupling — deleting challenges can never stop a certification grant.
+//!   Payload shape is validated before any database work; a malformed fact
+//!   is a typed refusal.
 //! - **Declarative everything.** Membership is typed fields
 //!   (`user_ids` + `include_all_users` + `include_badge_ids`) expanded at
 //!   reconciliation — no stored domain text, no eval, ever. Goal
@@ -91,6 +93,8 @@ pub enum GamificationError {
     BadgeCapReached,
     #[error("no badge is registered under key: {0}")]
     BadgeKeyUnknown(String),
+    #[error("certification payload failed validation: {0}")]
+    CertificationPayloadInvalid(String),
     #[error("grant kind must be challenge or event")]
     GrantKindInvalid,
     #[error("grant key must be non-empty and at most {MAX_GRANT_KEY_LEN} characters")]
@@ -136,6 +140,7 @@ impl GamificationError {
             Self::BadgeSelfGrant => "badge_self_grant",
             Self::BadgeCapReached => "badge_cap_reached",
             Self::BadgeKeyUnknown(_) => "badge_key_unknown",
+            Self::CertificationPayloadInvalid(_) => "certification_payload_invalid",
             Self::GrantKindInvalid => "grant_kind_invalid",
             Self::GrantKeyInvalid => "grant_key_invalid",
             Self::OriginKindUnknown(_) => "origin_kind_unknown",
@@ -265,6 +270,67 @@ pub struct CertificationGrantView {
     pub recipient_user_id: Uuid,
     pub grant_key: String,
     pub created: bool,
+}
+
+/// One inbound `CertificationPassed` fact — the survey certification
+/// contract's payload, field-for-field the event declaration in
+/// `schema/hooks/index.hook.yaml`. The producing module (or a host relay
+/// bridging processes) builds this struct and hands it to
+/// [`GamificationWriteService::certification_passed`].
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct CertificationPassedFact {
+    /// The certification's own id, namespaced by the producer
+    /// (a survey certificate carries `survey:{survey_id}`).
+    pub certification_ref: String,
+    /// The survey that issued the certification, when known. Carried for
+    /// provenance; NOT stored on the grant row.
+    pub survey_ref: Option<Uuid>,
+    /// The winning attempt id — the idempotency input alongside
+    /// `certification_ref`.
+    pub attempt_ref: String,
+    /// The certified user who earns the badge.
+    pub recipient_user_id: Uuid,
+    /// The badge's stable key — resolved to a `GamificationBadge` by name.
+    pub badge_key: String,
+}
+
+impl CertificationPassedFact {
+    /// The contract's idempotency grain: exactly one grant per
+    /// (certification, attempt) pair, enforced by the `grant_key` partial
+    /// UNIQUE index (rule R-G1). Under at-least-once delivery a redelivered
+    /// fact converges on the first row instead of minting again.
+    pub fn grant_key(&self) -> String {
+        format!(
+            "event:certification:{}:{}",
+            self.certification_ref, self.attempt_ref
+        )
+    }
+
+    /// Shape validation, BEFORE any database work: every reference is
+    /// non-empty after trimming and bounded so the composed grant key can
+    /// never overflow its index-bound length. Malformed facts are refused
+    /// loudly — never silently granted, never silently dropped.
+    pub fn validate(&self) -> Result<(), GamificationError> {
+        let refuse = |detail: String| Err(GamificationError::CertificationPayloadInvalid(detail));
+        for (name, value) in [
+            ("certification_ref", &self.certification_ref),
+            ("attempt_ref", &self.attempt_ref),
+            ("badge_key", &self.badge_key),
+        ] {
+            if value.trim().is_empty() {
+                return refuse(format!("{name} must not be empty"));
+            }
+            if value.chars().count() > MAX_KEY_LEN {
+                return refuse(format!("{name} exceeds {MAX_KEY_LEN} characters"));
+            }
+        }
+        if self.grant_key().chars().count() > MAX_GRANT_KEY_LEN {
+            return refuse(format!(
+                "composed grant key exceeds {MAX_GRANT_KEY_LEN} characters"
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// A badge's grant stats (one grouped query).
@@ -777,30 +843,28 @@ impl GamificationWriteService {
         }
     }
 
-    /// THE inbound certification contract (the M-4 consumer's completion
-    /// fact): resolve the badge by its stable key, grant once per
-    /// (certification, attempt) with NO challenge coupling — deleting
-    /// challenges can never stop a certification grant.
-    pub async fn on_certification_passed(
+    /// THE inbound certification entry point (the survey module's
+    /// completion fact): validate the payload shape, resolve the badge by
+    /// its stable key, grant once per (certification, attempt) with NO
+    /// challenge coupling — deleting challenges can never stop a
+    /// certification grant. Callers that hold loose fields can use the
+    /// argument-shaped [`Self::on_certification_passed`] alias.
+    pub async fn certification_passed(
         &self,
-        certification_ref: &str,
-        attempt_ref: &str,
-        recipient_user_id: Uuid,
-        badge_key: &str,
-        survey_ref: Option<Uuid>,
+        fact: &CertificationPassedFact,
     ) -> Result<CertificationGrantView, GamificationError> {
-        let _ = survey_ref; // carried by the event contract; not stored on the grant
+        fact.validate()?;
         let mut conn = self.pool.acquire().await?;
-        let badge = GamificationRepository::find_badge_by_name(&mut conn, badge_key)
+        let badge = GamificationRepository::find_badge_by_name(&mut conn, &fact.badge_key)
             .await?
-            .ok_or_else(|| GamificationError::BadgeKeyUnknown(badge_key.to_string()))?;
+            .ok_or_else(|| GamificationError::BadgeKeyUnknown(fact.badge_key.clone()))?;
         drop(conn);
 
-        let grant_key = format!("event:certification:{certification_ref}:{attempt_ref}");
+        let grant_key = fact.grant_key();
         let view = self
             .grant_system(
                 badge.id,
-                recipient_user_id,
+                fact.recipient_user_id,
                 BadgeGrantKind::Event,
                 &grant_key,
                 None, // deliberately NULL: no challenge-coupled hidden stop
@@ -814,6 +878,27 @@ impl GamificationWriteService {
             grant_key,
             created: view.created,
         })
+    }
+
+    /// The argument-shaped alias of [`Self::certification_passed`] — the
+    /// pinned name the survey contract's host adapter calls. Delegates to
+    /// the typed verb, so validation and key derivation live in ONE place.
+    pub async fn on_certification_passed(
+        &self,
+        certification_ref: &str,
+        attempt_ref: &str,
+        recipient_user_id: Uuid,
+        badge_key: &str,
+        survey_ref: Option<Uuid>,
+    ) -> Result<CertificationGrantView, GamificationError> {
+        self.certification_passed(&CertificationPassedFact {
+            certification_ref: certification_ref.to_string(),
+            survey_ref, // carried by the event contract; not stored on the grant
+            attempt_ref: attempt_ref.to_string(),
+            recipient_user_id,
+            badge_key: badge_key.to_string(),
+        })
+        .await
     }
 
     /// A badge's grant stats (one grouped query).

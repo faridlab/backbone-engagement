@@ -43,6 +43,7 @@ user_owned:
   - "tests/link_tracker_cases.rs"
   - "tests/rating_cases.rs"
   - "tests/gamification_cases.rs"
+  - "tests/certification_cases.rs"
 
   # Hand-authored module documentation.
   - "docs/**"
