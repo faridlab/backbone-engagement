@@ -14,13 +14,12 @@ version: 2
 schema: engagement
 description: "engagement — attribution (UTM masters + short-link tracker + click ledger), customer rating (the token-ferried 1..10 substrate), and gamification (karma ledger, badges, challenges, goals)"
 
-# ADR-0014 company fence: the Odoo engagement stack ships NO company column
-# and zero ir.rules (posture 4 — the ADR names utm/link_tracker's family
-# explicitly). Declaring `none` emits no company RLS migration; synthesizing
-# a fence would change behavior, not just enforcement (do-not-synthesize).
-# Tenant isolation (ADR-0006) remains the only fence; security is ACLs +
-# service-layer checks.
-company_fence: none
+# Company fence: none by design (ADR-0014 posture 4 — the ADR names
+# utm/link_tracker's family explicitly; the Odoo engagement stack ships no
+# company column and zero ir.rules). The module is tenant-agnostic (ADR-0029):
+# no company RLS is emitted and none may be synthesized — a fence would change
+# behavior, not just enforcement (do-not-synthesize). Tenant isolation
+# (ADR-0006) remains the only fence; security is ACLs + service-layer checks.
 
 config:
   database: postgresql
