@@ -47,6 +47,7 @@ rules:
     assert: "submit executes as ONE conditional UPDATE (SET consumed = true ... WHERE consumed = false AND token_nonce = $ AND token_expires_at > now()); zero rows → typed 409 with a shared refusal shape (already-consumed / unknown / expired are indistinguishable — no oracle)"
     error_code: rating_not_submittable
     enforcement: service
+    justification: "The guarantee is that ONE statement decides it: the conditional UPDATE is the lock, and a zero-row result is the refusal. Splitting that into a database guard would mean reading the row first and then writing it, which is the race this shape exists to remove. The shared refusal shape is also deliberate, and a constraint violation would leak which of the three cases occurred."
     # service-only justification: the atomic conditional update IS the mechanism —
     # no row-level CHECK can express "exactly once per token".
   - id: R-R3
@@ -84,6 +85,7 @@ rules:
     assert: "rule_auth governs: everyone | users (rule_auth_user_ids) | having (rule_auth_badge_ids) | nobody — NO admin bypass exists (the upstream is_admin short-circuit does not port — D-11); system grants are a different keyed verb, not a bypassed ladder"
     error_code: badge_not_grantable
     enforcement: service
+    justification: "Authorisation over a ladder of grantors, read from the badge rule and the sender's own badges. A database has no idea who is asking, and the point of the rule is that no path bypasses the ladder, which is a statement about the verbs rather than about the rows they leave."
     # service-only justification: procedural policy over typed json columns and
     # cross-row badge-holding checks — not expressible as a row-level CHECK.
   - id: R-G5
@@ -92,18 +94,21 @@ rules:
     assert: "when rule_max: the sender's grants this month < rule_max_number — counted by ONE grouped query over gamification_badge_users (the upstream per-badge owner-loop N+1 is a recorded fix — D-23)"
     error_code: badge_cap_reached
     enforcement: service
+    justification: "A per-sender, per-month aggregate over grants already made. A CHECK sees the new row alone, and a trigger counting the month on every grant would re-scan the same window for every sender. The verb counts once, in one grouped query, which is also the recorded fix for the loop it replaced."
   - id: R-G6
     name: badge_self_grant_refusal
     when: grant_peer
     assert: "a sender never grants to themselves — IN THE TYPED VERB (upstream guarded only the wizard — EN-67; every path here refuses)"
     error_code: badge_self_grant
     enforcement: service
+    justification: "Sender and recipient are both request facts, and the rule is that EVERY path refuses the pair, not only the one screen that used to. That is a property of the verb surface; a constraint comparing two columns could express the pair but not the guarantee that no other path exists."
   - id: R-G7
     name: started_goal_config_freeze
     when: update goal
     assert: "definition_id and user_id are immutable once state != draft (the kanban drag-and-drop guard, EN-R37)"
     error_code: goal_config_frozen
     enforcement: service
+    justification: "Immutability conditional on state: the two fields freeze once the goal leaves draft. The database can hold that with a trigger comparing old and new, and the module keeps the rule here because the refusal belongs to the verb the operator is using, which knows what they were trying to drag and can say so."
     # service-only justification: cross-row procedural guard (the goal's own row
     # cannot express "immutable-conditionally-on-prior-state" as a CHECK).
   - id: R-G8
@@ -112,6 +117,7 @@ rules:
     assert: "done → draft is refused while any live goal of the challenge is inprogress (EN-80's refusal, kept)"
     error_code: challenge_has_live_goals
     enforcement: service
+    justification: "Cross-table: the reset is refused because goals of the challenge are in progress, which no CHECK on the challenge row can see. The verb reads them at the moment of the reset and refuses with the reason, rather than failing on a foreign row."
     # service-only justification: cross-table guard (goals of the challenge).
   - id: R-G9
     name: ledger_single_writer
@@ -125,6 +131,7 @@ rules:
     assert: "metric_key must exist in the GamificationMetricRegistry when computation_mode = registered_metric (typed 422 on unknown key — the write-time validation that replaces every eval surface, EN-83)"
     error_code: metric_key_unknown
     enforcement: service
+    justification: "The registry is a code-side catalogue, not a table, so there is nothing for a foreign key to reference. Validating at write time is what turns an unknown key into a typed 422 instead of a silent metric that never computes."
     # service-only justification: the registry is code (a builder-registered
     # name → compute-fn map); membership cannot be a DB constraint.
 
