@@ -1,6 +1,6 @@
 [package]
 name = "backbone-engagement"
-version = "0.2.15"
+version = "0.2.16"
 edition = "2021"
 description = "Engagement — the attribution floor (UTM masters, short-link tracker, deduped click ledger) plus the visitor rating substrate and the gamification family: goals, challenges, badges, and the append-only karma ledger (Odoo utm + link_tracker + rating + gamification port)"
 
@@ -17,12 +17,12 @@ path = "src/lib.rs"
 # or `rev = "<commit-sha>"`. Cargo dedupes the git fetch — the repo is only
 # cloned once even though four crates reference it.
 # -----------------------------------------------------------------------------
-backbone-core = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.27", features = ["postgres"] }
-backbone-orm = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.27" }
-backbone-auth = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.27" }
-backbone-messaging = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.27" }
+backbone-core = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.28", features = ["postgres"] }
+backbone-orm = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.28" }
+backbone-auth = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.28" }
+backbone-messaging = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.28" }
 # The public /r/<code> redirect is throttled at middleware (ADR-0019).
-backbone-rate-limit = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.27" }
+backbone-rate-limit = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.28" }
 
 # Core async runtime and serialization
 tokio = { version = "1.0", features = ["full"] }
