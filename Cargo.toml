@@ -1,6 +1,6 @@
 [package]
 name = "backbone-engagement"
-version = "0.2.19"
+version = "0.2.20"
 edition = "2021"
 description = "Engagement — the attribution floor (UTM masters, short-link tracker, deduped click ledger) plus the visitor rating substrate and the gamification family: goals, challenges, badges, and the append-only karma ledger (Odoo utm + link_tracker + rating + gamification port)"
 
