@@ -203,6 +203,43 @@ impl GamificationRepository {
         .await
     }
 
+    /// A survey's badges — the certification lineage read (#239): every
+    /// badge the certification grant stamped with this survey.
+    pub async fn badges_by_survey(
+        conn: &mut PgConnection,
+        survey_id: Uuid,
+    ) -> Result<Vec<GamificationBadge>, sqlx::Error> {
+        sqlx::query_as::<_, GamificationBadge>(
+            r#"SELECT * FROM engagement.gamification_badges
+               WHERE survey_id = $1 AND (metadata->>'deleted_at') IS NULL
+               ORDER BY name"#,
+        )
+        .bind(survey_id)
+        .fetch_all(&mut *conn)
+        .await
+    }
+
+    /// Stamp a lineage-less badge with the survey whose certification
+    /// first granted it — first-certification-wins: a badge already
+    /// carrying a DIFFERENT survey keeps it, and the caller surfaces the
+    /// lineage on the grant view either way.
+    pub async fn stamp_badge_survey_lineage(
+        conn: &mut PgConnection,
+        badge_id: Uuid,
+        survey_id: Uuid,
+    ) -> Result<bool, sqlx::Error> {
+        let res = sqlx::query(
+            r#"UPDATE engagement.gamification_badges
+               SET survey_id = $2
+               WHERE id = $1 AND survey_id IS NULL"#,
+        )
+        .bind(badge_id)
+        .bind(survey_id)
+        .execute(&mut *conn)
+        .await?;
+        Ok(res.rows_affected() > 0)
+    }
+
     /// Distinct badges from a set that a user HOLDS a live grant of (the
     /// `having` ladder arm — the caller compares against the full set).
     pub async fn count_badges_held(

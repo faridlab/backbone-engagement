@@ -27,6 +27,15 @@ use backbone_engagement::application::service::gamification_write_service::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
+/// The shared test pool: DATABASE_URL when set (the dev postgres), else
+/// the module-local default. This file's older cases are pure; the
+/// lineage case is its first DB-backed one.
+async fn pool() -> PgPool {
+    let url = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgresql://postgres:postgres@localhost:5433/backbone_engagement".to_string());
+    PgPool::connect(&url).await.expect("connect DB")
+}
+
 fn bare_service(pool: &PgPool) -> GamificationWriteService {
     GamificationWriteService::new(pool.clone())
 }
@@ -321,4 +330,44 @@ async fn self_grant_refusal_and_ledger_immutability_survive_certification(pool: 
         .expect("replay");
     assert!(!replay.created);
     assert_eq!(grant_count(&pool).await, 1);
+}
+
+/// #239 survey lineage: the first certification carrying a survey ref
+/// stamps the lineage-less badge; a second certification from ANOTHER
+/// survey does not take it over (first-wins), and the survey-badges read
+/// returns exactly the stamped badge.
+#[tokio::test]
+async fn certification_stamps_survey_lineage_first_wins() {
+    let pool = pool().await;
+    let svc = bare_service(&pool);
+    let badge_name = format!("lineage-probe-{}", Uuid::new_v4().simple());
+    let badge = insert_badge(&pool, &badge_name).await;
+    let survey_a = Uuid::new_v4();
+    let survey_b = Uuid::new_v4();
+
+    let first = svc
+        .certification_passed(&with_survey(fact("survey:a1", "att-1", Uuid::new_v4(), &badge_name), survey_a))
+        .await
+        .expect("first grant");
+    assert_eq!(first.survey_lineage, Some(survey_a), "the fact's survey rides the view");
+    assert!(first.lineage_stamped_this_grant, "the first grant performed the stamp");
+
+    let second = svc
+        .certification_passed(&with_survey(fact("survey:b1", "att-2", Uuid::new_v4(), &badge_name), survey_b))
+        .await
+        .expect("second grant off another survey");
+    assert_eq!(second.survey_lineage, Some(survey_a), "first certification wins: the badge keeps survey A");
+    assert!(!second.lineage_stamped_this_grant, "no takeover stamp");
+
+    let badges = svc.badges_for_survey(survey_a).await.expect("read survey A badges");
+    assert_eq!(badges.len(), 1, "exactly the stamped badge");
+    assert_eq!(badges[0].id, badge);
+    let none = svc.badges_for_survey(survey_b).await.expect("read survey B badges");
+    assert!(none.is_empty(), "survey B never claimed the badge");
+}
+
+/// Test helper: the fact, with an explicit survey ref.
+fn with_survey(mut f: CertificationPassedFact, survey: Uuid) -> CertificationPassedFact {
+    f.survey_ref = Some(survey);
+    f
 }

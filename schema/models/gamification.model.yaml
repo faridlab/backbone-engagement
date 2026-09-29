@@ -74,6 +74,10 @@ models:
         attributes: ["@default(true)"]
         description: "Archive flag (inactive badges drop out of grantable lists)."
 
+      survey_id:
+        type: uuid?
+        description: "Survey lineage — set by the certification grant when the badge is first granted off a survey certification (the survey whose certification_badge_key names this badge). A survey badge is unique per (survey_id, name); badges with no lineage keep the global name unique. Cross-module ref in the house style (no SQL FK)."
+
       level:
         type: BadgeLevel?
         description: "bronze/silver/gold — the forum badge level. Optional on the definition (a levelless badge is legal); SNAPSHOT onto the grant row at grant time."

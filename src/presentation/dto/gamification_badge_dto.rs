@@ -153,6 +153,7 @@ pub struct GamificationBadgeResponseDto {
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
+    pub survey_id: Option<Uuid>,
     pub level: Option<BadgeLevel>,
     pub description: Option<String>,
     pub rule_auth: BadgeRuleAuth,
@@ -232,6 +233,7 @@ impl From<GamificationBadge> for GamificationBadgeResponseDto {
     fn from(entity: GamificationBadge) -> Self {
         Self {
             id: entity.id,
+            survey_id: None,
             name: entity.name,
             active: entity.active,
             level: entity.level,
@@ -265,6 +267,7 @@ impl From<CreateGamificationBadgeDto> for GamificationBadge {
             id: Uuid::new_v4(),
             name: dto.name,
             active: dto.active,
+            survey_id: None,
             level: dto.level,
             description: dto.description,
             rule_auth: dto.rule_auth,
@@ -283,6 +286,7 @@ impl From<&GamificationBadge> for GamificationBadgeResponseDto {
             id: entity.id.clone(),
             name: entity.name.clone(),
             active: entity.active.clone(),
+            survey_id: entity.survey_id,
             level: entity.level.clone(),
             description: entity.description.clone(),
             rule_auth: entity.rule_auth.clone(),

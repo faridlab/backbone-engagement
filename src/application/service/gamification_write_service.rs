@@ -59,8 +59,9 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::domain::entity::{
-    BadgeGrantKind, BadgeLevel, BadgeRuleAuth, ChallengePeriod, ChallengeState, GamificationGoal,
-    GamificationGoalDefinition, GoalComputationMode, GoalCondition, GoalState, ReportFrequency,
+    BadgeGrantKind, BadgeLevel, BadgeRuleAuth, ChallengePeriod, ChallengeState, GamificationBadge,
+    GamificationGoal, GamificationGoalDefinition, GoalComputationMode, GoalCondition, GoalState,
+    ReportFrequency,
 };
 use crate::infrastructure::persistence::gamification_repository::GamificationRepository;
 
@@ -270,6 +271,11 @@ pub struct CertificationGrantView {
     pub recipient_user_id: Uuid,
     pub grant_key: String,
     pub created: bool,
+    /// The survey whose lineage the badge now carries (the fact's ref, or
+    /// the one stamped by an earlier certification).
+    pub survey_lineage: Option<Uuid>,
+    /// True when THIS grant performed the stamp (first certification).
+    pub lineage_stamped_this_grant: bool,
 }
 
 /// One inbound `CertificationPassed` fact — the survey certification
@@ -858,6 +864,21 @@ impl GamificationWriteService {
         let badge = GamificationRepository::find_badge_by_name(&mut conn, &fact.badge_key)
             .await?
             .ok_or_else(|| GamificationError::BadgeKeyUnknown(fact.badge_key.clone()))?;
+        // Survey lineage (#239): the first certification carrying a survey
+        // ref stamps the badge. First-certification-wins — a badge already
+        // carrying another survey keeps it (the name uniqueness arms make a
+        // second survey's colliding badge its OWN row, not a takeover).
+        let stamped = match fact.survey_ref {
+            Some(sid) if badge.survey_id.is_none() => {
+                GamificationRepository::stamp_badge_survey_lineage(&mut conn, badge.id, sid).await?
+            }
+            _ => false,
+        };
+        // The EFFECTIVE lineage: what the badge carries after this grant —
+        // the just-stamped survey, or the one an earlier certification
+        // already claimed (the fact's own ref is NOT the lineage when the
+        // badge already belongs to another survey).
+        let survey_lineage = if stamped { fact.survey_ref } else { badge.survey_id };
         drop(conn);
 
         let grant_key = fact.grant_key();
@@ -877,6 +898,8 @@ impl GamificationWriteService {
             recipient_user_id: view.recipient_user_id,
             grant_key,
             created: view.created,
+            survey_lineage,
+            lineage_stamped_this_grant: stamped,
         })
     }
 
@@ -899,6 +922,15 @@ impl GamificationWriteService {
             badge_key: badge_key.to_string(),
         })
         .await
+    }
+
+    /// A survey's badges — the certification-lineage read (#239).
+    pub async fn badges_for_survey(
+        &self,
+        survey_id: Uuid,
+    ) -> Result<Vec<GamificationBadge>, GamificationError> {
+        let mut conn = self.pool.acquire().await?;
+        Ok(GamificationRepository::badges_by_survey(&mut conn, survey_id).await?)
     }
 
     /// A badge's grant stats (one grouped query).
