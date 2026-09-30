@@ -13,7 +13,7 @@ use super::{
     gamification_badge_user_handler::create_gamification_badge_user_read_routes,
     gamification_karma_tracking_handler::create_gamification_karma_tracking_read_routes,
     gamification_karma_rank_handler::create_gamification_karma_rank_routes,
-    gamification_challenge_handler::create_gamification_challenge_routes,
+    gamification_challenge_handler::create_gamification_challenge_read_routes,
     gamification_challenge_membership_handler::create_gamification_challenge_membership_read_routes,
     gamification_challenge_line_handler::create_gamification_challenge_line_routes,
     gamification_goal_definition_handler::create_gamification_goal_definition_routes,
@@ -88,8 +88,8 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_gamification_karma_tracking_read_routes(services.gamification_karma_tracking))
         // GamificationKarmaRank routes (12 Backbone endpoints)
         .merge(create_gamification_karma_rank_routes(services.gamification_karma_rank))
-        // GamificationChallenge routes (12 Backbone endpoints)
-        .merge(create_gamification_challenge_routes(services.gamification_challenge))
+        // GamificationChallenge routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_gamification_challenge_read_routes(services.gamification_challenge))
         // GamificationChallengeMembership routes (READ-ONLY — append-only/event-sourced entity; writes arrive via the event handlers)
         .merge(create_gamification_challenge_membership_read_routes(services.gamification_challenge_membership))
         // GamificationChallengeLine routes (12 Backbone endpoints)
@@ -121,11 +121,11 @@ pub mod individual {
     }
 
     pub fn gamification_badge_user_routes(service: Arc<GamificationBadgeUserService>) -> Router {
-        create_gamification_badge_user_routes(service)
+        create_gamification_badge_user_read_routes(service)
     }
 
     pub fn gamification_karma_tracking_routes(service: Arc<GamificationKarmaTrackingService>) -> Router {
-        create_gamification_karma_tracking_routes(service)
+        create_gamification_karma_tracking_read_routes(service)
     }
 
     pub fn gamification_karma_rank_routes(service: Arc<GamificationKarmaRankService>) -> Router {
@@ -133,11 +133,11 @@ pub mod individual {
     }
 
     pub fn gamification_challenge_routes(service: Arc<GamificationChallengeService>) -> Router {
-        create_gamification_challenge_routes(service)
+        create_gamification_challenge_read_routes(service)
     }
 
     pub fn gamification_challenge_membership_routes(service: Arc<GamificationChallengeMembershipService>) -> Router {
-        create_gamification_challenge_membership_routes(service)
+        create_gamification_challenge_membership_read_routes(service)
     }
 
     pub fn gamification_challenge_line_routes(service: Arc<GamificationChallengeLineService>) -> Router {
@@ -149,7 +149,7 @@ pub mod individual {
     }
 
     pub fn gamification_goal_routes(service: Arc<GamificationGoalService>) -> Router {
-        create_gamification_goal_routes(service)
+        create_gamification_goal_read_routes(service)
     }
 
     pub fn engagement_link_tracker_routes(service: Arc<EngagementLinkTrackerService>) -> Router {
@@ -161,7 +161,7 @@ pub mod individual {
     }
 
     pub fn engagement_rating_routes(service: Arc<EngagementRatingService>) -> Router {
-        create_engagement_rating_routes(service)
+        create_engagement_rating_read_routes(service)
     }
 
     pub fn engagement_campaign_routes(service: Arc<EngagementCampaignService>) -> Router {

@@ -23,7 +23,6 @@ pub mod engagement_source_api_test;
 pub mod engagement_medium_api_test;
 
 // Re-exports for convenience
-pub use crud_test_base::*;
 pub use gamification_badge_api_test::*;
 pub use gamification_badge_user_api_test::*;
 pub use gamification_karma_tracking_api_test::*;

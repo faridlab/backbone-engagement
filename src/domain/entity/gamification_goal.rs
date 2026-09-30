@@ -287,6 +287,9 @@ impl backbone_orm::EntityRepoMeta for GamificationGoal {
         m.insert("line_id".to_string(), "uuid".to_string());
         m.insert("challenge_id".to_string(), "uuid".to_string());
         m.insert("state".to_string(), "goal_state".to_string());
+        m.insert("start_date".to_string(), "date".to_string());
+        m.insert("end_date".to_string(), "date".to_string());
+        m.insert("last_update".to_string(), "date".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

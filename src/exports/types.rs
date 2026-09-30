@@ -51,6 +51,7 @@ pub struct GamificationBadgeDto {
     pub id: GamificationBadgeId,
     pub name: String,
     pub active: bool,
+    pub survey_id: Option<Uuid>,
     pub level: Option<BadgeLevel>,
     pub description: Option<String>,
     pub rule_auth: BadgeRuleAuth,

@@ -39,6 +39,8 @@ pub struct CreateGamificationBadgeDto {
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "survey_id")]
+    pub survey_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub level: Option<BadgeLevel>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -74,6 +76,8 @@ pub struct UpdateGamificationBadgeDto {
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "survey_id")]
+    pub survey_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub level: Option<BadgeLevel>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -111,6 +115,8 @@ pub struct PatchGamificationBadgeDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "survey_id")]
+    pub survey_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub level: Option<BadgeLevel>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -131,7 +137,7 @@ pub struct PatchGamificationBadgeDto {
 impl PatchGamificationBadgeDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.name.is_some() || self.active.is_some() || self.level.is_some() || self.description.is_some() || self.rule_auth.is_some() || self.rule_auth_user_ids.is_some() || self.rule_auth_badge_ids.is_some() || self.rule_max.is_some() || self.rule_max_number.is_some()
+        self.name.is_some() || self.active.is_some() || self.survey_id.is_some() || self.level.is_some() || self.description.is_some() || self.rule_auth.is_some() || self.rule_auth_user_ids.is_some() || self.rule_auth_badge_ids.is_some() || self.rule_max.is_some() || self.rule_max_number.is_some()
     }
 }
 
@@ -221,7 +227,7 @@ pub struct GamificationBadgeSummaryDto {
     pub id: Uuid,
     pub name: String,
     pub active: bool,
-    pub level: Option<BadgeLevel>,
+    pub survey_id: Option<Uuid>,
     pub created_at: Option<DateTime<Utc>>,
 }
 
@@ -233,9 +239,9 @@ impl From<GamificationBadge> for GamificationBadgeResponseDto {
     fn from(entity: GamificationBadge) -> Self {
         Self {
             id: entity.id,
-            survey_id: None,
             name: entity.name,
             active: entity.active,
+            survey_id: entity.survey_id,
             level: entity.level,
             description: entity.description,
             rule_auth: entity.rule_auth,
@@ -255,7 +261,7 @@ impl From<GamificationBadge> for GamificationBadgeSummaryDto {
             id: entity.id,
             name: entity.name,
             active: entity.active,
-            level: entity.level,
+            survey_id: entity.survey_id,
             created_at,
         }
     }
@@ -267,7 +273,7 @@ impl From<CreateGamificationBadgeDto> for GamificationBadge {
             id: Uuid::new_v4(),
             name: dto.name,
             active: dto.active,
-            survey_id: None,
+            survey_id: dto.survey_id,
             level: dto.level,
             description: dto.description,
             rule_auth: dto.rule_auth,
@@ -286,7 +292,7 @@ impl From<&GamificationBadge> for GamificationBadgeResponseDto {
             id: entity.id.clone(),
             name: entity.name.clone(),
             active: entity.active.clone(),
-            survey_id: entity.survey_id,
+            survey_id: entity.survey_id.clone(),
             level: entity.level.clone(),
             description: entity.description.clone(),
             rule_auth: entity.rule_auth.clone(),
@@ -309,6 +315,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationBadgeDto> for GamificationB
     fn apply_update(mut self, dto: UpdateGamificationBadgeDto) -> backbone_core::ServiceResult<Self> {
         self.name = dto.name;
         self.active = dto.active;
+        self.survey_id = dto.survey_id;
         self.level = dto.level;
         self.description = dto.description;
         self.rule_auth = dto.rule_auth;

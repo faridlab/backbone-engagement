@@ -234,6 +234,7 @@ impl backbone_orm::EntityRepoMeta for EngagementLinkTrackerClick {
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("link_id".to_string(), "uuid".to_string());
         m.insert("campaign_id".to_string(), "uuid".to_string());
+        m.insert("click_day".to_string(), "date".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

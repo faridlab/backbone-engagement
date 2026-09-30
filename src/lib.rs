@@ -51,6 +51,9 @@ pub use application::service::EngagementCampaignService;
 pub use application::service::EngagementSourceService;
 pub use application::service::EngagementMediumService;
 
+// Re-exports - Validation
+pub use application::validator::{ValidationError, ValidationResult};
+
 use std::sync::Arc;
 use axum::Router;
 use sqlx::PgPool;
@@ -113,7 +116,7 @@ impl EngagementModule {
             create_gamification_badge_user_read_routes,
             create_gamification_karma_tracking_read_routes,
             create_gamification_karma_rank_routes,
-            create_gamification_challenge_routes,
+            create_gamification_challenge_read_routes,
             create_gamification_challenge_membership_read_routes,
             create_gamification_challenge_line_routes,
             create_gamification_goal_definition_routes,
@@ -131,7 +134,10 @@ impl EngagementModule {
             .merge(create_gamification_badge_user_read_routes(self.gamification_badge_user_service.clone()))
             .merge(create_gamification_karma_tracking_read_routes(self.gamification_karma_tracking_service.clone()))
             .merge(create_gamification_karma_rank_routes(self.gamification_karma_rank_service.clone()))
-            .merge(create_gamification_challenge_routes(self.gamification_challenge_service.clone()))
+            // GamificationChallenge: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_gamification_challenge_read_routes(self.gamification_challenge_service.clone()))
             .merge(create_gamification_challenge_membership_read_routes(self.gamification_challenge_membership_service.clone()))
             .merge(create_gamification_challenge_line_routes(self.gamification_challenge_line_service.clone()))
             .merge(create_gamification_goal_definition_routes(self.gamification_goal_definition_service.clone()))

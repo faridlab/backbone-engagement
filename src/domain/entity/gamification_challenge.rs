@@ -374,6 +374,10 @@ impl backbone_orm::EntityRepoMeta for GamificationChallenge {
         m.insert("period".to_string(), "challenge_period".to_string());
         m.insert("visibility_mode".to_string(), "challenge_visibility_mode".to_string());
         m.insert("report_frequency".to_string(), "report_frequency".to_string());
+        m.insert("start_date".to_string(), "date".to_string());
+        m.insert("end_date".to_string(), "date".to_string());
+        m.insert("last_report_date".to_string(), "date".to_string());
+        m.insert("next_report_date".to_string(), "date".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

@@ -76,6 +76,7 @@ models:
 
       survey_id:
         type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
         description: "Survey lineage — set by the certification grant when the badge is first granted off a survey certification (the survey whose certification_badge_key names this badge). A survey badge is unique per (survey_id, name); badges with no lineage keep the global name unique. Cross-module ref in the house style (no SQL FK)."
 
       level:

@@ -53,7 +53,6 @@ pub struct GamificationBadge {
     pub id: Uuid,
     pub name: String,
     pub active: bool,
-    /// Survey lineage — stamped by the certification grant on first grant.
     pub survey_id: Option<Uuid>,
     pub level: Option<BadgeLevel>,
     pub description: Option<String>,
@@ -146,6 +145,12 @@ impl GamificationBadge {
     // Fluent Setters (with_* for optional fields)
     // ==========================================================
 
+    /// Set the survey_id field (chainable)
+    pub fn with_survey_id(mut self, value: Uuid) -> Self {
+        self.survey_id = Some(value);
+        self
+    }
+
     /// Set the level field (chainable)
     pub fn with_level(mut self, value: BadgeLevel) -> Self {
         self.level = Some(value);
@@ -177,6 +182,9 @@ impl GamificationBadge {
                 }
                 "active" => {
                     if let Ok(v) = serde_json::from_value(value) { self.active = v; }
+                }
+                "survey_id" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.survey_id = v; }
                 }
                 "level" => {
                     if let Ok(v) = serde_json::from_value(value) { self.level = v; }
@@ -253,6 +261,7 @@ impl backbone_orm::EntityRepoMeta for GamificationBadge {
     fn column_types() -> std::collections::HashMap<String, String> {
         let mut m = std::collections::HashMap::new();
         m.insert("id".to_string(), "uuid".to_string());
+        m.insert("survey_id".to_string(), "uuid".to_string());
         m.insert("level".to_string(), "badge_level".to_string());
         m.insert("rule_auth".to_string(), "badge_rule_auth".to_string());
         m
@@ -270,6 +279,7 @@ impl backbone_orm::EntityRepoMeta for GamificationBadge {
 pub struct GamificationBadgeBuilder {
     name: Option<String>,
     active: Option<bool>,
+    survey_id: Option<Uuid>,
     level: Option<BadgeLevel>,
     description: Option<String>,
     rule_auth: Option<BadgeRuleAuth>,
@@ -289,6 +299,12 @@ impl GamificationBadgeBuilder {
     /// Set the active field (default: `true`)
     pub fn active(mut self, value: bool) -> Self {
         self.active = Some(value);
+        self
+    }
+
+    /// Set the survey_id field (optional)
+    pub fn survey_id(mut self, value: Uuid) -> Self {
+        self.survey_id = Some(value);
         self
     }
 
@@ -345,7 +361,7 @@ impl GamificationBadgeBuilder {
             id: Uuid::new_v4(),
             name,
             active: self.active.unwrap_or(true),
-            survey_id: None,
+            survey_id: self.survey_id,
             level: self.level,
             description: self.description,
             rule_auth,

@@ -238,6 +238,7 @@ impl backbone_orm::EntityRepoMeta for GamificationKarmaTracking {
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("user_id".to_string(), "uuid".to_string());
         m.insert("origin_id".to_string(), "uuid".to_string());
+        m.insert("tracking_date".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

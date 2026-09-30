@@ -7,6 +7,7 @@
 
 use async_trait::async_trait;
 use anyhow::Result;
+use uuid::Uuid;
 
 use crate::domain::entity::{GamificationBadge, BadgeLevel, BadgeRuleAuth};
 
@@ -45,6 +46,7 @@ pub struct GamificationBadgePaginatedResult {
 pub struct GamificationBadgeFilter {
     pub name: Option<String>,
     pub active: Option<bool>,
+    pub survey_id: Option<Uuid>,
     pub level: Option<BadgeLevel>,
     pub description: Option<String>,
     pub rule_auth: Option<BadgeRuleAuth>,
@@ -54,7 +56,7 @@ pub struct GamificationBadgeFilter {
 impl GamificationBadgeFilter {
     /// Check if any filter is set
     pub fn has_filters(&self) -> bool {
-        self.name.is_some() || self.active.is_some() || self.level.is_some() || self.description.is_some() || self.rule_auth.is_some() || self.rule_max.is_some()
+        self.name.is_some() || self.active.is_some() || self.survey_id.is_some() || self.level.is_some() || self.description.is_some() || self.rule_auth.is_some() || self.rule_max.is_some()
     }
 }
 

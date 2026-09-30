@@ -268,6 +268,7 @@ impl backbone_orm::EntityRepoMeta for GamificationBadgeUser {
         m.insert("challenge_id".to_string(), "uuid".to_string());
         m.insert("grant_kind".to_string(), "badge_grant_kind".to_string());
         m.insert("level".to_string(), "badge_level".to_string());
+        m.insert("granted_at".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

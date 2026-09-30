@@ -5555,6 +5555,10 @@ components:
           maxLength: 200
         active:
           type: boolean
+        survey_id:
+          nullable: true
+          type: string
+          format: uuid
         level:
           nullable: true
           type: string
@@ -5605,6 +5609,10 @@ components:
           maxLength: 200
         active:
           type: boolean
+        survey_id:
+          nullable: true
+          type: string
+          format: uuid
         level:
           nullable: true
           type: string
@@ -5642,6 +5650,10 @@ components:
           maxLength: 200
         active:
           type: boolean
+        survey_id:
+          nullable: true
+          type: string
+          format: uuid
         level:
           nullable: true
           type: string
@@ -5671,6 +5683,10 @@ components:
           maxLength: 200
         active:
           type: boolean
+        survey_id:
+          nullable: true
+          type: string
+          format: uuid
         level:
           nullable: true
           type: string

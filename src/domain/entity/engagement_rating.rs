@@ -335,6 +335,9 @@ impl backbone_orm::EntityRepoMeta for EngagementRating {
         m.insert("rated_user_id".to_string(), "uuid".to_string());
         m.insert("rater_user_id".to_string(), "uuid".to_string());
         m.insert("publisher_user_id".to_string(), "uuid".to_string());
+        m.insert("rated_on".to_string(), "timestamptz".to_string());
+        m.insert("token_expires_at".to_string(), "timestamptz".to_string());
+        m.insert("publisher_replied_at".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {
