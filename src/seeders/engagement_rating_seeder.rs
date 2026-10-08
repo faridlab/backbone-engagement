@@ -36,7 +36,7 @@ impl Seeder for SeedEngagementRatingSeeder {
     }
 
     fn order(&self) -> i32 {
-        12
+        10
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {
