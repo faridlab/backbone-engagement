@@ -264,7 +264,8 @@ impl EngagementModule {
 /// Builder for EngagementModule
 pub struct EngagementModuleBuilder {
     db_pool: Option<PgPool>,
-    // <<< CUSTOM - custom builder fields
+    // <<< CUSTOM BUILDER FIELDS
+    // custom builder fields
     rating_secret: Option<Vec<u8>>,
     rated_types: Vec<(String, Option<String>)>,
     metrics: Vec<(String, application::service::gamification_write_service::MetricFn)>,
@@ -278,7 +279,7 @@ impl EngagementModuleBuilder {
     pub fn new() -> Self {
         Self {
             db_pool: None,
-            // <<< CUSTOM
+            // <<< CUSTOM BUILDER DEFAULTS
             rating_secret: None,
             rated_types: Vec::new(),
             metrics: Vec::new(),
