@@ -22,6 +22,6 @@ pub type GamificationGoalTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for GamificationGoal.
 pub fn gamification_goal_trigger_registry() -> GamificationGoalTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

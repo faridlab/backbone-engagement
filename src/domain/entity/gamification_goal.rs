@@ -7,7 +7,7 @@ use rust_decimal::Decimal;
 use super::GoalState;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{goal_stateStateMachine, goal_stateState, StateMachineError};
+use crate::domain::state_machine::{GoalStateStateMachine, GoalStateState, StateMachineError};
 
 /// Strongly-typed ID for GamificationGoal
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -181,9 +181,9 @@ impl GamificationGoal {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.state` directly.
-    pub fn transition_to(&mut self, new_state: goal_stateState) -> Result<(), StateMachineError> {
-        let current = self.state.to_string().parse::<goal_stateState>()?;
-        let mut sm = goal_stateStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: GoalStateState) -> Result<(), StateMachineError> {
+        let current = self.state.to_string().parse::<GoalStateState>()?;
+        let mut sm = GoalStateStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.state = new_state.to_string().parse::<GoalState>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;

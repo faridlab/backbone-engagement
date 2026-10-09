@@ -29,5 +29,5 @@ pub enum StateMachineError {
     FinalStateReached(String),
 }
 
-pub use challenge_state_state_machine::{challenge_stateState, challenge_stateTransition, challenge_stateStateMachine};
-pub use goal_state_state_machine::{goal_stateState, goal_stateTransition, goal_stateStateMachine};
+pub use challenge_state_state_machine::{ChallengeStateState, ChallengeStateTransition, ChallengeStateStateMachine};
+pub use goal_state_state_machine::{GoalStateState, GoalStateTransition, GoalStateStateMachine};

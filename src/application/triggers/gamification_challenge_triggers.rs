@@ -22,6 +22,6 @@ pub type GamificationChallengeTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for GamificationChallenge.
 pub fn gamification_challenge_trigger_registry() -> GamificationChallengeTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

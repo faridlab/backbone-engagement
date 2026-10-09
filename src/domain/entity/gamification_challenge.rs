@@ -9,7 +9,7 @@ use super::ChallengeVisibilityMode;
 use super::ReportFrequency;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{challenge_stateStateMachine, challenge_stateState, StateMachineError};
+use crate::domain::state_machine::{ChallengeStateStateMachine, ChallengeStateState, StateMachineError};
 
 /// Strongly-typed ID for GamificationChallenge
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -237,9 +237,9 @@ impl GamificationChallenge {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.state` directly.
-    pub fn transition_to(&mut self, new_state: challenge_stateState) -> Result<(), StateMachineError> {
-        let current = self.state.to_string().parse::<challenge_stateState>()?;
-        let mut sm = challenge_stateStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: ChallengeStateState) -> Result<(), StateMachineError> {
+        let current = self.state.to_string().parse::<ChallengeStateState>()?;
+        let mut sm = ChallengeStateStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.state = new_state.to_string().parse::<ChallengeState>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;

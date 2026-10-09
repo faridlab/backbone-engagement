@@ -28,7 +28,7 @@ use crate::application::service::{GamificationChallengeService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateGamificationChallengeDto, UpdateGamificationChallengeDto, PatchGamificationChallengeDto, GamificationChallengeResponseDto};
 
-use crate::domain::state_machine::{challenge_stateState, challenge_stateStateMachine, challenge_stateTransition};
+use crate::domain::state_machine::{ChallengeStateState, ChallengeStateStateMachine, ChallengeStateTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -213,7 +213,7 @@ pub async fn start_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = challenge_stateTransition::Start.allowed_roles();
+        let allowed_roles = ChallengeStateTransition::Start.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:start");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
         if !has_specific_perm && !has_update_perm {
@@ -222,10 +222,10 @@ pub async fn start_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: challenge_stateState = entity.state.to_string().parse()
-        .unwrap_or(challenge_stateState::default());
-    let sm = challenge_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(challenge_stateTransition::Start) {
+    let current_state: ChallengeStateState = entity.state.to_string().parse()
+        .unwrap_or(ChallengeStateState::default());
+    let sm = ChallengeStateStateMachine::from_state(current_state);
+    if !sm.can_transition(ChallengeStateTransition::Start) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationChallengeResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -263,7 +263,7 @@ pub async fn close_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = challenge_stateTransition::Close.allowed_roles();
+        let allowed_roles = ChallengeStateTransition::Close.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:close");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
         if !has_specific_perm && !has_update_perm {
@@ -272,10 +272,10 @@ pub async fn close_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: challenge_stateState = entity.state.to_string().parse()
-        .unwrap_or(challenge_stateState::default());
-    let sm = challenge_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(challenge_stateTransition::Close) {
+    let current_state: ChallengeStateState = entity.state.to_string().parse()
+        .unwrap_or(ChallengeStateState::default());
+    let sm = ChallengeStateStateMachine::from_state(current_state);
+    if !sm.can_transition(ChallengeStateTransition::Close) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationChallengeResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -313,7 +313,7 @@ pub async fn reset_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = challenge_stateTransition::Reset.allowed_roles();
+        let allowed_roles = ChallengeStateTransition::Reset.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:reset");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
         if !has_specific_perm && !has_update_perm {
@@ -322,10 +322,10 @@ pub async fn reset_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: challenge_stateState = entity.state.to_string().parse()
-        .unwrap_or(challenge_stateState::default());
-    let sm = challenge_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(challenge_stateTransition::Reset) {
+    let current_state: ChallengeStateState = entity.state.to_string().parse()
+        .unwrap_or(ChallengeStateState::default());
+    let sm = ChallengeStateStateMachine::from_state(current_state);
+    if !sm.can_transition(ChallengeStateTransition::Reset) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationChallengeResponseDto>::error("Transition not allowed from current state")));
     }
 

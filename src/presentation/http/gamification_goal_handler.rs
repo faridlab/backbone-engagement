@@ -29,7 +29,7 @@ use crate::application::service::{GamificationGoalService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateGamificationGoalDto, UpdateGamificationGoalDto, PatchGamificationGoalDto, GamificationGoalResponseDto};
 
-use crate::domain::state_machine::{goal_stateState, goal_stateStateMachine, goal_stateTransition};
+use crate::domain::state_machine::{GoalStateState, GoalStateStateMachine, GoalStateTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -214,7 +214,7 @@ pub async fn start_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = goal_stateTransition::Start.allowed_roles();
+        let allowed_roles = GoalStateTransition::Start.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:start");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
         if !has_specific_perm && !has_update_perm {
@@ -223,10 +223,10 @@ pub async fn start_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: goal_stateState = entity.state.to_string().parse()
-        .unwrap_or(goal_stateState::default());
-    let sm = goal_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(goal_stateTransition::Start) {
+    let current_state: GoalStateState = entity.state.to_string().parse()
+        .unwrap_or(GoalStateState::default());
+    let sm = GoalStateStateMachine::from_state(current_state);
+    if !sm.can_transition(GoalStateTransition::Start) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -264,7 +264,7 @@ pub async fn evaluate_met_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = goal_stateTransition::EvaluateMet.allowed_roles();
+        let allowed_roles = GoalStateTransition::EvaluateMet.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:evaluate_met");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
         if !has_specific_perm && !has_update_perm {
@@ -273,10 +273,10 @@ pub async fn evaluate_met_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: goal_stateState = entity.state.to_string().parse()
-        .unwrap_or(goal_stateState::default());
-    let sm = goal_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(goal_stateTransition::EvaluateMet) {
+    let current_state: GoalStateState = entity.state.to_string().parse()
+        .unwrap_or(GoalStateState::default());
+    let sm = GoalStateStateMachine::from_state(current_state);
+    if !sm.can_transition(GoalStateTransition::EvaluateMet) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -314,7 +314,7 @@ pub async fn manual_reach_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = goal_stateTransition::ManualReach.allowed_roles();
+        let allowed_roles = GoalStateTransition::ManualReach.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:manual_reach");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
         if !has_specific_perm && !has_update_perm {
@@ -323,10 +323,10 @@ pub async fn manual_reach_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: goal_stateState = entity.state.to_string().parse()
-        .unwrap_or(goal_stateState::default());
-    let sm = goal_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(goal_stateTransition::ManualReach) {
+    let current_state: GoalStateState = entity.state.to_string().parse()
+        .unwrap_or(GoalStateState::default());
+    let sm = GoalStateStateMachine::from_state(current_state);
+    if !sm.can_transition(GoalStateTransition::ManualReach) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -364,7 +364,7 @@ pub async fn window_close_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = goal_stateTransition::WindowClose.allowed_roles();
+        let allowed_roles = GoalStateTransition::WindowClose.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:window_close");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
         if !has_specific_perm && !has_update_perm {
@@ -373,10 +373,10 @@ pub async fn window_close_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: goal_stateState = entity.state.to_string().parse()
-        .unwrap_or(goal_stateState::default());
-    let sm = goal_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(goal_stateTransition::WindowClose) {
+    let current_state: GoalStateState = entity.state.to_string().parse()
+        .unwrap_or(GoalStateState::default());
+    let sm = GoalStateStateMachine::from_state(current_state);
+    if !sm.can_transition(GoalStateTransition::WindowClose) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -414,7 +414,7 @@ pub async fn cancel_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = goal_stateTransition::Cancel.allowed_roles();
+        let allowed_roles = GoalStateTransition::Cancel.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:cancel");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
         if !has_specific_perm && !has_update_perm {
@@ -423,10 +423,10 @@ pub async fn cancel_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: goal_stateState = entity.state.to_string().parse()
-        .unwrap_or(goal_stateState::default());
-    let sm = goal_stateStateMachine::from_state(current_state);
-    if !sm.can_transition(goal_stateTransition::Cancel) {
+    let current_state: GoalStateState = entity.state.to_string().parse()
+        .unwrap_or(GoalStateState::default());
+    let sm = GoalStateStateMachine::from_state(current_state);
+    if !sm.can_transition(GoalStateTransition::Cancel) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
     }
 
