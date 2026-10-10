@@ -298,6 +298,9 @@ impl super::Entity for EngagementRating {
 }
 
 impl backbone_core::PersistentEntity for EngagementRating {
+    fn write_protected_fields() -> &'static [&'static str] {
+        &["token_nonce"]
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }
@@ -341,7 +344,10 @@ impl backbone_orm::EntityRepoMeta for EngagementRating {
         m
     }
     fn search_fields() -> &'static [&'static str] {
-        &["rated_model", "token_nonce"]
+        &["rated_model"]
+    }
+    fn secret_fields() -> &'static [&'static str] {
+        &["tokenNonce"]
     }
 }
 

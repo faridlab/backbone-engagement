@@ -114,10 +114,6 @@ pub struct UpdateEngagementRatingDto {
     pub consumed: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "rated_on")]
     pub rated_on: Option<DateTime<Utc>>,
-    #[cfg_attr(feature = "validation", validate(length(max = 64)))]
-    #[cfg_attr(feature = "openapi", schema(example = "example"))]
-    #[serde(alias = "token_nonce")]
-    pub token_nonce: String,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(alias = "token_expires_at")]
     pub token_expires_at: DateTime<Utc>,
@@ -170,10 +166,6 @@ pub struct PatchEngagementRatingDto {
     pub consumed: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "rated_on")]
     pub rated_on: Option<DateTime<Utc>>,
-    #[cfg_attr(feature = "validation", validate(length(max = 64)))]
-    #[cfg_attr(feature = "openapi", schema(example = "example"))]
-    #[serde(skip_serializing_if = "Option::is_none", alias = "token_nonce")]
-    pub token_nonce: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "token_expires_at")]
     pub token_expires_at: Option<DateTime<Utc>>,
@@ -188,7 +180,7 @@ pub struct PatchEngagementRatingDto {
 impl PatchEngagementRatingDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.rated_model.is_some() || self.rated_record_id.is_some() || self.parent_rated_model.is_some() || self.parent_rated_record_id.is_some() || self.rated_user_id.is_some() || self.rater_user_id.is_some() || self.rater_email.is_some() || self.rating_value.is_some() || self.feedback.is_some() || self.consumed.is_some() || self.rated_on.is_some() || self.token_nonce.is_some() || self.token_expires_at.is_some() || self.publisher_comment.is_some() || self.publisher_user_id.is_some() || self.publisher_replied_at.is_some()
+        self.rated_model.is_some() || self.rated_record_id.is_some() || self.parent_rated_model.is_some() || self.parent_rated_record_id.is_some() || self.rated_user_id.is_some() || self.rater_user_id.is_some() || self.rater_email.is_some() || self.rating_value.is_some() || self.feedback.is_some() || self.consumed.is_some() || self.rated_on.is_some() || self.token_expires_at.is_some() || self.publisher_comment.is_some() || self.publisher_user_id.is_some() || self.publisher_replied_at.is_some()
     }
 }
 
@@ -401,7 +393,6 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementRatingDto> for EngagementRati
         self.feedback = dto.feedback;
         self.consumed = dto.consumed;
         self.rated_on = dto.rated_on;
-        self.token_nonce = dto.token_nonce;
         self.token_expires_at = dto.token_expires_at;
         self.publisher_comment = dto.publisher_comment;
         self.publisher_user_id = dto.publisher_user_id;

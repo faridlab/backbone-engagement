@@ -106,7 +106,7 @@ models:
 
       token_nonce:
         type: string
-        attributes: ["@required", "@max(64)", "@indexed"]
+        attributes: ["@required", "@max(64)", "@indexed", "@sensitive", "@immutable"]
         description: "128-bit hex selector of the Tier A capability — the public link carries {id}.{nonce}.{exp}.{mac}; the MAC is HMAC-SHA256 over (id, nonce, grant, exp) with a server secret (env-var reference). The nonce alone is not the capability."
 
       token_expires_at:
