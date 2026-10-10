@@ -418,3 +418,59 @@ async fn parent_rollup_aggregates_children(pool: PgPool) {
     assert_eq!(stats.ko, 1);
     assert_eq!(stats.percentage_satisfaction, 67); // 2/3 rounded
 }
+
+// ─── the reply's author is the session's principal ────────────────────────────
+
+#[sqlx::test(migrations = "./migrations")]
+async fn the_reply_route_records_the_principal_and_refuses_a_request_with_none(pool: PgPool) {
+    use tower::ServiceExt;
+    let id = Uuid::new_v4();
+    sqlx::query(
+        r#"INSERT INTO engagement.engagement_ratings
+               (id, rated_model, rated_record_id, rating_value, consumed, rated_on,
+                token_nonce, token_expires_at)
+           VALUES ($1, 'helpdesk.ticket', $2, 8, true, now(), $3, now() + interval '30 days')"#,
+    )
+    .bind(id)
+    .bind(Uuid::new_v4())
+    .bind(Uuid::new_v4().simple().to_string())
+    .execute(&pool)
+    .await
+    .expect("seed rating");
+    let module = std::sync::Arc::new(
+        backbone_engagement::EngagementModule::builder()
+            .with_database(pool.clone())
+            .with_rating_secret(SECRET)
+            .build()
+            .expect("module"),
+    );
+    let router = module.rating_guarded_routes();
+    let (author, forged) = (Uuid::new_v4(), Uuid::new_v4());
+    let reply = |user: Option<Uuid>| {
+        let mut req = axum::http::Request::post(format!("/engagement/ratings/{id}/reply"))
+            .header("content-type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({ "comment": "thanks", "publisher_user_id": forged }).to_string(),
+            ))
+            .unwrap();
+        if let Some(user) = user {
+            req.extensions_mut().insert(backbone_auth::org::OrgContext {
+                acting_unit_id: Uuid::new_v4(),
+                entitled_units: vec![],
+                legacy_company_id: None,
+                user_id: user.to_string(),
+            });
+        }
+        router.clone().oneshot(req)
+    };
+
+    assert_eq!(reply(None).await.unwrap().status(), axum::http::StatusCode::UNAUTHORIZED);
+    assert_eq!(reply(Some(author)).await.unwrap().status(), axum::http::StatusCode::NO_CONTENT);
+    let uid: Option<Uuid> =
+        sqlx::query_scalar("SELECT publisher_user_id FROM engagement.engagement_ratings WHERE id = $1")
+            .bind(id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(uid, Some(author), "the author is the principal, not the body's publisher_user_id");
+}

@@ -168,17 +168,27 @@ pub struct TtlBody {
 #[derive(Deserialize)]
 pub struct PublisherReplyBody {
     pub comment: String,
+    /// Ignored: the reply's author is the authenticated principal. Still accepted, and no
+    /// longer required, so existing callers keep working.
+    #[serde(default)]
     pub publisher_user_id: Uuid,
 }
 
+/// The reply's author is the org guard's authenticated principal, never a field of the
+/// body, which could name anyone. A request without the `OrgContext` the host's org guard
+/// inserts is refused with 401.
 async fn publisher_reply(
     State(app): State<ApiState>,
+    org: backbone_auth::org::OrgContext,
     Path(id): Path<Uuid>,
     Json(body): Json<PublisherReplyBody>,
 ) -> Response {
+    let Ok(author) = Uuid::parse_str(&org.user_id) else {
+        return (StatusCode::UNAUTHORIZED, Json(json!({ "error": "unauthenticated" }))).into_response();
+    };
     match app
         .rating_write_service()
-        .publisher_reply(id, &body.comment, body.publisher_user_id)
+        .publisher_reply(id, &body.comment, author)
         .await
     {
         Ok(()) => (StatusCode::NO_CONTENT).into_response(),

@@ -22,7 +22,7 @@ path = "src/lib.rs"
 # -----------------------------------------------------------------------------
 backbone-core = { version = "3.0.0", features = ["postgres"] }
 backbone-orm = { version = "3.0.0" }
-backbone-auth = { version = "3.0.0" }
+backbone-auth = { version = "3.0.0", features = ["axum"] }
 backbone-messaging = { version = "3.0.0" }
 # The public /r/<code> redirect is throttled at middleware (ADR-0019).
 backbone-rate-limit = { version = "3.0.0" }
