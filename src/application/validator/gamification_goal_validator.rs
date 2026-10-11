@@ -14,10 +14,6 @@ pub type GamificationGoalValidator = EntityValidator<GamificationGoal>;
 /// Build a validator for GamificationGoal with all schema-defined field rules.
 pub fn gamification_goal_validator() -> GamificationGoalValidator {
     EntityValidator::new()
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
         // No schema-derived rules — add custom rules above.
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -21,9 +21,5 @@ pub fn engagement_rating_validator() -> EngagementRatingValidator {
         .rule(OptionalNotBlank::new("feedback", |e: &EngagementRating| e.feedback.as_deref()))
         .rule(RequiredString::new("token_nonce", |e: &EngagementRating| &e.token_nonce))
         .rule(OptionalNotBlank::new("publisher_comment", |e: &EngagementRating| e.publisher_comment.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

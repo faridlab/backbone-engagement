@@ -186,3 +186,4 @@ pub fn create_protected_gamification_challenge_membership_routes<A: AuthMiddlewa
             }
         }))
 }
+

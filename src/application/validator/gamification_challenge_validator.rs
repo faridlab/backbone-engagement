@@ -16,9 +16,5 @@ pub type GamificationChallengeValidator = EntityValidator<GamificationChallenge>
 pub fn gamification_challenge_validator() -> GamificationChallengeValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &GamificationChallenge| &e.name))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

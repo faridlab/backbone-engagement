@@ -115,6 +115,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add GamificationBadge specific tests here
-// <<< CUSTOM TESTS END >>>

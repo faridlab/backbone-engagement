@@ -18,5 +18,3 @@ use crate::domain::entity::GamificationGoalDefinition;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type GamificationGoalDefinitionDomainPolicy = PermitAllPolicy<GamificationGoalDefinition>;
 
-// <<< CUSTOM
-// END CUSTOM

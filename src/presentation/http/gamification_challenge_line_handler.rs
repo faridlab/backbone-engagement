@@ -187,3 +187,4 @@ pub fn create_protected_gamification_challenge_line_routes<A: AuthMiddleware + S
             }
         }))
 }
+

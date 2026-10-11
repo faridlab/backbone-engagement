@@ -18,9 +18,5 @@ pub fn gamification_karma_rank_validator() -> GamificationKarmaRankValidator {
         .rule(RequiredString::new("name", |e: &GamificationKarmaRank| &e.name))
         .rule(OptionalNotBlank::new("description", |e: &GamificationKarmaRank| e.description.as_deref()))
         .rule(OptionalNotBlank::new("motivational_text", |e: &GamificationKarmaRank| e.motivational_text.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

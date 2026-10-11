@@ -32,5 +32,3 @@ pub type EngagementLinkTrackerClickService = GenericCrudService<
     EngagementLinkTrackerClickRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

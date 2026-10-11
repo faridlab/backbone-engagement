@@ -186,3 +186,4 @@ pub fn create_protected_gamification_karma_rank_routes<A: AuthMiddleware + Send 
             }
         }))
 }
+

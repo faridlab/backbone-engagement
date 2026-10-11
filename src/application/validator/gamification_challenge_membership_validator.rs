@@ -14,10 +14,6 @@ pub type GamificationChallengeMembershipValidator = EntityValidator<Gamification
 /// Build a validator for GamificationChallengeMembership with all schema-defined field rules.
 pub fn gamification_challenge_membership_validator() -> GamificationChallengeMembershipValidator {
     EntityValidator::new()
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
         // No schema-derived rules — add custom rules above.
 }
 
-// <<< CUSTOM
-// END CUSTOM

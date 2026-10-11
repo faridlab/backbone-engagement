@@ -194,8 +194,6 @@ impl EngagementLinkTracker {
         }
     }
 
-    // <<< CUSTOM METHODS START >>>
-    // <<< CUSTOM METHODS END >>>
 }
 
 impl super::Entity for EngagementLinkTracker {

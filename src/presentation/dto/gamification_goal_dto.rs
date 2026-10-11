@@ -341,7 +341,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationGoalDto> for GamificationGo
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationGoal here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

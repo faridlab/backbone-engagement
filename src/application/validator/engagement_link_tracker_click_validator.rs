@@ -18,9 +18,5 @@ pub fn engagement_link_tracker_click_validator() -> EngagementLinkTrackerClickVa
         .rule(OptionalNotBlank::new("ip", |e: &EngagementLinkTrackerClick| e.ip.as_deref()))
         .rule(OptionalNotBlank::new("country_code", |e: &EngagementLinkTrackerClick| e.country_code.as_deref()))
         .rule(RequiredString::new("dedup_key", |e: &EngagementLinkTrackerClick| &e.dedup_key))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

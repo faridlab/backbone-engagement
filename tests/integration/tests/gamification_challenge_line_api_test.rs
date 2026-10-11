@@ -103,6 +103,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add GamificationChallengeLine specific tests here
-// <<< CUSTOM TESTS END >>>

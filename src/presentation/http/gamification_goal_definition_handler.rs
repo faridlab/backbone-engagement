@@ -186,3 +186,4 @@ pub fn create_protected_gamification_goal_definition_routes<A: AuthMiddleware + 
             }
         }))
 }
+

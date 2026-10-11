@@ -24,8 +24,6 @@ pub mod application;
 pub mod presentation;
 pub mod seeders;
 pub mod exports;
-// <<< CUSTOM MODULES
-// END CUSTOM
 
 // The module's extension (hand-written; ADR-0031).
 #[path = "lib.ext.rs"]
@@ -100,8 +98,6 @@ pub struct EngagementModule {
     pub(crate) engagement_medium_service: Arc<EngagementMediumService>,
     /// The module's extension state (`lib.ext.rs`); its fields read through `Deref`.
     pub(crate) ext: ModuleExt,
-    // <<< CUSTOM FIELDS
-    // END CUSTOM
 }
 
 impl std::ops::Deref for EngagementModule {
@@ -256,8 +252,6 @@ impl EngagementModule {
             .merge(create_engagement_medium_read_routes(self.engagement_medium_service.clone()))
     }
 
-    // <<< CUSTOM METHODS
-    // END CUSTOM
 }
 
 /// Builder for EngagementModule
@@ -265,8 +259,6 @@ pub struct EngagementModuleBuilder {
     db_pool: Option<PgPool>,
     /// The builder's extension state (`lib.ext.rs`); its fields read through `Deref`.
     ext: ModuleBuilderExt,
-    // <<< CUSTOM BUILDER FIELDS
-    // END CUSTOM
 }
 
 impl std::ops::Deref for EngagementModuleBuilder {
@@ -288,8 +280,6 @@ impl EngagementModuleBuilder {
         Self {
             db_pool: None,
             ext: Default::default(),
-            // <<< CUSTOM BUILDER DEFAULTS
-            // END CUSTOM
         }
     }
 
@@ -299,8 +289,6 @@ impl EngagementModuleBuilder {
         self
     }
 
-    // <<< CUSTOM - custom builder methods
-    // END CUSTOM
 
     /// Build the module with configured dependencies
     pub fn build(self) -> anyhow::Result<EngagementModule> {
@@ -367,8 +355,6 @@ impl EngagementModuleBuilder {
         let engagement_medium_repository = Arc::new(EngagementMediumRepository::new(db_pool.clone()));
         let engagement_medium_service = Arc::new(EngagementMediumService::with_repository(engagement_medium_repository.clone()));
 
-        // <<< CUSTOM
-        // END CUSTOM
 
         // The extension builds its own state from what the generated build made.
         let ext = self.ext.build(&ModuleParts {
@@ -422,8 +408,6 @@ impl EngagementModuleBuilder {
             engagement_source_service,
             engagement_medium_service,
             ext,
-            // <<< CUSTOM
-            // END CUSTOM
         })
     }
 }

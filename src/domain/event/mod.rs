@@ -64,5 +64,3 @@ pub use engagement_source_event_handlers::EngagementSourceEventHandler;
 pub use engagement_medium_events::{EngagementMediumEvent, EngagementMediumEventPublisher, NoopEngagementMediumEventPublisher};
 pub use engagement_medium_event_handlers::EngagementMediumEventHandler;
 
-// <<< CUSTOM
-// END CUSTOM

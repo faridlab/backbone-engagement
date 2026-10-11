@@ -405,7 +405,7 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementRatingDto> for EngagementRati
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to EngagementRating here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

@@ -11,8 +11,6 @@ use crate::domain::entity::EngagementLinkTracker;
 /// enum containing a `Crud(CrudEvent<EngagementLinkTracker>)` variant.
 pub type EngagementLinkTrackerEvent = CrudEvent<EngagementLinkTracker>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

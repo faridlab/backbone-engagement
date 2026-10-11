@@ -23,8 +23,6 @@ pub mod engagement_campaign_service;
 pub mod engagement_source_service;
 pub mod engagement_medium_service;
 
-// <<< CUSTOM
-// END CUSTOM
 
 pub use gamification_badge_service::GamificationBadgeService;
 pub use gamification_badge_user_service::GamificationBadgeUserService;
@@ -41,8 +39,6 @@ pub use engagement_rating_service::EngagementRatingService;
 pub use engagement_campaign_service::EngagementCampaignService;
 pub use engagement_source_service::EngagementSourceService;
 pub use engagement_medium_service::EngagementMediumService;
-// <<< CUSTOM
-// END CUSTOM
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

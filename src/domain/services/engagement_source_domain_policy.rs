@@ -18,5 +18,3 @@ use crate::domain::entity::EngagementSource;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type EngagementSourceDomainPolicy = PermitAllPolicy<EngagementSource>;
 
-// <<< CUSTOM
-// END CUSTOM

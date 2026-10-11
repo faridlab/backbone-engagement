@@ -17,9 +17,5 @@ pub fn engagement_campaign_validator() -> EngagementCampaignValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &EngagementCampaign| &e.name))
         .rule(RequiredString::new("title", |e: &EngagementCampaign| &e.title))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

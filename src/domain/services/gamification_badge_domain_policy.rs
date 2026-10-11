@@ -18,5 +18,3 @@ use crate::domain::entity::GamificationBadge;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type GamificationBadgeDomainPolicy = PermitAllPolicy<GamificationBadge>;
 
-// <<< CUSTOM
-// END CUSTOM

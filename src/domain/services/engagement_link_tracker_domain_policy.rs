@@ -18,5 +18,3 @@ use crate::domain::entity::EngagementLinkTracker;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type EngagementLinkTrackerDomainPolicy = PermitAllPolicy<EngagementLinkTracker>;
 
-// <<< CUSTOM
-// END CUSTOM

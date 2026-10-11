@@ -32,5 +32,3 @@ pub type GamificationBadgeUserService = GenericCrudService<
     GamificationBadgeUserRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

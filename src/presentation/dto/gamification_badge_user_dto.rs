@@ -324,7 +324,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationBadgeUserDto> for Gamificat
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationBadgeUser here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

@@ -353,3 +353,4 @@ pub fn create_gamification_challenge_transition_routes(service: Arc<Gamification
         .route("/gamification_challenges/:id/transitions/reset", post(reset_transition))
         .with_state(service)
 }
+

@@ -17,9 +17,5 @@ pub fn gamification_badge_validator() -> GamificationBadgeValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &GamificationBadge| &e.name))
         .rule(OptionalNotBlank::new("description", |e: &GamificationBadge| e.description.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

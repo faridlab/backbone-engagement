@@ -324,7 +324,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationKarmaTrackingDto> for Gamif
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationKarmaTracking here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

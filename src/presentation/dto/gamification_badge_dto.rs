@@ -331,7 +331,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationBadgeDto> for GamificationB
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationBadge here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

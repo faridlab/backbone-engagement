@@ -11,8 +11,6 @@ use crate::domain::entity::GamificationGoal;
 /// enum containing a `Crud(CrudEvent<GamificationGoal>)` variant.
 pub type GamificationGoalEvent = CrudEvent<GamificationGoal>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

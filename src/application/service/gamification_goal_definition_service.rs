@@ -32,5 +32,3 @@ pub type GamificationGoalDefinitionService = GenericCrudService<
     GamificationGoalDefinitionRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

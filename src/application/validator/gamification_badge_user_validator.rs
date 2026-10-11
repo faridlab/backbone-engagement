@@ -17,9 +17,5 @@ pub fn gamification_badge_user_validator() -> GamificationBadgeUserValidator {
     EntityValidator::new()
         .rule(OptionalNotBlank::new("comment", |e: &GamificationBadgeUser| e.comment.as_deref()))
         .rule(OptionalNotBlank::new("grant_key", |e: &GamificationBadgeUser| e.grant_key.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -32,5 +32,3 @@ pub type EngagementRatingService = GenericCrudService<
     EngagementRatingRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

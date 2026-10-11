@@ -281,8 +281,6 @@ impl EngagementRating {
         }
     }
 
-    // <<< CUSTOM METHODS START >>>
-    // <<< CUSTOM METHODS END >>>
 }
 
 impl super::Entity for EngagementRating {

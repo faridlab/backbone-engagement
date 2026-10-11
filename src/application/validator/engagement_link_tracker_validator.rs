@@ -19,9 +19,5 @@ pub fn engagement_link_tracker_validator() -> EngagementLinkTrackerValidator {
         .rule(RequiredString::new("code", |e: &EngagementLinkTracker| &e.code))
         .rule(OptionalNotBlank::new("title", |e: &EngagementLinkTracker| e.title.as_deref()))
         .rule(RequiredString::new("label", |e: &EngagementLinkTracker| &e.label))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -187,3 +187,4 @@ pub fn create_protected_gamification_karma_tracking_routes<A: AuthMiddleware + S
             }
         }))
 }
+

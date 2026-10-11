@@ -32,5 +32,3 @@ pub type GamificationKarmaTrackingService = GenericCrudService<
     GamificationKarmaTrackingRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

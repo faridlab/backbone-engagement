@@ -18,5 +18,3 @@ use crate::domain::entity::GamificationKarmaRank;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type GamificationKarmaRankDomainPolicy = PermitAllPolicy<GamificationKarmaRank>;
 
-// <<< CUSTOM
-// END CUSTOM

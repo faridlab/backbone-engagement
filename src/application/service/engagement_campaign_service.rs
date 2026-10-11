@@ -32,5 +32,3 @@ pub type EngagementCampaignService = GenericCrudService<
     EngagementCampaignRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

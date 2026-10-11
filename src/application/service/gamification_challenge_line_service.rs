@@ -32,5 +32,3 @@ pub type GamificationChallengeLineService = GenericCrudService<
     GamificationChallengeLineRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

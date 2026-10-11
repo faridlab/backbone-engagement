@@ -186,3 +186,4 @@ pub fn create_protected_gamification_badge_routes<A: AuthMiddleware + Send + Syn
             }
         }))
 }
+

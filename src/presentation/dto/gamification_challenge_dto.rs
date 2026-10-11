@@ -445,7 +445,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationChallengeDto> for Gamificat
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationChallenge here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

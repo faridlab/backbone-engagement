@@ -18,5 +18,3 @@ use crate::domain::entity::EngagementRating;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type EngagementRatingDomainPolicy = PermitAllPolicy<EngagementRating>;
 
-// <<< CUSTOM
-// END CUSTOM

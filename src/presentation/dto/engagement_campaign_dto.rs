@@ -290,7 +290,7 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementCampaignDto> for EngagementCa
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to EngagementCampaign here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

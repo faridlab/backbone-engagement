@@ -261,7 +261,7 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationKarmaRankDto> for Gamificat
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to GamificationKarmaRank here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

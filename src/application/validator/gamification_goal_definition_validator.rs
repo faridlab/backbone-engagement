@@ -19,9 +19,5 @@ pub fn gamification_goal_definition_validator() -> GamificationGoalDefinitionVal
         .rule(OptionalNotBlank::new("description", |e: &GamificationGoalDefinition| e.description.as_deref()))
         .rule(OptionalNotBlank::new("suffix", |e: &GamificationGoalDefinition| e.suffix.as_deref()))
         .rule(OptionalNotBlank::new("metric_key", |e: &GamificationGoalDefinition| e.metric_key.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

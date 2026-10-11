@@ -16,9 +16,5 @@ pub type EngagementSourceValidator = EntityValidator<EngagementSource>;
 pub fn engagement_source_validator() -> EngagementSourceValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &EngagementSource| &e.name))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

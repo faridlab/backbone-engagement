@@ -18,5 +18,3 @@ use crate::domain::entity::GamificationChallengeMembership;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type GamificationChallengeMembershipDomainPolicy = PermitAllPolicy<GamificationChallengeMembership>;
 
-// <<< CUSTOM
-// END CUSTOM

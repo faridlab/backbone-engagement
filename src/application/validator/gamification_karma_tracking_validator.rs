@@ -18,9 +18,5 @@ pub fn gamification_karma_tracking_validator() -> GamificationKarmaTrackingValid
         .rule(RequiredString::new("reason", |e: &GamificationKarmaTracking| &e.reason))
         .rule(RequiredString::new("origin_kind", |e: &GamificationKarmaTracking| &e.origin_kind))
         .rule(OptionalNotBlank::new("origin_label", |e: &GamificationKarmaTracking| e.origin_label.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

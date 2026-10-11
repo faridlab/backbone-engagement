@@ -16,9 +16,5 @@ pub type EngagementMediumValidator = EntityValidator<EngagementMedium>;
 pub fn engagement_medium_validator() -> EngagementMediumValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &EngagementMedium| &e.name))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

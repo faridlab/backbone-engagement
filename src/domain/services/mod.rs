@@ -34,5 +34,3 @@ pub use engagement_campaign_domain_policy::EngagementCampaignDomainPolicy;
 pub use engagement_source_domain_policy::EngagementSourceDomainPolicy;
 pub use engagement_medium_domain_policy::EngagementMediumDomainPolicy;
 
-// <<< CUSTOM
-// END CUSTOM

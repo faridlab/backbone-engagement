@@ -32,5 +32,3 @@ pub type EngagementSourceService = GenericCrudService<
     EngagementSourceRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

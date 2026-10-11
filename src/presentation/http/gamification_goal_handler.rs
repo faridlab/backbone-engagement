@@ -456,3 +456,4 @@ pub fn create_gamification_goal_transition_routes(service: Arc<GamificationGoalS
         .route("/gamification_goals/:id/transitions/cancel", post(cancel_transition))
         .with_state(service)
 }
+
