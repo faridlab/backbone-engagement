@@ -27,6 +27,16 @@ pub mod exports;
 // <<< CUSTOM MODULES
 // END CUSTOM
 
+// The module's extension (hand-written; ADR-0031).
+#[path = "lib.ext.rs"]
+mod lib_ext;
+pub use lib_ext::*;
+/// This crate's module and builder under fixed names, for the extension's `impl` blocks.
+#[allow(dead_code)]
+pub(crate) type ThisModule = EngagementModule;
+#[allow(dead_code)]
+pub(crate) type ThisModuleBuilder = EngagementModuleBuilder;
+
 // Re-exports for convenience - Domain entities
 pub use domain::entity::*;
 
@@ -88,17 +98,59 @@ pub struct EngagementModule {
     pub(crate) engagement_campaign_service: Arc<EngagementCampaignService>,
     pub(crate) engagement_source_service: Arc<EngagementSourceService>,
     pub(crate) engagement_medium_service: Arc<EngagementMediumService>,
+    /// The module's extension state (`lib.ext.rs`); its fields read through `Deref`.
+    pub(crate) ext: ModuleExt,
     // <<< CUSTOM FIELDS
-    pub(crate) engagement_write_service: std::sync::Arc<
-        application::service::engagement_write_service::EngagementWriteService,
-    >,
-    pub(crate) rating_write_service: std::sync::Arc<
-        application::service::rating_write_service::RatingWriteService,
-    >,
-    pub(crate) gamification_write_service: std::sync::Arc<
-        application::service::gamification_write_service::GamificationWriteService,
-    >,
     // END CUSTOM
+}
+
+impl std::ops::Deref for EngagementModule {
+    type Target = ModuleExt;
+    fn deref(&self) -> &Self::Target {
+        &self.ext
+    }
+}
+
+impl std::ops::DerefMut for EngagementModule {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.ext
+    }
+}
+
+/// What the extension's `build` hook receives from the generated build (ADR-0031).
+#[allow(dead_code)]
+pub(crate) struct ModuleParts<'a> {
+    pub(crate) db_pool: &'a PgPool,
+    pub(crate) gamification_badge_service: &'a Arc<GamificationBadgeService>,
+    pub(crate) gamification_badge_repository: &'a Arc<GamificationBadgeRepository>,
+    pub(crate) gamification_badge_user_service: &'a Arc<GamificationBadgeUserService>,
+    pub(crate) gamification_badge_user_repository: &'a Arc<GamificationBadgeUserRepository>,
+    pub(crate) gamification_karma_tracking_service: &'a Arc<GamificationKarmaTrackingService>,
+    pub(crate) gamification_karma_tracking_repository: &'a Arc<GamificationKarmaTrackingRepository>,
+    pub(crate) gamification_karma_rank_service: &'a Arc<GamificationKarmaRankService>,
+    pub(crate) gamification_karma_rank_repository: &'a Arc<GamificationKarmaRankRepository>,
+    pub(crate) gamification_challenge_service: &'a Arc<GamificationChallengeService>,
+    pub(crate) gamification_challenge_repository: &'a Arc<GamificationChallengeRepository>,
+    pub(crate) gamification_challenge_membership_service: &'a Arc<GamificationChallengeMembershipService>,
+    pub(crate) gamification_challenge_membership_repository: &'a Arc<GamificationChallengeMembershipRepository>,
+    pub(crate) gamification_challenge_line_service: &'a Arc<GamificationChallengeLineService>,
+    pub(crate) gamification_challenge_line_repository: &'a Arc<GamificationChallengeLineRepository>,
+    pub(crate) gamification_goal_definition_service: &'a Arc<GamificationGoalDefinitionService>,
+    pub(crate) gamification_goal_definition_repository: &'a Arc<GamificationGoalDefinitionRepository>,
+    pub(crate) gamification_goal_service: &'a Arc<GamificationGoalService>,
+    pub(crate) gamification_goal_repository: &'a Arc<GamificationGoalRepository>,
+    pub(crate) engagement_link_tracker_service: &'a Arc<EngagementLinkTrackerService>,
+    pub(crate) engagement_link_tracker_repository: &'a Arc<EngagementLinkTrackerRepository>,
+    pub(crate) engagement_link_tracker_click_service: &'a Arc<EngagementLinkTrackerClickService>,
+    pub(crate) engagement_link_tracker_click_repository: &'a Arc<EngagementLinkTrackerClickRepository>,
+    pub(crate) engagement_rating_service: &'a Arc<EngagementRatingService>,
+    pub(crate) engagement_rating_repository: &'a Arc<EngagementRatingRepository>,
+    pub(crate) engagement_campaign_service: &'a Arc<EngagementCampaignService>,
+    pub(crate) engagement_campaign_repository: &'a Arc<EngagementCampaignRepository>,
+    pub(crate) engagement_source_service: &'a Arc<EngagementSourceService>,
+    pub(crate) engagement_source_repository: &'a Arc<EngagementSourceRepository>,
+    pub(crate) engagement_medium_service: &'a Arc<EngagementMediumService>,
+    pub(crate) engagement_medium_repository: &'a Arc<EngagementMediumRepository>,
 }
 
 impl EngagementModule {
@@ -205,75 +257,29 @@ impl EngagementModule {
     }
 
     // <<< CUSTOM METHODS
-    /// The validated write path (attribution find-or-create, tracker
-    /// minting, the redirect resolver) — the service behind the guarded and
-    /// public route groups.
-    pub fn engagement_write_service(
-        &self,
-    ) -> &std::sync::Arc<application::service::engagement_write_service::EngagementWriteService> {
-        &self.engagement_write_service
-    }
-
-    /// Guarded management composition: safe GETs + validated write seams, NO
-    /// generic mutation. Mount behind the host's authenticated tree.
-    pub fn guarded_routes(self: &Arc<Self>) -> Router {
-        presentation::http::guarded_routes::composer(Arc::clone(self))
-    }
-
-    /// The PUBLIC short-link redirect (`GET /r/:code`) — a BARE, throttled
-    /// mount (ADR-0019 action_link class). Mount at the site root so codes
-    /// resolve as `/r/<code>`; never behind auth.
-    pub fn redirect_routes(self: &Arc<Self>) -> Router {
-        presentation::http::redirect_routes::composer().with_state(Arc::clone(self))
-    }
-
-    /// The validated rating path (issue / rotate / reset / publisher reply /
-    /// stats / the single-use submit) — the service behind the public and
-    /// guarded rating route groups.
-    pub fn rating_write_service(
-        &self,
-    ) -> &std::sync::Arc<application::service::rating_write_service::RatingWriteService> {
-        &self.rating_write_service
-    }
-
-    /// The PUBLIC rating submit (`POST /rate/:token/submit`) — a BARE,
-    /// throttled mount (ADR-0019 action_link class: the HMAC'd capability
-    /// link is the auth). Mount at the site root; never behind auth.
-    pub fn rating_public_routes(self: &Arc<Self>) -> Router {
-        presentation::http::rating_routes::public_composer().with_state(Arc::clone(self))
-    }
-
-    /// Guarded rating management: the validated operator seams only (no
-    /// generic rating mutation anywhere). Mount behind the host's
-    /// authenticated tree.
-    pub fn rating_guarded_routes(self: &Arc<Self>) -> Router {
-        presentation::http::rating_routes::guarded_composer(Arc::clone(self))
-    }
-
-    /// The validated gamification path (the append-only karma ledger, the
-    /// two badge-grant verbs, the certification inbound contract, both
-    /// state machines, and the daily challenge check).
-    pub fn gamification_write_service(
-        &self,
-    ) -> &std::sync::Arc<
-        application::service::gamification_write_service::GamificationWriteService,
-    > {
-        &self.gamification_write_service
-    }
     // END CUSTOM
 }
 
 /// Builder for EngagementModule
 pub struct EngagementModuleBuilder {
     db_pool: Option<PgPool>,
+    /// The builder's extension state (`lib.ext.rs`); its fields read through `Deref`.
+    ext: ModuleBuilderExt,
     // <<< CUSTOM BUILDER FIELDS
-    // custom builder fields
-    rating_secret: Option<Vec<u8>>,
-    rated_types: Vec<(String, Option<String>)>,
-    metrics: Vec<(String, application::service::gamification_write_service::MetricFn)>,
-    user_directory:
-        Option<application::service::gamification_write_service::UserDirectory>,
     // END CUSTOM
+}
+
+impl std::ops::Deref for EngagementModuleBuilder {
+    type Target = ModuleBuilderExt;
+    fn deref(&self) -> &Self::Target {
+        &self.ext
+    }
+}
+
+impl std::ops::DerefMut for EngagementModuleBuilder {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.ext
+    }
 }
 
 impl EngagementModuleBuilder {
@@ -281,11 +287,8 @@ impl EngagementModuleBuilder {
     pub fn new() -> Self {
         Self {
             db_pool: None,
+            ext: Default::default(),
             // <<< CUSTOM BUILDER DEFAULTS
-            rating_secret: None,
-            rated_types: Vec::new(),
-            metrics: Vec::new(),
-            user_directory: None,
             // END CUSTOM
         }
     }
@@ -297,46 +300,6 @@ impl EngagementModuleBuilder {
     }
 
     // <<< CUSTOM - custom builder methods
-    /// Override the rating-token HMAC secret (tests and explicit
-    /// composition; the default reads
-    /// [`application::service::rating_write_service::RATING_TOKEN_SECRET_ENV`]
-    /// — an unset variable leaves the secret empty and every issue/verify
-    /// refuses with a typed 500).
-    pub fn with_rating_secret(mut self, secret: impl Into<Vec<u8>>) -> Self {
-        self.rating_secret = Some(secret.into());
-        self
-    }
-
-    /// Register a rated target type (composition-time code, never free
-    /// text): the entity name a rating may target, plus the optional
-    /// parent model label for the rollup pair.
-    pub fn with_rated_type(mut self, model: &str, parent_model: Option<&str>) -> Self {
-        self.rated_types
-            .push((model.to_string(), parent_model.map(String::from)));
-        self
-    }
-
-    /// Register a goal metric (the name goal definitions cite; the compute
-    /// function is code — the only computed mode).
-    pub fn with_metric(
-        mut self,
-        key: &str,
-        compute: application::service::gamification_write_service::MetricFn,
-    ) -> Self {
-        self.metrics.push((key.to_string(), compute));
-        self
-    }
-
-    /// Register the user directory supplying the `include_all_users`
-    /// expansion (the user table lives in another module — the host wires
-    /// the listing).
-    pub fn with_user_directory(
-        mut self,
-        directory: application::service::gamification_write_service::UserDirectory,
-    ) -> Self {
-        self.user_directory = Some(directory);
-        self
-    }
     // END CUSTOM
 
     /// Build the module with configured dependencies
@@ -405,46 +368,42 @@ impl EngagementModuleBuilder {
         let engagement_medium_service = Arc::new(EngagementMediumService::with_repository(engagement_medium_repository.clone()));
 
         // <<< CUSTOM
-        let engagement_write_service = std::sync::Arc::new(
-            application::service::engagement_write_service::EngagementWriteService::new(
-                db_pool.clone(),
-            ),
-        );
-        let rating_write_service = {
-            let secret = self.rating_secret.unwrap_or_else(|| {
-                std::env::var(
-                    application::service::rating_write_service::RATING_TOKEN_SECRET_ENV,
-                )
-                .unwrap_or_default()
-                .into_bytes()
-            });
-            let mut registry =
-                application::service::rating_write_service::RatedTypeRegistry::new();
-            for (model, parent) in &self.rated_types {
-                registry.register(model, parent.as_deref());
-            }
-            std::sync::Arc::new(
-                application::service::rating_write_service::RatingWriteService::with_config(
-                    db_pool.clone(),
-                    &secret,
-                    registry,
-                ),
-            )
-        };
-        let gamification_write_service = {
-            let mut service =
-                application::service::gamification_write_service::GamificationWriteService::new(
-                    db_pool.clone(),
-                );
-            for (key, compute) in &self.metrics {
-                service.register_metric(key, compute.clone());
-            }
-            if let Some(directory) = &self.user_directory {
-                service.set_user_directory(directory.clone());
-            }
-            std::sync::Arc::new(service)
-        };
         // END CUSTOM
+
+        // The extension builds its own state from what the generated build made.
+        let ext = self.ext.build(&ModuleParts {
+            db_pool: &db_pool,
+            gamification_badge_service: &gamification_badge_service,
+            gamification_badge_repository: &gamification_badge_repository,
+            gamification_badge_user_service: &gamification_badge_user_service,
+            gamification_badge_user_repository: &gamification_badge_user_repository,
+            gamification_karma_tracking_service: &gamification_karma_tracking_service,
+            gamification_karma_tracking_repository: &gamification_karma_tracking_repository,
+            gamification_karma_rank_service: &gamification_karma_rank_service,
+            gamification_karma_rank_repository: &gamification_karma_rank_repository,
+            gamification_challenge_service: &gamification_challenge_service,
+            gamification_challenge_repository: &gamification_challenge_repository,
+            gamification_challenge_membership_service: &gamification_challenge_membership_service,
+            gamification_challenge_membership_repository: &gamification_challenge_membership_repository,
+            gamification_challenge_line_service: &gamification_challenge_line_service,
+            gamification_challenge_line_repository: &gamification_challenge_line_repository,
+            gamification_goal_definition_service: &gamification_goal_definition_service,
+            gamification_goal_definition_repository: &gamification_goal_definition_repository,
+            gamification_goal_service: &gamification_goal_service,
+            gamification_goal_repository: &gamification_goal_repository,
+            engagement_link_tracker_service: &engagement_link_tracker_service,
+            engagement_link_tracker_repository: &engagement_link_tracker_repository,
+            engagement_link_tracker_click_service: &engagement_link_tracker_click_service,
+            engagement_link_tracker_click_repository: &engagement_link_tracker_click_repository,
+            engagement_rating_service: &engagement_rating_service,
+            engagement_rating_repository: &engagement_rating_repository,
+            engagement_campaign_service: &engagement_campaign_service,
+            engagement_campaign_repository: &engagement_campaign_repository,
+            engagement_source_service: &engagement_source_service,
+            engagement_source_repository: &engagement_source_repository,
+            engagement_medium_service: &engagement_medium_service,
+            engagement_medium_repository: &engagement_medium_repository,
+        })?;
 
         Ok(EngagementModule {
             gamification_badge_service,
@@ -462,10 +421,8 @@ impl EngagementModuleBuilder {
             engagement_campaign_service,
             engagement_source_service,
             engagement_medium_service,
+            ext,
             // <<< CUSTOM
-            engagement_write_service,
-            rating_write_service,
-            gamification_write_service,
             // END CUSTOM
         })
     }

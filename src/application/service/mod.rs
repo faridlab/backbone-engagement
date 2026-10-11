@@ -24,10 +24,6 @@ pub mod engagement_source_service;
 pub mod engagement_medium_service;
 
 // <<< CUSTOM
-// Hand-authored validated write paths (user-owned; see metaphor.codegen.yaml).
-pub mod engagement_write_service;
-pub mod rating_write_service;
-pub mod gamification_write_service;
 // END CUSTOM
 
 pub use gamification_badge_service::GamificationBadgeService;
@@ -46,15 +42,7 @@ pub use engagement_campaign_service::EngagementCampaignService;
 pub use engagement_source_service::EngagementSourceService;
 pub use engagement_medium_service::EngagementMediumService;
 // <<< CUSTOM
-pub use engagement_write_service::{
-    AttributionInput, AttributionRefs, EngagementError, EngagementWriteService, TrackerView,
-};
-pub use rating_write_service::{
-    RatedType, RatedTypeRegistry, RatingError, RatingStats, RatingTokenView, RatingWriteService,
-};
-pub use gamification_write_service::{
-    CertificationGrantView, CertificationPassedFact, DailyCheckReport, GamificationError,
-    GamificationMetricRegistry, GamificationWriteService, KarmaAppendView, LeaderboardEntry,
-    MetricFn, RankInfo, UserDirectory,
-};
 // END CUSTOM
+
+// This directory's extension (hand-written; ADR-0031).
+include!("mod.ext.rs");

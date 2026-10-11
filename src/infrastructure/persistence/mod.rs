@@ -22,10 +22,6 @@ mod engagement_medium_repository;
 
 // Custom persistence modules
 // <<< CUSTOM
-// Hand-written SQL (services orchestrate, repositories hold SQL).
-pub mod engagement_repository;
-pub mod rating_repository;
-pub mod gamification_repository;
 // END CUSTOM
 
 // Re-exports
@@ -54,7 +50,7 @@ pub use backbone_orm::repository::{
 
 // Re-export custom persistence types
 // <<< CUSTOM
-pub use engagement_repository::EngagementRepository;
-pub use rating_repository::RatingRepository;
-pub use gamification_repository::GamificationRepository;
 // END CUSTOM
+
+// This directory's extension (hand-written; ADR-0031).
+include!("mod.ext.rs");

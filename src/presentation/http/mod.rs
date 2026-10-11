@@ -22,12 +22,6 @@ pub mod engagement_source_handler;
 pub mod engagement_medium_handler;
 
 // <<< CUSTOM
-// Hand-written route groups (user-owned; survive regen): the guarded
-// management composition, the public /r/<code> redirect, and the public +
-// guarded rating groups.
-pub mod guarded_routes;
-pub mod redirect_routes;
-pub mod rating_routes;
 // END CUSTOM
 
 // Re-exports
@@ -48,3 +42,6 @@ pub use engagement_source_handler::{create_engagement_source_routes, create_enga
 pub use engagement_medium_handler::{create_engagement_medium_routes, create_engagement_medium_read_routes, create_engagement_medium_write_routes};
 // <<< CUSTOM
 // END CUSTOM
+
+// This directory's extension (hand-written; ADR-0031).
+include!("mod.ext.rs");
