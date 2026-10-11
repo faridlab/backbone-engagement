@@ -216,8 +216,13 @@ pub async fn start_transition(
     };
     {
         let allowed_roles = GoalStateTransition::Start.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:start");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_goal:transition:start");
+        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -274,8 +279,13 @@ pub async fn evaluate_met_transition(
     };
     {
         let allowed_roles = GoalStateTransition::EvaluateMet.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:evaluate_met");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_goal:transition:evaluate_met");
+        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -332,8 +342,13 @@ pub async fn manual_reach_transition(
     };
     {
         let allowed_roles = GoalStateTransition::ManualReach.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:manual_reach");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_goal:transition:manual_reach");
+        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -390,8 +405,13 @@ pub async fn window_close_transition(
     };
     {
         let allowed_roles = GoalStateTransition::WindowClose.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:window_close");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_goal:transition:window_close");
+        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -448,8 +468,13 @@ pub async fn cancel_transition(
     };
     {
         let allowed_roles = GoalStateTransition::Cancel.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:cancel");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_goal:transition:cancel");
+        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {

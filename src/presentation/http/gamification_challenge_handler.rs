@@ -215,8 +215,13 @@ pub async fn start_transition(
     };
     {
         let allowed_roles = ChallengeStateTransition::Start.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:start");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_challenge:transition:start");
+        let has_update_perm = granted("gamification_challenge:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -273,8 +278,13 @@ pub async fn close_transition(
     };
     {
         let allowed_roles = ChallengeStateTransition::Close.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:close");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_challenge:transition:close");
+        let has_update_perm = granted("gamification_challenge:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -331,8 +341,13 @@ pub async fn reset_transition(
     };
     {
         let allowed_roles = ChallengeStateTransition::Reset.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:transition:reset");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_challenge:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("gamification_challenge:transition:reset");
+        let has_update_perm = granted("gamification_challenge:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
