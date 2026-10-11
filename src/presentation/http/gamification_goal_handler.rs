@@ -17,7 +17,6 @@ use rust_decimal::Decimal;
 use backbone_core::http::{ApiResponse, BackboneCrudHandler};
 
 // Auth integration (optional)
-#[cfg(feature = "auth")]
 use backbone_auth::middleware::AuthContext;
 #[cfg(feature = "auth")]
 use backbone_auth::AuthMiddleware;
@@ -200,7 +199,7 @@ pub fn create_protected_gamification_goal_routes<A: AuthMiddleware + Send + Sync
 pub async fn start_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -211,8 +210,10 @@ pub async fn start_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationGoalResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = GoalStateTransition::Start.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:start");
@@ -256,7 +257,7 @@ pub async fn start_transition(
 pub async fn evaluate_met_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -267,8 +268,10 @@ pub async fn evaluate_met_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationGoalResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = GoalStateTransition::EvaluateMet.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:evaluate_met");
@@ -312,7 +315,7 @@ pub async fn evaluate_met_transition(
 pub async fn manual_reach_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -323,8 +326,10 @@ pub async fn manual_reach_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationGoalResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = GoalStateTransition::ManualReach.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:manual_reach");
@@ -368,7 +373,7 @@ pub async fn manual_reach_transition(
 pub async fn window_close_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -379,8 +384,10 @@ pub async fn window_close_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationGoalResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = GoalStateTransition::WindowClose.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:window_close");
@@ -424,7 +431,7 @@ pub async fn window_close_transition(
 pub async fn cancel_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -435,8 +442,10 @@ pub async fn cancel_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationGoalResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = GoalStateTransition::Cancel.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:cancel");
