@@ -217,14 +217,20 @@ pub async fn start_transition(
         let allowed_roles = GoalStateTransition::Start.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:start");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for start transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for start transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "start", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:start");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: GoalStateState = entity.state.to_string().parse()
-        .unwrap_or(GoalStateState::default());
+    let current_state: GoalStateState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<GamificationGoalResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::Start) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
@@ -232,9 +238,9 @@ pub async fn start_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Inprogress".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("inprogress".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("start", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: GamificationGoalResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -267,14 +273,20 @@ pub async fn evaluate_met_transition(
         let allowed_roles = GoalStateTransition::EvaluateMet.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:evaluate_met");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for evaluate_met transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for evaluate_met transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "evaluate_met", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:evaluate_met");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: GoalStateState = entity.state.to_string().parse()
-        .unwrap_or(GoalStateState::default());
+    let current_state: GoalStateState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<GamificationGoalResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::EvaluateMet) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
@@ -282,9 +294,9 @@ pub async fn evaluate_met_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Reached".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("reached".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("evaluate_met", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: GamificationGoalResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -317,14 +329,20 @@ pub async fn manual_reach_transition(
         let allowed_roles = GoalStateTransition::ManualReach.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:manual_reach");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for manual_reach transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for manual_reach transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "manual_reach", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:manual_reach");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: GoalStateState = entity.state.to_string().parse()
-        .unwrap_or(GoalStateState::default());
+    let current_state: GoalStateState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<GamificationGoalResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::ManualReach) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
@@ -332,9 +350,9 @@ pub async fn manual_reach_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Reached".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("reached".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("manual_reach", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: GamificationGoalResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -367,14 +385,20 @@ pub async fn window_close_transition(
         let allowed_roles = GoalStateTransition::WindowClose.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:window_close");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for window_close transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for window_close transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "window_close", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:window_close");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: GoalStateState = entity.state.to_string().parse()
-        .unwrap_or(GoalStateState::default());
+    let current_state: GoalStateState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<GamificationGoalResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::WindowClose) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
@@ -382,9 +406,9 @@ pub async fn window_close_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Failed".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("failed".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("window_close", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: GamificationGoalResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -417,14 +441,20 @@ pub async fn cancel_transition(
         let allowed_roles = GoalStateTransition::Cancel.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "gamification_goal:transition:cancel");
         let has_update_perm = auth.permissions.iter().any(|p| p == "gamification_goal:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for cancel transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for cancel transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "cancel", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:cancel");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: GoalStateState = entity.state.to_string().parse()
-        .unwrap_or(GoalStateState::default());
+    let current_state: GoalStateState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<GamificationGoalResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::Cancel) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
@@ -432,9 +462,9 @@ pub async fn cancel_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Canceled".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("canceled".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("cancel", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: GamificationGoalResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))

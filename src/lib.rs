@@ -313,7 +313,7 @@ impl EngagementModuleBuilder {
 
         // GamificationChallenge service
         let gamification_challenge_repository = Arc::new(GamificationChallengeRepository::new(db_pool.clone()));
-        let gamification_challenge_service = Arc::new(GamificationChallengeService::with_repository(gamification_challenge_repository.clone()));
+        let gamification_challenge_service = Arc::new(GamificationChallengeService::with_repository(gamification_challenge_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationChallengeRowRules)));
 
         // GamificationChallengeMembership service
         let gamification_challenge_membership_repository = Arc::new(GamificationChallengeMembershipRepository::new(db_pool.clone()));
@@ -329,7 +329,7 @@ impl EngagementModuleBuilder {
 
         // GamificationGoal service
         let gamification_goal_repository = Arc::new(GamificationGoalRepository::new(db_pool.clone()));
-        let gamification_goal_service = Arc::new(GamificationGoalService::with_repository(gamification_goal_repository.clone()));
+        let gamification_goal_service = Arc::new(GamificationGoalService::with_repository(gamification_goal_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationGoalRowRules)));
 
         // EngagementLinkTracker service
         let engagement_link_tracker_repository = Arc::new(EngagementLinkTrackerRepository::new(db_pool.clone()));

@@ -39,6 +39,8 @@ pub use engagement_rating_service::EngagementRatingService;
 pub use engagement_campaign_service::EngagementCampaignService;
 pub use engagement_source_service::EngagementSourceService;
 pub use engagement_medium_service::EngagementMediumService;
+pub use gamification_challenge_service::GamificationChallengeRowRules;
+pub use gamification_goal_service::GamificationGoalRowRules;
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");
