@@ -35,106 +35,132 @@ rules:
 
   - id: R-R1
     name: rating_value_bounds
+    entity: EngagementRating
     when: submit
     assert: "rating_value BETWEEN 1 AND 10 (EN-03/10 — the recorded 1..10 deviation; out-of-range is a typed 422, never a raw 500)"
     error_code: rating_out_of_range
+    enforced_by: "src/application/service/rating_write_service.rs::submit_rating, migrations/20260426220019_gamification_immutability_hardening.up.sql::engagement_ratings_rating_value_range"
     enforcement: both
     # The DB CHECK backstop is installed by the hand-written hardening migration
     # (the generic non-negative attribute cannot express a 1..10 band).
   - id: R-R2
     name: single_use_submit
+    entity: EngagementRating
     when: submit
     assert: "submit executes as ONE conditional UPDATE (SET consumed = true ... WHERE consumed = false AND token_nonce = $ AND token_expires_at > now()); zero rows → typed 409 with a shared refusal shape (already-consumed / unknown / expired are indistinguishable — no oracle)"
     error_code: rating_not_submittable
+    enforced_by: "src/infrastructure/persistence/rating_repository.rs::conditional_submit, src/application/service/rating_write_service.rs::submit_rating"
     enforcement: service
-    justification: "The guarantee is that ONE statement decides it: the conditional UPDATE is the lock, and a zero-row result is the refusal. Splitting that into a database guard would mean reading the row first and then writing it, which is the race this shape exists to remove. The shared refusal shape is also deliberate, and a constraint violation would leak which of the three cases occurred."
+    justification: "The conditional UPDATE re-checks nonce, consumption, expiry and deletion, so a concurrent submit loses cleanly; reset_rating re-arms a consumed row on purpose."
     # service-only justification: the atomic conditional update IS the mechanism —
     # no row-level CHECK can express "exactly once per token".
   - id: R-R3
     name: idempotent_issuance
+    entity: EngagementRating
     when: issue
     assert: "one live unconsumed row per (rated_model, rated_record_id, rater_user_id) — the partial UNIQUE index backs the find-or-create (the upstream _rating_get_access_token reuse semantics, DB-backed)"
     error_code: duplicate_live_rating
     enforcement: db
+    justification: "PARTLY: the live-rater unique holds, but issue_rating re-reads after a unique violation on the transaction Postgres already aborted, so the concurrent loser answers 500; and the reused live row is returned even when its link has expired."
 
   # ---- gamification: exactly-once, append-only, ladder, freeze --------------
 
   - id: R-G1
     name: badge_grant_exactly_once
+    entity: GamificationBadgeUser
     when: grant_system
     assert: "a (grant_key) partial UNIQUE among live rows makes keyed grants exactly-once under at-least-once delivery (EN-86's search_count replaced; the survey certification DoD leg — an occurrence delivered twice grants once)"
     error_code: badge_already_granted
+    enforced_by: "migrations/20260426220011_create_gamification_badge_user_table.up.sql::idx_gamification_badge_users_grant_key, src/infrastructure/persistence/gamification_repository.rs::insert_grant, src/application/service/gamification_write_service.rs::grant_system"
     enforcement: db
+    justification: "Exactly once per grant key; the certification grant still resolves its badge by name alone, and badge names are no longer unique across surveys, so it can grant another survey's badge of the same name."
   - id: R-G2
     name: karma_min_positive
+    entity: GamificationKarmaRank
     when: create, update rank
     assert: "karma_min > 0 (EN-69)"
     error_code: karma_min_not_positive
+    enforced_by: "migrations/20260426220019_gamification_immutability_hardening.up.sql::gamification_karma_ranks_karma_min_positive"
     enforcement: db
+    justification: "Database only; no service check, and the code is never produced."
     # The strict CHECK (karma_min > 0) is installed by the hand-written hardening
     # migration; @non_negative only expresses >= 0 (would admit 0).
   - id: R-G3
     name: karma_ledger_append_only
+    entity: GamificationKarmaTracking
     when: update, delete ledger row
     assert: "a BEFORE UPDATE OR DELETE trigger on gamification_karma_trackings raises — UPDATE and DELETE never succeed, soft-delete writes included (EN-62's rewrite ban, enforced at the DB)"
     error_code: karma_ledger_immutable
+    enforced_by: "migrations/20260426220019_gamification_immutability_hardening.up.sql::gamification_karma_trackings_immutable, migrations/20260426220019_gamification_immutability_hardening.up.sql::gamification_karma_ledger_immutable"
     enforcement: db
+    justification: "A row trigger refuses UPDATE and DELETE; TRUNCATE is not covered."
   - id: R-G4
     name: badge_peer_grant_ladder
+    entity: GamificationBadgeUser
     when: grant_peer
     assert: "rule_auth governs: everyone | users (rule_auth_user_ids) | having (rule_auth_badge_ids) | nobody — NO admin bypass exists (the upstream is_admin short-circuit does not port — D-11); system grants are a different keyed verb, not a bypassed ladder"
     error_code: badge_not_grantable
     enforcement: service
-    justification: "Authorisation over a ladder of grantors, read from the badge rule and the sender's own badges. A database has no idea who is asking, and the point of the rule is that no path bypasses the ladder, which is a statement about the verbs rather than about the rows they leave."
+    justification: "PARTLY: grant_peer refuses nobody and enforces the allowlist, but a having badge with an empty prerequisite list is grantable by everyone."
     # service-only justification: procedural policy over typed json columns and
     # cross-row badge-holding checks — not expressible as a row-level CHECK.
   - id: R-G5
     name: badge_monthly_peer_cap
+    entity: GamificationBadgeUser
     when: grant_peer
     assert: "when rule_max: the sender's grants this month < rule_max_number — counted by ONE grouped query over gamification_badge_users (the upstream per-badge owner-loop N+1 is a recorded fix — D-23)"
     error_code: badge_cap_reached
     enforcement: service
-    justification: "A per-sender, per-month aggregate over grants already made. A CHECK sees the new row alone, and a trigger counting the month on every grant would re-scan the same window for every sender. The verb counts once, in one grouped query, which is also the recorded fix for the loop it replaced."
+    justification: "PARTLY: the monthly count is an unlocked read before the insert, so concurrent grants by one sender pass the cap together; it counts per badge and sender, not per sender."
   - id: R-G6
     name: badge_self_grant_refusal
+    entity: GamificationBadgeUser
     when: grant_peer
     assert: "a sender never grants to themselves — IN THE TYPED VERB (upstream guarded only the wizard — EN-67; every path here refuses)"
     error_code: badge_self_grant
+    enforced_by: "src/application/service/gamification_write_service.rs::grant_peer"
     enforcement: service
     justification: "Sender and recipient are both request facts, and the rule is that EVERY path refuses the pair, not only the one screen that used to. That is a property of the verb surface; a constraint comparing two columns could express the pair but not the guarantee that no other path exists."
   - id: R-G7
     name: started_goal_config_freeze
+    entity: GamificationGoal
     when: update goal
     assert: "definition_id and user_id are immutable once state != draft (the kanban drag-and-drop guard, EN-R37)"
     error_code: goal_config_frozen
     enforcement: service
-    justification: "Immutability conditional on state: the two fields freeze once the goal leaves draft. The database can hold that with a trigger comparing old and new, and the module keeps the rule here because the refusal belongs to the verb the operator is using, which knows what they were trying to drag and can say so."
+    justification: "NOT ENFORCED: nothing refuses a change to a started goal's definition or user; it holds only because the module's own updates never set those columns, while the generic goal update accepts both."
     # service-only justification: cross-row procedural guard (the goal's own row
     # cannot express "immutable-conditionally-on-prior-state" as a CHECK).
   - id: R-G8
     name: challenge_reset_refused_with_live_goals
+    entity: GamificationChallenge
     when: reset challenge
     assert: "done → draft is refused while any live goal of the challenge is inprogress (EN-80's refusal, kept)"
     error_code: challenge_has_live_goals
     enforcement: service
-    justification: "Cross-table: the reset is refused because goals of the challenge are in progress, which no CHECK on the challenge row can see. The verb reads them at the moment of the reset and refuses with the reason, rather than failing on a foreign row."
+    justification: "PARTLY: reset_challenge refuses while goals are in progress, but reads the challenge without a lock and checks goals unlocked, so a concurrent goal evaluation can move a goal in progress after the check."
     # service-only justification: cross-table guard (goals of the challenge).
   - id: R-G9
     name: ledger_single_writer
+    entity: GamificationKarmaTracking
     when: write ledger
     assert: "ledger rows are written ONLY by the typed append_karma verb (INSERT); no update path exists at any layer — the R-G3 trigger is the backstop"
     error_code: null
+    enforced_by: "src/application/service/gamification_write_service.rs::append_karma, src/infrastructure/persistence/gamification_repository.rs::insert_ledger_row"
     enforcement: both
+    justification: "The only insert into the ledger is insert_ledger_row and the immutability trigger blocks rewrites; nothing at the database stops another insert path. The balance picks the latest row by tracking_date, which defaults to the transaction start, so two appends that take the lock out of start order can drop one delta."
   - id: R-G10
     name: metric_key_registered
+    entity: GamificationGoalDefinition
     when: create, update goal definition
     assert: "metric_key must exist in the GamificationMetricRegistry when computation_mode = registered_metric (typed 422 on unknown key — the write-time validation that replaces every eval surface, EN-83)"
     error_code: metric_key_unknown
+    enforced_by: "src/application/service/gamification_write_service.rs::create_goal_definition"
     enforcement: service
-    justification: "The registry is a code-side catalogue, not a table, so there is nothing for a foreign key to reference. Validating at write time is what turns an unknown key into a typed 422 instead of a silent metric that never computes."
+    justification: "Create only; a blank or long name is refused with this code too. The composing service seeds definitions by SQL, outside the verb."
     # service-only justification: the registry is code (a builder-registered
     # name → compute-fn map); membership cannot be a DB constraint.
 
-triggers: []
+# triggers: [] — not read by the generator in a list-format hook file
 # (none — Odoo's gamification triggers were UI onchange handlers; the onchange
 #  report-frequency trigger class does not port, D-20. Reports ride events.)
