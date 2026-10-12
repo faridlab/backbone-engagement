@@ -1,0 +1,20 @@
+# The rule ratchet (schema doctor): these counts may only go down. Regenerate with
+# `metaphor schema rules . --update-baseline` after enforcing a rule.
+unenforced: 13
+warnings: 14
+machines_without_verbs: 0
+untested_rule_ids: 13
+unenforced_rules:
+- 'engagement.hook.yaml: badge_grant_exactly_once'
+- 'engagement.hook.yaml: badge_monthly_peer_cap'
+- 'engagement.hook.yaml: badge_peer_grant_ladder'
+- 'engagement.hook.yaml: badge_self_grant_refusal'
+- 'engagement.hook.yaml: challenge_reset_refused_with_live_goals'
+- 'engagement.hook.yaml: idempotent_issuance'
+- 'engagement.hook.yaml: karma_ledger_append_only'
+- 'engagement.hook.yaml: karma_min_positive'
+- 'engagement.hook.yaml: ledger_single_writer'
+- 'engagement.hook.yaml: metric_key_registered'
+- 'engagement.hook.yaml: rating_value_bounds'
+- 'engagement.hook.yaml: single_use_submit'
+- 'engagement.hook.yaml: started_goal_config_freeze'
