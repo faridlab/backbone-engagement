@@ -32,3 +32,61 @@ pub type EngagementRatingService = GenericCrudService<
     EngagementRatingRepository,
 >;
 
+/// The rules the schema declares for EngagementRating, checked against the row a create or update
+/// would store. The generated build attaches it to [`EngagementRatingService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct EngagementRatingRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<EngagementRating> for EngagementRatingRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, EngagementRating>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `rated_model_required` (@required on EngagementRating.rated_model)
+        if (create || (update && r::changed(old.as_ref(), row, &["rated_model"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "rated_model")), r::not(r::is_empty(r::trim(r::field(row, "rated_model")))))) {
+            refuse.push(Violation::new("rated_model", "required", "rated_model is required"));
+        }
+        // `rated_model_max_length` (@max(120) on EngagementRating.rated_model)
+        if (create || (update && r::changed(old.as_ref(), row, &["rated_model"]))) && !r::holds(&r::le(r::length(r::field(row, "rated_model")), r::Val::Num(120.0_f64))) {
+            shadow.push(Violation::new("rated_model", "max_length", "rated_model must be at most 120 characters").with_param("max", 120_i64));
+        }
+        // `rated_record_id_required` (@required on EngagementRating.rated_record_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["rated_record_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "rated_record_id")), r::not(r::is_empty(r::trim(r::field(row, "rated_record_id")))))) {
+            refuse.push(Violation::new("rated_record_id", "required", "rated_record_id is required"));
+        }
+        // `parent_rated_model_max_length` (@max(120) on EngagementRating.parent_rated_model)
+        if (create || (update && r::changed(old.as_ref(), row, &["parent_rated_model"]))) && !r::holds(&r::le(r::length(r::field(row, "parent_rated_model")), r::Val::Num(120.0_f64))) {
+            shadow.push(Violation::new("parent_rated_model", "max_length", "parent_rated_model must be at most 120 characters").with_param("max", 120_i64));
+        }
+        // `rater_email_max_length` (@max(320) on EngagementRating.rater_email)
+        if (create || (update && r::changed(old.as_ref(), row, &["rater_email"]))) && !r::holds(&r::le(r::length(r::field(row, "rater_email")), r::Val::Num(320.0_f64))) {
+            shadow.push(Violation::new("rater_email", "max_length", "rater_email must be at most 320 characters").with_param("max", 320_i64));
+        }
+        // `token_nonce_required` (@required on EngagementRating.token_nonce)
+        if (create || (update && r::changed(old.as_ref(), row, &["token_nonce"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "token_nonce")), r::not(r::is_empty(r::trim(r::field(row, "token_nonce")))))) {
+            refuse.push(Violation::new("token_nonce", "required", "token_nonce is required"));
+        }
+        // `token_nonce_max_length` (@max(64) on EngagementRating.token_nonce)
+        if (create || (update && r::changed(old.as_ref(), row, &["token_nonce"]))) && !r::holds(&r::le(r::length(r::field(row, "token_nonce")), r::Val::Num(64.0_f64))) {
+            shadow.push(Violation::new("token_nonce", "max_length", "token_nonce must be at most 64 characters").with_param("max", 64_i64));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

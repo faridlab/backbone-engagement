@@ -32,3 +32,49 @@ pub type GamificationGoalDefinitionService = GenericCrudService<
     GamificationGoalDefinitionRepository,
 >;
 
+/// The rules the schema declares for GamificationGoalDefinition, checked against the row a create or update
+/// would store. The generated build attaches it to [`GamificationGoalDefinitionService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct GamificationGoalDefinitionRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<GamificationGoalDefinition> for GamificationGoalDefinitionRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, GamificationGoalDefinition>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `name_required` (@required on GamificationGoalDefinition.name)
+        if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "name")), r::not(r::is_empty(r::trim(r::field(row, "name")))))) {
+            refuse.push(Violation::new("name", "required", "name is required"));
+        }
+        // `name_max_length` (@max(200) on GamificationGoalDefinition.name)
+        if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::le(r::length(r::field(row, "name")), r::Val::Num(200.0_f64))) {
+            shadow.push(Violation::new("name", "max_length", "name must be at most 200 characters").with_param("max", 200_i64));
+        }
+        // `suffix_max_length` (@max(40) on GamificationGoalDefinition.suffix)
+        if (create || (update && r::changed(old.as_ref(), row, &["suffix"]))) && !r::holds(&r::le(r::length(r::field(row, "suffix")), r::Val::Num(40.0_f64))) {
+            shadow.push(Violation::new("suffix", "max_length", "suffix must be at most 40 characters").with_param("max", 40_i64));
+        }
+        // `metric_key_max_length` (@max(120) on GamificationGoalDefinition.metric_key)
+        if (create || (update && r::changed(old.as_ref(), row, &["metric_key"]))) && !r::holds(&r::le(r::length(r::field(row, "metric_key")), r::Val::Num(120.0_f64))) {
+            shadow.push(Violation::new("metric_key", "max_length", "metric_key must be at most 120 characters").with_param("max", 120_i64));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

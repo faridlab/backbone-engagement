@@ -32,9 +32,10 @@ pub type GamificationGoalService = GenericCrudService<
     GamificationGoalRepository,
 >;
 
-/// The row rules the schema declares for GamificationGoal, checked against the row a create or
-/// update would store. The generated build attaches it to [`GamificationGoalService`]. Every rule
-/// runs in shadow: a break is logged under `backbone::write_guard` and the write goes ahead.
+/// The rules the schema declares for GamificationGoal, checked against the row a create or update
+/// would store. The generated build attaches it to [`GamificationGoalService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
 pub struct GamificationGoalRowRules;
 
 #[async_trait::async_trait]
@@ -56,11 +57,20 @@ impl backbone_core::write_guard::WriteGuard<GamificationGoal> for GamificationGo
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
         let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
         // `state` belongs to a state machine: only its verbs move it
         if update && ctx.transition.is_none() && r::changed(old.as_ref(), row, &["state"]) {
             shadow.push(Violation::new("state", "state_field_verbs_only", "the state field moves only through its verbs"));
         }
-        GuardOutcome { refuse: Vec::new(), shadow }
+        // `definition_id_required` (@required on GamificationGoal.definition_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["definition_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "definition_id")), r::not(r::is_empty(r::trim(r::field(row, "definition_id")))))) {
+            refuse.push(Violation::new("definition_id", "required", "definition_id is required"));
+        }
+        // `user_id_required` (@required on GamificationGoal.user_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["user_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "user_id")), r::not(r::is_empty(r::trim(r::field(row, "user_id")))))) {
+            refuse.push(Violation::new("user_id", "required", "user_id is required"));
+        }
+        GuardOutcome { refuse, shadow }
     }
 }
 

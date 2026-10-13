@@ -39,8 +39,21 @@ pub use engagement_rating_service::EngagementRatingService;
 pub use engagement_campaign_service::EngagementCampaignService;
 pub use engagement_source_service::EngagementSourceService;
 pub use engagement_medium_service::EngagementMediumService;
+pub use gamification_badge_service::GamificationBadgeRowRules;
+pub use gamification_badge_user_service::GamificationBadgeUserRowRules;
+pub use gamification_karma_tracking_service::GamificationKarmaTrackingRowRules;
+pub use gamification_karma_rank_service::GamificationKarmaRankRowRules;
 pub use gamification_challenge_service::GamificationChallengeRowRules;
+pub use gamification_challenge_membership_service::GamificationChallengeMembershipRowRules;
+pub use gamification_challenge_line_service::GamificationChallengeLineRowRules;
+pub use gamification_goal_definition_service::GamificationGoalDefinitionRowRules;
 pub use gamification_goal_service::GamificationGoalRowRules;
+pub use engagement_link_tracker_service::EngagementLinkTrackerRowRules;
+pub use engagement_link_tracker_click_service::EngagementLinkTrackerClickRowRules;
+pub use engagement_rating_service::EngagementRatingRowRules;
+pub use engagement_campaign_service::EngagementCampaignRowRules;
+pub use engagement_source_service::EngagementSourceRowRules;
+pub use engagement_medium_service::EngagementMediumRowRules;
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

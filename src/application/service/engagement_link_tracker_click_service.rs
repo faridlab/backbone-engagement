@@ -32,3 +32,53 @@ pub type EngagementLinkTrackerClickService = GenericCrudService<
     EngagementLinkTrackerClickRepository,
 >;
 
+/// The rules the schema declares for EngagementLinkTrackerClick, checked against the row a create or update
+/// would store. The generated build attaches it to [`EngagementLinkTrackerClickService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct EngagementLinkTrackerClickRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<EngagementLinkTrackerClick> for EngagementLinkTrackerClickRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, EngagementLinkTrackerClick>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `link_id_required` (@required on EngagementLinkTrackerClick.link_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["link_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "link_id")), r::not(r::is_empty(r::trim(r::field(row, "link_id")))))) {
+            refuse.push(Violation::new("link_id", "required", "link_id is required"));
+        }
+        // `ip_max_length` (@max(64) on EngagementLinkTrackerClick.ip)
+        if (create || (update && r::changed(old.as_ref(), row, &["ip"]))) && !r::holds(&r::le(r::length(r::field(row, "ip")), r::Val::Num(64.0_f64))) {
+            shadow.push(Violation::new("ip", "max_length", "ip must be at most 64 characters").with_param("max", 64_i64));
+        }
+        // `country_code_max_length` (@max(2) on EngagementLinkTrackerClick.country_code)
+        if (create || (update && r::changed(old.as_ref(), row, &["country_code"]))) && !r::holds(&r::le(r::length(r::field(row, "country_code")), r::Val::Num(2.0_f64))) {
+            shadow.push(Violation::new("country_code", "max_length", "country_code must be at most 2 characters").with_param("max", 2_i64));
+        }
+        // `dedup_key_required` (@required on EngagementLinkTrackerClick.dedup_key)
+        if (create || (update && r::changed(old.as_ref(), row, &["dedup_key"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "dedup_key")), r::not(r::is_empty(r::trim(r::field(row, "dedup_key")))))) {
+            refuse.push(Violation::new("dedup_key", "required", "dedup_key is required"));
+        }
+        // `dedup_key_max_length` (@max(200) on EngagementLinkTrackerClick.dedup_key)
+        if (create || (update && r::changed(old.as_ref(), row, &["dedup_key"]))) && !r::holds(&r::le(r::length(r::field(row, "dedup_key")), r::Val::Num(200.0_f64))) {
+            shadow.push(Violation::new("dedup_key", "max_length", "dedup_key must be at most 200 characters").with_param("max", 200_i64));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

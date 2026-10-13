@@ -61,9 +61,6 @@ pub use application::service::EngagementCampaignService;
 pub use application::service::EngagementSourceService;
 pub use application::service::EngagementMediumService;
 
-// Re-exports - Validation
-pub use application::validator::{ValidationError, ValidationResult};
-
 use std::sync::Arc;
 use axum::Router;
 use sqlx::PgPool;
@@ -297,19 +294,19 @@ impl EngagementModuleBuilder {
 
         // GamificationBadge service
         let gamification_badge_repository = Arc::new(GamificationBadgeRepository::new(db_pool.clone()));
-        let gamification_badge_service = Arc::new(GamificationBadgeService::with_repository(gamification_badge_repository.clone()));
+        let gamification_badge_service = Arc::new(GamificationBadgeService::with_repository(gamification_badge_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationBadgeRowRules)));
 
         // GamificationBadgeUser service
         let gamification_badge_user_repository = Arc::new(GamificationBadgeUserRepository::new(db_pool.clone()));
-        let gamification_badge_user_service = Arc::new(GamificationBadgeUserService::with_repository(gamification_badge_user_repository.clone()));
+        let gamification_badge_user_service = Arc::new(GamificationBadgeUserService::with_repository(gamification_badge_user_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationBadgeUserRowRules)));
 
         // GamificationKarmaTracking service
         let gamification_karma_tracking_repository = Arc::new(GamificationKarmaTrackingRepository::new(db_pool.clone()));
-        let gamification_karma_tracking_service = Arc::new(GamificationKarmaTrackingService::with_repository(gamification_karma_tracking_repository.clone()));
+        let gamification_karma_tracking_service = Arc::new(GamificationKarmaTrackingService::with_repository(gamification_karma_tracking_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationKarmaTrackingRowRules)));
 
         // GamificationKarmaRank service
         let gamification_karma_rank_repository = Arc::new(GamificationKarmaRankRepository::new(db_pool.clone()));
-        let gamification_karma_rank_service = Arc::new(GamificationKarmaRankService::with_repository(gamification_karma_rank_repository.clone()));
+        let gamification_karma_rank_service = Arc::new(GamificationKarmaRankService::with_repository(gamification_karma_rank_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationKarmaRankRowRules)));
 
         // GamificationChallenge service
         let gamification_challenge_repository = Arc::new(GamificationChallengeRepository::new(db_pool.clone()));
@@ -317,15 +314,15 @@ impl EngagementModuleBuilder {
 
         // GamificationChallengeMembership service
         let gamification_challenge_membership_repository = Arc::new(GamificationChallengeMembershipRepository::new(db_pool.clone()));
-        let gamification_challenge_membership_service = Arc::new(GamificationChallengeMembershipService::with_repository(gamification_challenge_membership_repository.clone()));
+        let gamification_challenge_membership_service = Arc::new(GamificationChallengeMembershipService::with_repository(gamification_challenge_membership_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationChallengeMembershipRowRules)));
 
         // GamificationChallengeLine service
         let gamification_challenge_line_repository = Arc::new(GamificationChallengeLineRepository::new(db_pool.clone()));
-        let gamification_challenge_line_service = Arc::new(GamificationChallengeLineService::with_repository(gamification_challenge_line_repository.clone()));
+        let gamification_challenge_line_service = Arc::new(GamificationChallengeLineService::with_repository(gamification_challenge_line_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationChallengeLineRowRules)));
 
         // GamificationGoalDefinition service
         let gamification_goal_definition_repository = Arc::new(GamificationGoalDefinitionRepository::new(db_pool.clone()));
-        let gamification_goal_definition_service = Arc::new(GamificationGoalDefinitionService::with_repository(gamification_goal_definition_repository.clone()));
+        let gamification_goal_definition_service = Arc::new(GamificationGoalDefinitionService::with_repository(gamification_goal_definition_repository.clone()).with_guard(Arc::new(crate::application::service::GamificationGoalDefinitionRowRules)));
 
         // GamificationGoal service
         let gamification_goal_repository = Arc::new(GamificationGoalRepository::new(db_pool.clone()));
@@ -333,27 +330,27 @@ impl EngagementModuleBuilder {
 
         // EngagementLinkTracker service
         let engagement_link_tracker_repository = Arc::new(EngagementLinkTrackerRepository::new(db_pool.clone()));
-        let engagement_link_tracker_service = Arc::new(EngagementLinkTrackerService::with_repository(engagement_link_tracker_repository.clone()));
+        let engagement_link_tracker_service = Arc::new(EngagementLinkTrackerService::with_repository(engagement_link_tracker_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementLinkTrackerRowRules)));
 
         // EngagementLinkTrackerClick service
         let engagement_link_tracker_click_repository = Arc::new(EngagementLinkTrackerClickRepository::new(db_pool.clone()));
-        let engagement_link_tracker_click_service = Arc::new(EngagementLinkTrackerClickService::with_repository(engagement_link_tracker_click_repository.clone()));
+        let engagement_link_tracker_click_service = Arc::new(EngagementLinkTrackerClickService::with_repository(engagement_link_tracker_click_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementLinkTrackerClickRowRules)));
 
         // EngagementRating service
         let engagement_rating_repository = Arc::new(EngagementRatingRepository::new(db_pool.clone()));
-        let engagement_rating_service = Arc::new(EngagementRatingService::with_repository(engagement_rating_repository.clone()));
+        let engagement_rating_service = Arc::new(EngagementRatingService::with_repository(engagement_rating_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementRatingRowRules)));
 
         // EngagementCampaign service
         let engagement_campaign_repository = Arc::new(EngagementCampaignRepository::new(db_pool.clone()));
-        let engagement_campaign_service = Arc::new(EngagementCampaignService::with_repository(engagement_campaign_repository.clone()));
+        let engagement_campaign_service = Arc::new(EngagementCampaignService::with_repository(engagement_campaign_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementCampaignRowRules)));
 
         // EngagementSource service
         let engagement_source_repository = Arc::new(EngagementSourceRepository::new(db_pool.clone()));
-        let engagement_source_service = Arc::new(EngagementSourceService::with_repository(engagement_source_repository.clone()));
+        let engagement_source_service = Arc::new(EngagementSourceService::with_repository(engagement_source_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementSourceRowRules)));
 
         // EngagementMedium service
         let engagement_medium_repository = Arc::new(EngagementMediumRepository::new(db_pool.clone()));
-        let engagement_medium_service = Arc::new(EngagementMediumService::with_repository(engagement_medium_repository.clone()));
+        let engagement_medium_service = Arc::new(EngagementMediumService::with_repository(engagement_medium_repository.clone()).with_guard(Arc::new(crate::application::service::EngagementMediumRowRules)));
 
 
         // The extension builds its own state from what the generated build made.
