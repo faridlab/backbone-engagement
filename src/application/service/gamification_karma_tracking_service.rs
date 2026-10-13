@@ -56,7 +56,7 @@ impl backbone_core::write_guard::WriteGuard<GamificationKarmaTracking> for Gamif
         };
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
-        let mut shadow = Vec::new();
+        let shadow = Vec::new();
         let mut refuse = Vec::new();
         // `user_id_required` (@required on GamificationKarmaTracking.user_id)
         if (create || (update && r::changed(old.as_ref(), row, &["user_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "user_id")), r::not(r::is_empty(r::trim(r::field(row, "user_id")))))) {
@@ -72,11 +72,11 @@ impl backbone_core::write_guard::WriteGuard<GamificationKarmaTracking> for Gamif
         }
         // `origin_kind_max_length` (@max(40) on GamificationKarmaTracking.origin_kind)
         if (create || (update && r::changed(old.as_ref(), row, &["origin_kind"]))) && !r::holds(&r::le(r::length(r::field(row, "origin_kind")), r::Val::Num(40.0_f64))) {
-            shadow.push(Violation::new("origin_kind", "max_length", "origin_kind must be at most 40 characters").with_param("max", 40_i64));
+            refuse.push(Violation::new("origin_kind", "max_length", "origin_kind must be at most 40 characters").with_param("max", 40_i64));
         }
         // `origin_label_max_length` (@max(200) on GamificationKarmaTracking.origin_label)
         if (create || (update && r::changed(old.as_ref(), row, &["origin_label"]))) && !r::holds(&r::le(r::length(r::field(row, "origin_label")), r::Val::Num(200.0_f64))) {
-            shadow.push(Violation::new("origin_label", "max_length", "origin_label must be at most 200 characters").with_param("max", 200_i64));
+            refuse.push(Violation::new("origin_label", "max_length", "origin_label must be at most 200 characters").with_param("max", 200_i64));
         }
         GuardOutcome { refuse, shadow }
     }

@@ -68,7 +68,7 @@ impl backbone_core::write_guard::WriteGuard<GamificationChallenge> for Gamificat
         }
         // `name_max_length` (@max(200) on GamificationChallenge.name)
         if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::le(r::length(r::field(row, "name")), r::Val::Num(200.0_f64))) {
-            shadow.push(Violation::new("name", "max_length", "name must be at most 200 characters").with_param("max", 200_i64));
+            refuse.push(Violation::new("name", "max_length", "name must be at most 200 characters").with_param("max", 200_i64));
         }
         GuardOutcome { refuse, shadow }
     }

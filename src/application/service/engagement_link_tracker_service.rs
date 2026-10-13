@@ -56,7 +56,7 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTracker> for Engagemen
         };
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
-        let mut shadow = Vec::new();
+        let shadow = Vec::new();
         let mut refuse = Vec::new();
         // `url_required` (@required on EngagementLinkTracker.url)
         if (create || (update && r::changed(old.as_ref(), row, &["url"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "url")), r::not(r::is_empty(r::trim(r::field(row, "url")))))) {
@@ -64,7 +64,7 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTracker> for Engagemen
         }
         // `url_max_length` (@max(2000) on EngagementLinkTracker.url)
         if (create || (update && r::changed(old.as_ref(), row, &["url"]))) && !r::holds(&r::le(r::length(r::field(row, "url")), r::Val::Num(2000.0_f64))) {
-            shadow.push(Violation::new("url", "max_length", "url must be at most 2000 characters").with_param("max", 2000_i64));
+            refuse.push(Violation::new("url", "max_length", "url must be at most 2000 characters").with_param("max", 2000_i64));
         }
         // `code_required` (@required on EngagementLinkTracker.code)
         if (create || (update && r::changed(old.as_ref(), row, &["code"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "code")), r::not(r::is_empty(r::trim(r::field(row, "code")))))) {
@@ -72,15 +72,15 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTracker> for Engagemen
         }
         // `code_max_length` (@max(16) on EngagementLinkTracker.code)
         if (create || (update && r::changed(old.as_ref(), row, &["code"]))) && !r::holds(&r::le(r::length(r::field(row, "code")), r::Val::Num(16.0_f64))) {
-            shadow.push(Violation::new("code", "max_length", "code must be at most 16 characters").with_param("max", 16_i64));
+            refuse.push(Violation::new("code", "max_length", "code must be at most 16 characters").with_param("max", 16_i64));
         }
         // `title_max_length` (@max(300) on EngagementLinkTracker.title)
         if (create || (update && r::changed(old.as_ref(), row, &["title"]))) && !r::holds(&r::le(r::length(r::field(row, "title")), r::Val::Num(300.0_f64))) {
-            shadow.push(Violation::new("title", "max_length", "title must be at most 300 characters").with_param("max", 300_i64));
+            refuse.push(Violation::new("title", "max_length", "title must be at most 300 characters").with_param("max", 300_i64));
         }
         // `label_max_length` (@max(40) on EngagementLinkTracker.label)
         if (create || (update && r::changed(old.as_ref(), row, &["label"]))) && !r::holds(&r::le(r::length(r::field(row, "label")), r::Val::Num(40.0_f64))) {
-            shadow.push(Violation::new("label", "max_length", "label must be at most 40 characters").with_param("max", 40_i64));
+            refuse.push(Violation::new("label", "max_length", "label must be at most 40 characters").with_param("max", 40_i64));
         }
         GuardOutcome { refuse, shadow }
     }

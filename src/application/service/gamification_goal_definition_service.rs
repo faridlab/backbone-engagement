@@ -56,7 +56,7 @@ impl backbone_core::write_guard::WriteGuard<GamificationGoalDefinition> for Gami
         };
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
-        let mut shadow = Vec::new();
+        let shadow = Vec::new();
         let mut refuse = Vec::new();
         // `name_required` (@required on GamificationGoalDefinition.name)
         if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "name")), r::not(r::is_empty(r::trim(r::field(row, "name")))))) {
@@ -64,15 +64,15 @@ impl backbone_core::write_guard::WriteGuard<GamificationGoalDefinition> for Gami
         }
         // `name_max_length` (@max(200) on GamificationGoalDefinition.name)
         if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::le(r::length(r::field(row, "name")), r::Val::Num(200.0_f64))) {
-            shadow.push(Violation::new("name", "max_length", "name must be at most 200 characters").with_param("max", 200_i64));
+            refuse.push(Violation::new("name", "max_length", "name must be at most 200 characters").with_param("max", 200_i64));
         }
         // `suffix_max_length` (@max(40) on GamificationGoalDefinition.suffix)
         if (create || (update && r::changed(old.as_ref(), row, &["suffix"]))) && !r::holds(&r::le(r::length(r::field(row, "suffix")), r::Val::Num(40.0_f64))) {
-            shadow.push(Violation::new("suffix", "max_length", "suffix must be at most 40 characters").with_param("max", 40_i64));
+            refuse.push(Violation::new("suffix", "max_length", "suffix must be at most 40 characters").with_param("max", 40_i64));
         }
         // `metric_key_max_length` (@max(120) on GamificationGoalDefinition.metric_key)
         if (create || (update && r::changed(old.as_ref(), row, &["metric_key"]))) && !r::holds(&r::le(r::length(r::field(row, "metric_key")), r::Val::Num(120.0_f64))) {
-            shadow.push(Violation::new("metric_key", "max_length", "metric_key must be at most 120 characters").with_param("max", 120_i64));
+            refuse.push(Violation::new("metric_key", "max_length", "metric_key must be at most 120 characters").with_param("max", 120_i64));
         }
         GuardOutcome { refuse, shadow }
     }

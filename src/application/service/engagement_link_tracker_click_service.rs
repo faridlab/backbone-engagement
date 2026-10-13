@@ -56,7 +56,7 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTrackerClick> for Enga
         };
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
-        let mut shadow = Vec::new();
+        let shadow = Vec::new();
         let mut refuse = Vec::new();
         // `link_id_required` (@required on EngagementLinkTrackerClick.link_id)
         if (create || (update && r::changed(old.as_ref(), row, &["link_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "link_id")), r::not(r::is_empty(r::trim(r::field(row, "link_id")))))) {
@@ -64,11 +64,11 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTrackerClick> for Enga
         }
         // `ip_max_length` (@max(64) on EngagementLinkTrackerClick.ip)
         if (create || (update && r::changed(old.as_ref(), row, &["ip"]))) && !r::holds(&r::le(r::length(r::field(row, "ip")), r::Val::Num(64.0_f64))) {
-            shadow.push(Violation::new("ip", "max_length", "ip must be at most 64 characters").with_param("max", 64_i64));
+            refuse.push(Violation::new("ip", "max_length", "ip must be at most 64 characters").with_param("max", 64_i64));
         }
         // `country_code_max_length` (@max(2) on EngagementLinkTrackerClick.country_code)
         if (create || (update && r::changed(old.as_ref(), row, &["country_code"]))) && !r::holds(&r::le(r::length(r::field(row, "country_code")), r::Val::Num(2.0_f64))) {
-            shadow.push(Violation::new("country_code", "max_length", "country_code must be at most 2 characters").with_param("max", 2_i64));
+            refuse.push(Violation::new("country_code", "max_length", "country_code must be at most 2 characters").with_param("max", 2_i64));
         }
         // `dedup_key_required` (@required on EngagementLinkTrackerClick.dedup_key)
         if (create || (update && r::changed(old.as_ref(), row, &["dedup_key"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "dedup_key")), r::not(r::is_empty(r::trim(r::field(row, "dedup_key")))))) {
@@ -76,7 +76,7 @@ impl backbone_core::write_guard::WriteGuard<EngagementLinkTrackerClick> for Enga
         }
         // `dedup_key_max_length` (@max(200) on EngagementLinkTrackerClick.dedup_key)
         if (create || (update && r::changed(old.as_ref(), row, &["dedup_key"]))) && !r::holds(&r::le(r::length(r::field(row, "dedup_key")), r::Val::Num(200.0_f64))) {
-            shadow.push(Violation::new("dedup_key", "max_length", "dedup_key must be at most 200 characters").with_param("max", 200_i64));
+            refuse.push(Violation::new("dedup_key", "max_length", "dedup_key must be at most 200 characters").with_param("max", 200_i64));
         }
         GuardOutcome { refuse, shadow }
     }
