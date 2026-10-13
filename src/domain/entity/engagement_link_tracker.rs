@@ -249,6 +249,9 @@ impl backbone_orm::EntityRepoMeta for EngagementLinkTracker {
     fn search_fields() -> &'static [&'static str] {
         &["url", "code", "label"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("campaign", "engagement_campaigns", "campaignId"), ("medium", "engagement_media", "mediumId"), ("source", "engagement_sources", "sourceId")]
+    }
 }
 
 /// Builder for EngagementLinkTracker entity

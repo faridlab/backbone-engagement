@@ -203,6 +203,9 @@ impl backbone_orm::EntityRepoMeta for GamificationChallengeMembership {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("challenge", "gamification_challenges", "challengeId")]
+    }
 }
 
 /// Builder for GamificationChallengeMembership entity

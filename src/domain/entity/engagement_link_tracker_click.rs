@@ -238,6 +238,9 @@ impl backbone_orm::EntityRepoMeta for EngagementLinkTrackerClick {
     fn search_fields() -> &'static [&'static str] {
         &["dedup_key"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("link", "engagement_link_trackers", "linkId"), ("campaign", "engagement_campaigns", "campaignId")]
+    }
 }
 
 /// Builder for EngagementLinkTrackerClick entity
