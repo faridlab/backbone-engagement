@@ -55,5 +55,125 @@ pub use engagement_campaign_service::EngagementCampaignRowRules;
 pub use engagement_source_service::EngagementSourceRowRules;
 pub use engagement_medium_service::EngagementMediumRowRules;
 
+/// A `GamificationBadgeService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_badge_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationBadgeRepository>,
+) -> GamificationBadgeService {
+    GamificationBadgeService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationBadgeRowRules))
+}
+
+/// A `GamificationBadgeUserService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_badge_user_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationBadgeUserRepository>,
+) -> GamificationBadgeUserService {
+    GamificationBadgeUserService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationBadgeUserRowRules))
+}
+
+/// A `GamificationKarmaTrackingService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_karma_tracking_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationKarmaTrackingRepository>,
+) -> GamificationKarmaTrackingService {
+    GamificationKarmaTrackingService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationKarmaTrackingRowRules))
+}
+
+/// A `GamificationKarmaRankService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_karma_rank_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationKarmaRankRepository>,
+) -> GamificationKarmaRankService {
+    GamificationKarmaRankService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationKarmaRankRowRules))
+}
+
+/// A `GamificationChallengeService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_challenge_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationChallengeRepository>,
+) -> GamificationChallengeService {
+    GamificationChallengeService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationChallengeRowRules))
+}
+
+/// A `GamificationChallengeMembershipService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_challenge_membership_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationChallengeMembershipRepository>,
+) -> GamificationChallengeMembershipService {
+    GamificationChallengeMembershipService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationChallengeMembershipRowRules))
+}
+
+/// A `GamificationChallengeLineService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_challenge_line_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationChallengeLineRepository>,
+) -> GamificationChallengeLineService {
+    GamificationChallengeLineService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationChallengeLineRowRules))
+}
+
+/// A `GamificationGoalDefinitionService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_goal_definition_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationGoalDefinitionRepository>,
+) -> GamificationGoalDefinitionService {
+    GamificationGoalDefinitionService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationGoalDefinitionRowRules))
+}
+
+/// A `GamificationGoalService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_gamification_goal_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::GamificationGoalRepository>,
+) -> GamificationGoalService {
+    GamificationGoalService::with_repository(repository).with_guard(std::sync::Arc::new(GamificationGoalRowRules))
+}
+
+/// A `EngagementLinkTrackerService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_link_tracker_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementLinkTrackerRepository>,
+) -> EngagementLinkTrackerService {
+    EngagementLinkTrackerService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementLinkTrackerRowRules))
+}
+
+/// A `EngagementLinkTrackerClickService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_link_tracker_click_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementLinkTrackerClickRepository>,
+) -> EngagementLinkTrackerClickService {
+    EngagementLinkTrackerClickService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementLinkTrackerClickRowRules))
+}
+
+/// A `EngagementRatingService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_rating_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementRatingRepository>,
+) -> EngagementRatingService {
+    EngagementRatingService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementRatingRowRules))
+}
+
+/// A `EngagementCampaignService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_campaign_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementCampaignRepository>,
+) -> EngagementCampaignService {
+    EngagementCampaignService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementCampaignRowRules))
+}
+
+/// A `EngagementSourceService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_source_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementSourceRepository>,
+) -> EngagementSourceService {
+    EngagementSourceService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementSourceRowRules))
+}
+
+/// A `EngagementMediumService` over `repository` with its write guard attached: the way to build it, so its writes are
+/// served only with the rules the schema declares.
+pub fn build_engagement_medium_service(
+    repository: std::sync::Arc<crate::infrastructure::persistence::EngagementMediumRepository>,
+) -> EngagementMediumService {
+    EngagementMediumService::with_repository(repository).with_guard(std::sync::Arc::new(EngagementMediumRowRules))
+}
+
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

@@ -79,39 +79,6 @@ events:
       - { name: recipient_user_id, type: uuid, description: "The certified user who earns the badge" }
       - { name: badge_key, type: string, description: "The badge's stable key/name — resolved to a GamificationBadge by the handler" }
 
-  BadgeGranted:
-    description: "OUTBOUND: a badge grant row was minted (peer, challenge, or event kind). The notification fact the host relays to the recipient (upstream's badge-received email, delivered as an event — D-17)."
-    aggregate: GamificationBadgeUser
-    version: 1
-    storage:
-      store: true
-      retention: "365_days"
-      index_fields: [grant_row_id, badge_id, recipient_user_id]
-    fields:
-      - { name: grant_row_id, type: uuid, description: "The GamificationBadgeUser row id" }
-      - { name: badge_id, type: uuid, description: "The granted badge" }
-      - { name: badge_name, type: string, description: "Badge name snapshot (relay payloads are self-contained)" }
-      - { name: recipient_user_id, type: uuid, description: "Who earned it" }
-      - { name: grant_kind, type: string, description: "peer | challenge | event" }
-      - { name: grant_key, type: "string?", description: "The idempotency key (NULL on peer grants)" }
-      - { name: challenge_id, type: "uuid?", description: "The granting challenge, when kind=challenge" }
-
-  KarmaLedgerAppended:
-    description: "OUTBOUND: a karma ledger row was appended (the balance moved). The currency-mint observable — pairs with the karma_ledger_write critical audit event."
-    aggregate: GamificationKarmaTracking
-    version: 1
-    storage:
-      store: true
-      retention: "90_days"
-      index_fields: [tracking_row_id, user_id]
-    fields:
-      - { name: tracking_row_id, type: uuid, description: "The appended GamificationKarmaTracking row id" }
-      - { name: user_id, type: uuid, description: "Whose balance moved" }
-      - { name: delta, type: integer, description: "new_value - old_value (derived at emission)" }
-      - { name: new_value, type: integer, description: "The new balance (the projection's value)" }
-      - { name: origin_kind, type: string, description: "manual | badge | challenge | certification | host" }
-      - { name: reason, type: string, description: "Why the balance moved" }
-
   RankChanged:
     description: "OUTBOUND: a user's rank changed (the balance crossed a karma_min threshold — EN-65's declarative rank-change notification). Upstream emailed the new-rank template in-module; here it is a host-relayed fact (D-17)."
     aggregate: GamificationKarmaRank

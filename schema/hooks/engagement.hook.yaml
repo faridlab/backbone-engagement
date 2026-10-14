@@ -124,13 +124,13 @@ rules:
   - id: R-G7
     name: started_goal_config_freeze
     entity: GamificationGoal
-    when: update goal
-    assert: "definition_id and user_id are immutable once state != draft (the kanban drag-and-drop guard, EN-R37)"
+    # definition_id and user_id are immutable once the goal has left draft
+    # (the kanban drag-and-drop guard, EN-R37).
+    when: [update]
+    assert: "$old.state == 'draft' || (definition_id == $old.definition_id && user_id == $old.user_id)"
     error_code: goal_config_frozen
     enforcement: service
-    justification: "NOT ENFORCED: nothing refuses a change to a started goal's definition or user; it holds only because the module's own updates never set those columns, while the generic goal update accepts both."
-    # service-only justification: cross-row procedural guard (the goal's own row
-    # cannot express "immutable-conditionally-on-prior-state" as a CHECK).
+    justification: "Compiled into the generated write guard, which compares the update against the stored row: every update of a goal that has left draft, the generic goal update included, refuses a changed definition or user with goal_config_frozen. A database CHECK cannot see the prior row, so raw SQL is not refused."
   - id: R-G8
     name: challenge_reset_refused_with_live_goals
     entity: GamificationChallenge
