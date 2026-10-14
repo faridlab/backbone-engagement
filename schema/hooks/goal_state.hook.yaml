@@ -44,6 +44,7 @@ states:
       to: failed
       message: "Derived — the goal's window passed with the condition unmet (failed is terminal; no closed flag)"
     cancel:
-      from: [inprogress, reached]
+      # the leaver sweep also cancels a goal never started (still draft)
+      from: [draft, inprogress, reached]
       to: canceled
       message: "The leaver sweep cancels goals — never unlinks them (rule R-G8's sibling guarantee)"

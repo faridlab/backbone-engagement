@@ -222,13 +222,9 @@ pub async fn start_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("gamification_goal:transition:start");
-        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for start transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "start", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:start");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("start needs gamification_goal:transition:start")));
         }
     }
 
@@ -285,13 +281,9 @@ pub async fn evaluate_met_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("gamification_goal:transition:evaluate_met");
-        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for evaluate_met transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "evaluate_met", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:evaluate_met");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("evaluate_met needs gamification_goal:transition:evaluate_met")));
         }
     }
 
@@ -348,13 +340,9 @@ pub async fn manual_reach_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("gamification_goal:transition:manual_reach");
-        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for manual_reach transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "manual_reach", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:manual_reach");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("manual_reach needs gamification_goal:transition:manual_reach")));
         }
     }
 
@@ -411,13 +399,9 @@ pub async fn window_close_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("gamification_goal:transition:window_close");
-        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for window_close transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "window_close", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:window_close");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("window_close needs gamification_goal:transition:window_close")));
         }
     }
 
@@ -474,13 +458,9 @@ pub async fn cancel_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("gamification_goal:transition:cancel");
-        let has_update_perm = granted("gamification_goal:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("Insufficient permissions for cancel transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "GamificationGoal", verb = "cancel", code = "transition_by_update_permission", "a transition granted only by gamification_goal:update, running in shadow; it needs gamification_goal:transition:cancel");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("cancel needs gamification_goal:transition:cancel")));
         }
     }
 

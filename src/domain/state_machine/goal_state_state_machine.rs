@@ -87,7 +87,7 @@ pub enum GoalStateTransition {
     ManualReach,
     /// inprogress -> failed
     WindowClose,
-    /// inprogress, reached -> canceled
+    /// draft, inprogress, reached -> canceled
     Cancel,
 }
 
@@ -190,6 +190,7 @@ impl GoalStateStateMachine {
             (GoalStateState::Inprogress, GoalStateTransition::EvaluateMet) => true,
             (GoalStateState::Inprogress, GoalStateTransition::ManualReach) => true,
             (GoalStateState::Inprogress, GoalStateTransition::WindowClose) => true,
+            (GoalStateState::Draft, GoalStateTransition::Cancel) => true,
             (GoalStateState::Inprogress, GoalStateTransition::Cancel) => true,
             (GoalStateState::Reached, GoalStateTransition::Cancel) => true,
             _ => false,
