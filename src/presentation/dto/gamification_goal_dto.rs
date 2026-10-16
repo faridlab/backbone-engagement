@@ -47,7 +47,6 @@ pub struct CreateGamificationGoalDto {
     pub end_date: Option<NaiveDate>,
     pub target: Decimal,
     pub current: Decimal,
-    pub state: GoalState,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(alias = "to_update")]
     pub to_update: bool,
@@ -280,7 +279,7 @@ impl From<CreateGamificationGoalDto> for GamificationGoal {
             end_date: dto.end_date,
             target: dto.target,
             current: dto.current,
-            state: dto.state,
+            state: GoalState::Draft,
             to_update: dto.to_update,
             last_update: dto.last_update,
             metadata: AuditMetadata::default(),

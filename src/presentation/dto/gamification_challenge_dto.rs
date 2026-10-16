@@ -34,7 +34,6 @@ use crate::domain::entity::ReportFrequency;
 pub struct CreateGamificationChallengeDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
-    pub state: ChallengeState,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "manager_user_id")]
     pub manager_user_id: Option<Uuid>,
     pub period: ChallengePeriod,
@@ -347,7 +346,7 @@ impl From<CreateGamificationChallengeDto> for GamificationChallenge {
         Self {
             id: Uuid::new_v4(),
             name: dto.name,
-            state: dto.state,
+            state: ChallengeState::Draft,
             manager_user_id: dto.manager_user_id,
             period: dto.period,
             start_date: dto.start_date,
