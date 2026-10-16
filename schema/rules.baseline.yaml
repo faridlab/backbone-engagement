@@ -1,12 +1,11 @@
 # The rule ratchet (schema doctor): these counts may only go down. Regenerate with
 # `metaphor schema rules . --update-baseline` after enforcing a rule.
-unenforced: 5
+unenforced: 3
 warnings: 0
 machines_without_verbs: 0
 untested_rule_ids: 13
 unenforced_rules:
-- 'engagement.hook.yaml: badge_monthly_peer_cap'
 - 'engagement.hook.yaml: badge_peer_grant_ladder'
 - 'engagement.hook.yaml: challenge_reset_refused_with_live_goals'
 - 'engagement.hook.yaml: idempotent_issuance'
-- 'engagement.hook.yaml: started_goal_config_freeze'
+bypassable_rules: []

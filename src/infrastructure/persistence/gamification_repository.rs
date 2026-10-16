@@ -259,6 +259,21 @@ impl GamificationRepository {
         .await
     }
 
+    /// Serialize one sender's peer grants of one badge for the caller's transaction: the monthly
+    /// cap counts and inserts under this lock, so concurrent grants by the sender cannot pass the
+    /// cap together. Released at commit or rollback.
+    pub async fn lock_peer_grants(
+        conn: &mut PgConnection,
+        badge_id: Uuid,
+        sender_user_id: Uuid,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+            .bind(format!("badge_peer_grant:{badge_id}:{sender_user_id}"))
+            .execute(conn)
+            .await?;
+        Ok(())
+    }
+
     /// The sender's peer grants of ONE badge this calendar month (the cap
     /// arm — the single grouped query that replaces the upstream per-badge
     /// owner loop).

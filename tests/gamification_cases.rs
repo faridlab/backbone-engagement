@@ -1164,3 +1164,28 @@ async fn report_cadence_fires_on_due_clock(pool: PgPool) {
     let report = svc.daily_challenge_check(today()).await.expect("same-day replay");
     assert_eq!(report.reports_due.len(), 0);
 }
+
+#[sqlx::test(migrations = "./migrations")]
+async fn concurrent_peer_grants_by_one_sender_stay_within_the_monthly_cap(pool: PgPool) {
+    let svc = std::sync::Arc::new(bare_service(&pool));
+    let sender = Uuid::new_v4();
+    let capped = insert_badge(&pool, "kudos", true, None, "everyone", "[]", "[]", true, Some(1)).await;
+    let start = std::sync::Arc::new(tokio::sync::Barrier::new(30));
+    let grants: Vec<_> = (0..30)
+        .map(|_| {
+            let (svc, start) = (svc.clone(), start.clone());
+            tokio::spawn(async move {
+                start.wait().await;
+                svc.grant_peer(capped, sender, Uuid::new_v4(), None).await
+            })
+        })
+        .collect();
+    let mut granted = 0;
+    for g in grants {
+        match g.await.unwrap() {
+            Ok(_) => granted += 1,
+            Err(e) => assert!(matches!(e, GamificationError::BadgeCapReached), "only the cap refuses: {e:?}"),
+        }
+    }
+    assert_eq!(granted, 1, "a cap of one admits one grant, however many race for it");
+}

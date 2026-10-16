@@ -61,7 +61,7 @@ rules:
     assert: "one live unconsumed row per (rated_model, rated_record_id, rater_user_id) — the partial UNIQUE index backs the find-or-create (the upstream _rating_get_access_token reuse semantics, DB-backed)"
     error_code: duplicate_live_rating
     enforcement: db
-    justification: "PARTLY: the live-rater unique holds, but issue_rating re-reads after a unique violation on the transaction Postgres already aborted, so the concurrent loser answers 500; and the reused live row is returned even when its link has expired."
+    justification: "PARTLY: the live-rater unique holds, and issue_rating inserts under a savepoint, so the loser of a concurrent issuance converges on the winner's row instead of answering 500 (tests/rating_cases.rs concurrent_issuance_for_one_rater_converges_on_one_row); still open: the reused live row is returned even when its link has expired."
 
   # ---- gamification: exactly-once, append-only, ladder, freeze --------------
 
@@ -108,10 +108,11 @@ rules:
     name: badge_monthly_peer_cap
     entity: GamificationBadgeUser
     when: grant_peer
-    assert: "when rule_max: the sender's grants this month < rule_max_number — counted by ONE grouped query over gamification_badge_users (the upstream per-badge owner-loop N+1 is a recorded fix — D-23)"
+    assert: "when rule_max: the sender's grants of this badge this month < rule_max_number — counted by ONE grouped query over gamification_badge_users (the upstream per-badge owner-loop N+1 is a recorded fix — D-23)"
     error_code: badge_cap_reached
     enforcement: service
-    justification: "PARTLY: the monthly count is an unlocked read before the insert, so concurrent grants by one sender pass the cap together; it counts per badge and sender, not per sender."
+    enforced_by: "src/infrastructure/persistence/gamification_repository.rs::lock_peer_grants"
+    justification: "grant_peer takes a transaction-scoped advisory lock on the badge and sender before it counts this month's grants, and inserts under it, so concurrent grants by one sender are counted one after another and cannot pass the cap together (tests/gamification_cases.rs concurrent_peer_grants_by_one_sender_stay_within_the_monthly_cap). The cap is per badge and sender, as upstream counts it."
   - id: R-G6
     name: badge_self_grant_refusal
     entity: GamificationBadgeUser

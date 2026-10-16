@@ -432,8 +432,11 @@ impl RatingWriteService {
         let expires_at = Utc::now() + Duration::days(ttl);
         let id = Uuid::new_v4();
 
+        // The insert runs under a savepoint: a unique violation aborts only the savepoint, so the
+        // loser of a concurrent issuance can still read the winner's row on this transaction.
+        let mut attempt = sqlx::Connection::begin(&mut *tx).await?;
         let row = RatingRepository::insert_rating(
-            &mut tx,
+            &mut attempt,
             id,
             rated_model,
             rated_record_id,
@@ -448,12 +451,16 @@ impl RatingWriteService {
         )
         .await;
 
-        let row = match row {
-            Ok(row) => row,
+        let (row, created) = match row {
+            Ok(row) => {
+                attempt.commit().await?;
+                (row, true)
+            }
             // A concurrent issuance for the same identified rater won the
             // partial-unique race — converge on the winner (the index's
             // error code is the unique-violation 23505 family).
             Err(sqlx::Error::Database(db)) if db.is_unique_violation() => {
+                attempt.rollback().await?;
                 let rater = rater_user_id.expect("unique violation implies identified rater");
                 let existing = RatingRepository::find_live_unconsumed(
                     &mut tx,
@@ -465,7 +472,7 @@ impl RatingWriteService {
                 .ok_or_else(|| {
                     RatingError::Internal("unique violation with no live row to converge on".into())
                 })?;
-                existing
+                (existing, false)
             }
             Err(e) => return Err(e.into()),
         };
@@ -473,7 +480,7 @@ impl RatingWriteService {
         let exp = row.token_expires_at.timestamp();
         let link = self.build_link(row.id, &row.token_nonce, rated_model, rated_record_id, exp)?;
         tx.commit().await?;
-        Ok(RatingTokenView { id: row.id, link, expires_at: row.token_expires_at, created: true })
+        Ok(RatingTokenView { id: row.id, link, expires_at: row.token_expires_at, created })
     }
 
     // ── submit (public, single-use) ─────────────────────────────────────────

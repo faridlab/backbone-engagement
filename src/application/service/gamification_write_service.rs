@@ -704,6 +704,8 @@ impl GamificationWriteService {
         if badge.rule_max {
             match badge.rule_max_number {
                 Some(cap) => {
+                    // Counted and inserted under the sender's lock for this badge.
+                    GamificationRepository::lock_peer_grants(&mut tx, badge_id, sender_user_id).await?;
                     let spent = GamificationRepository::peer_grants_this_month(
                         &mut tx,
                         badge_id,

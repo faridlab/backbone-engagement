@@ -474,3 +474,26 @@ async fn the_reply_route_records_the_principal_and_refuses_a_request_with_none(p
             .unwrap();
     assert_eq!(uid, Some(author), "the author is the principal, not the body's publisher_user_id");
 }
+
+#[sqlx::test(migrations = "./migrations")]
+async fn concurrent_issuance_for_one_rater_converges_on_one_row(pool: PgPool) {
+    let svc = std::sync::Arc::new(service(&pool));
+    let (record, rater) = (Uuid::new_v4(), Uuid::new_v4());
+    let start = std::sync::Arc::new(tokio::sync::Barrier::new(30));
+    let calls: Vec<_> = (0..30)
+        .map(|_| {
+            let (svc, start) = (svc.clone(), start.clone());
+            tokio::spawn(async move {
+                start.wait().await;
+                svc.issue_rating("helpdesk.ticket", record, Some(rater), None, None, None, None).await
+            })
+        })
+        .collect();
+    let mut views = Vec::new();
+    for c in calls {
+        views.push(c.await.unwrap().expect("every concurrent issuance answers, none errors"));
+    }
+    let first = views[0].id;
+    assert!(views.iter().all(|v| v.id == first), "every caller converges on one rating");
+    assert_eq!(views.iter().filter(|v| v.created).count(), 1, "exactly one call created it");
+}

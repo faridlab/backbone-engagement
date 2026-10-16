@@ -71,7 +71,7 @@ impl backbone_core::write_guard::WriteGuard<GamificationGoal> for GamificationGo
         if (create || (update && r::changed(old.as_ref(), row, &["user_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "user_id")), r::not(r::is_empty(r::trim(r::field(row, "user_id")))))) {
             refuse.push(Violation::new("user_id", "required", "user_id is required"));
         }
-        // `started_goal_config_freeze` (engagement.hook.yaml:124)
+        // `started_goal_config_freeze` (engagement.hook.yaml:125)
         if (update) && !r::holds(&r::or(r::eq(r::field(old_row, "state"), r::text("draft")), r::and(r::eq(r::field(row, "definition_id"), r::field(old_row, "definition_id")), r::eq(r::field(row, "user_id"), r::field(old_row, "user_id"))))) {
             refuse.push(Violation::new("state", "goal_config_frozen", "breaks the rule `started_goal_config_freeze`: $old.state == 'draft' || (definition_id == $old.definition_id && user_id == $old.user_id)"));
         }
