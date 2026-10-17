@@ -206,7 +206,7 @@ pub async fn start_transition(
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     };
 
     // Check permission
@@ -247,7 +247,7 @@ pub async fn start_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     }
 }
 
@@ -265,7 +265,7 @@ pub async fn close_transition(
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     };
 
     // Check permission
@@ -306,7 +306,7 @@ pub async fn close_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     }
 }
 
@@ -324,7 +324,7 @@ pub async fn reset_transition(
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     };
 
     // Check permission
@@ -365,7 +365,7 @@ pub async fn reset_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<GamificationChallengeResponseDto>::not_found("GamificationChallenge", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<GamificationChallengeResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<GamificationChallengeResponseDto>(&e),
     }
 }
 
