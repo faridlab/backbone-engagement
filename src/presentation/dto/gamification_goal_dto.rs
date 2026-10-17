@@ -46,9 +46,10 @@ pub struct CreateGamificationGoalDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "end_date")]
     pub end_date: Option<NaiveDate>,
     pub target: Decimal,
+    #[serde(default)]
     pub current: Decimal,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "to_update")]
+    #[serde(default, alias = "to_update")]
     pub to_update: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_update")]
     pub last_update: Option<NaiveDate>,
@@ -109,15 +110,15 @@ pub struct PatchGamificationGoalDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "user_id")]
     pub user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "line_id")]
-    pub line_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "challenge_id")]
-    pub challenge_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "line_id")]
+    pub line_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "challenge_id")]
+    pub challenge_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "start_date")]
     pub start_date: Option<NaiveDate>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "end_date")]
-    pub end_date: Option<NaiveDate>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "end_date")]
+    pub end_date: Option<Option<NaiveDate>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -127,8 +128,8 @@ pub struct PatchGamificationGoalDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "to_update")]
     pub to_update: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_update")]
-    pub last_update: Option<NaiveDate>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_update")]
+    pub last_update: Option<Option<NaiveDate>>,
 }
 
 impl PatchGamificationGoalDto {
@@ -329,12 +330,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationGoalDto> for GamificationGo
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationGoal here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

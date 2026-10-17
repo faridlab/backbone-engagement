@@ -89,12 +89,12 @@ pub struct PatchEngagementLinkTrackerClickDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "link_id")]
     pub link_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "campaign_id")]
-    pub campaign_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ip: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "country_code")]
-    pub country_code: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "campaign_id")]
+    pub campaign_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub ip: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "country_code")]
+    pub country_code: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "click_day")]
     pub click_day: Option<NaiveDate>,
@@ -275,12 +275,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementLinkTrackerClickDto> for Enga
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementLinkTrackerClick here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

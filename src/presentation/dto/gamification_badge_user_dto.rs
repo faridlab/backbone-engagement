@@ -38,7 +38,7 @@ pub struct CreateGamificationBadgeUserDto {
     pub recipient_user_id: Uuid,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "sender_user_id")]
     pub sender_user_id: Option<Uuid>,
-    #[serde(alias = "grant_kind")]
+    #[serde(default = "default_create_gamification_badge_user_grant_kind", alias = "grant_kind")]
     pub grant_kind: BadgeGrantKind,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "challenge_id")]
     pub challenge_id: Option<Uuid>,
@@ -47,10 +47,18 @@ pub struct CreateGamificationBadgeUserDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub level: Option<BadgeLevel>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
-    #[serde(alias = "granted_at")]
+    #[serde(default = "default_create_gamification_badge_user_granted_at", alias = "granted_at")]
     pub granted_at: DateTime<Utc>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "grant_key")]
     pub grant_key: Option<String>,
+}
+
+fn default_create_gamification_badge_user_grant_kind() -> BadgeGrantKind {
+    BadgeGrantKind::Peer
+}
+
+fn default_create_gamification_badge_user_granted_at() -> DateTime<Utc> {
+    Utc::now()
 }
 
 // =============================================================================
@@ -106,21 +114,21 @@ pub struct PatchGamificationBadgeUserDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "recipient_user_id")]
     pub recipient_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "sender_user_id")]
-    pub sender_user_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "sender_user_id")]
+    pub sender_user_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "grant_kind")]
     pub grant_kind: Option<BadgeGrantKind>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "challenge_id")]
-    pub challenge_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub comment: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub level: Option<BadgeLevel>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "challenge_id")]
+    pub challenge_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub comment: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub level: Option<Option<BadgeLevel>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "granted_at")]
     pub granted_at: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "grant_key")]
-    pub grant_key: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "grant_key")]
+    pub grant_key: Option<Option<String>>,
 }
 
 impl PatchGamificationBadgeUserDto {
@@ -310,12 +318,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationBadgeUserDto> for Gamificat
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationBadgeUser here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -35,7 +35,12 @@ pub struct CreateGamificationChallengeMembershipDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(alias = "user_id")]
     pub user_id: Uuid,
+    #[serde(default = "default_create_gamification_challenge_membership_source")]
     pub source: MembershipSource,
+}
+
+fn default_create_gamification_challenge_membership_source() -> MembershipSource {
+    MembershipSource::Explicit
 }
 
 // =============================================================================
@@ -237,12 +242,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationChallengeMembershipDto> for
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationChallengeMembership here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

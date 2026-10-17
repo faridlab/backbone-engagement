@@ -31,12 +31,16 @@ pub struct CreateGamificationKarmaRankDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "karma_min")]
+    #[serde(default = "default_create_gamification_karma_rank_karma_min", alias = "karma_min")]
     pub karma_min: i32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "motivational_text")]
     pub motivational_text: Option<String>,
+}
+
+fn default_create_gamification_karma_rank_karma_min() -> i32 {
+    1
 }
 
 // =============================================================================
@@ -80,10 +84,10 @@ pub struct PatchGamificationKarmaRankDto {
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "karma_min")]
     pub karma_min: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "motivational_text")]
-    pub motivational_text: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub description: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "motivational_text")]
+    pub motivational_text: Option<Option<String>>,
 }
 
 impl PatchGamificationKarmaRankDto {
@@ -247,12 +251,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationKarmaRankDto> for Gamificat
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationKarmaRank here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

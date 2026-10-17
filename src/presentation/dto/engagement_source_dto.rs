@@ -31,7 +31,12 @@ pub struct CreateEngagementSourceDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_engagement_source_active")]
     pub active: bool,
+}
+
+fn default_create_engagement_source_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -221,12 +226,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementSourceDto> for EngagementSour
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementSource here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

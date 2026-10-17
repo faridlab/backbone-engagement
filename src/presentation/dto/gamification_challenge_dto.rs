@@ -36,12 +36,13 @@ pub struct CreateGamificationChallengeDto {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "manager_user_id")]
     pub manager_user_id: Option<Uuid>,
+    #[serde(default = "default_create_gamification_challenge_period")]
     pub period: ChallengePeriod,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "start_date")]
     pub start_date: Option<NaiveDate>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "end_date")]
     pub end_date: Option<NaiveDate>,
-    #[serde(alias = "visibility_mode")]
+    #[serde(default = "default_create_gamification_challenge_visibility_mode", alias = "visibility_mode")]
     pub visibility_mode: ChallengeVisibilityMode,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "reward_badge_id")]
     pub reward_badge_id: Option<Uuid>,
@@ -52,12 +53,12 @@ pub struct CreateGamificationChallengeDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "reward_third_badge_id")]
     pub reward_third_badge_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "reward_failure")]
+    #[serde(default, alias = "reward_failure")]
     pub reward_failure: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "reward_realtime")]
+    #[serde(default = "default_create_gamification_challenge_reward_realtime", alias = "reward_realtime")]
     pub reward_realtime: bool,
-    #[serde(alias = "report_frequency")]
+    #[serde(default = "default_create_gamification_challenge_report_frequency", alias = "report_frequency")]
     pub report_frequency: ReportFrequency,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_report_date")]
     pub last_report_date: Option<NaiveDate>,
@@ -65,13 +66,37 @@ pub struct CreateGamificationChallengeDto {
     pub next_report_date: Option<NaiveDate>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "remind_update_delay")]
     pub remind_update_delay: Option<i32>,
-    #[serde(alias = "user_ids")]
+    #[serde(default = "default_create_gamification_challenge_user_ids", alias = "user_ids")]
     pub user_ids: serde_json::Value,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "include_all_users")]
+    #[serde(default, alias = "include_all_users")]
     pub include_all_users: bool,
-    #[serde(alias = "include_badge_ids")]
+    #[serde(default = "default_create_gamification_challenge_include_badge_ids", alias = "include_badge_ids")]
     pub include_badge_ids: serde_json::Value,
+}
+
+fn default_create_gamification_challenge_period() -> ChallengePeriod {
+    ChallengePeriod::Once
+}
+
+fn default_create_gamification_challenge_visibility_mode() -> ChallengeVisibilityMode {
+    ChallengeVisibilityMode::Personal
+}
+
+fn default_create_gamification_challenge_reward_realtime() -> bool {
+    true
+}
+
+fn default_create_gamification_challenge_report_frequency() -> ReportFrequency {
+    ReportFrequency::Never
+}
+
+fn default_create_gamification_challenge_user_ids() -> serde_json::Value {
+    serde_json::json!([])
+}
+
+fn default_create_gamification_challenge_include_badge_ids() -> serde_json::Value {
+    serde_json::json!([])
 }
 
 // =============================================================================
@@ -146,24 +171,24 @@ pub struct PatchGamificationChallengeDto {
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<ChallengeState>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "manager_user_id")]
-    pub manager_user_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "manager_user_id")]
+    pub manager_user_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub period: Option<ChallengePeriod>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "start_date")]
-    pub start_date: Option<NaiveDate>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "end_date")]
-    pub end_date: Option<NaiveDate>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "start_date")]
+    pub start_date: Option<Option<NaiveDate>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "end_date")]
+    pub end_date: Option<Option<NaiveDate>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "visibility_mode")]
     pub visibility_mode: Option<ChallengeVisibilityMode>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reward_badge_id")]
-    pub reward_badge_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reward_first_badge_id")]
-    pub reward_first_badge_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reward_second_badge_id")]
-    pub reward_second_badge_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reward_third_badge_id")]
-    pub reward_third_badge_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reward_badge_id")]
+    pub reward_badge_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reward_first_badge_id")]
+    pub reward_first_badge_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reward_second_badge_id")]
+    pub reward_second_badge_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reward_third_badge_id")]
+    pub reward_third_badge_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "reward_failure")]
     pub reward_failure: Option<bool>,
@@ -172,12 +197,12 @@ pub struct PatchGamificationChallengeDto {
     pub reward_realtime: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "report_frequency")]
     pub report_frequency: Option<ReportFrequency>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_report_date")]
-    pub last_report_date: Option<NaiveDate>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "next_report_date")]
-    pub next_report_date: Option<NaiveDate>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "remind_update_delay")]
-    pub remind_update_delay: Option<i32>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_report_date")]
+    pub last_report_date: Option<Option<NaiveDate>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "next_report_date")]
+    pub next_report_date: Option<Option<NaiveDate>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "remind_update_delay")]
+    pub remind_update_delay: Option<Option<i32>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "user_ids")]
     pub user_ids: Option<serde_json::Value>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
@@ -430,12 +455,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationChallengeDto> for Gamificat
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationChallenge here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

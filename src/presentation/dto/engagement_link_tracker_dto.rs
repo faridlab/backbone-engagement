@@ -90,17 +90,17 @@ pub struct PatchEngagementLinkTrackerDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub title: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "campaign_id")]
-    pub campaign_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "medium_id")]
-    pub medium_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "source_id")]
-    pub source_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "campaign_id")]
+    pub campaign_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "medium_id")]
+    pub medium_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "source_id")]
+    pub source_id: Option<Option<Uuid>>,
 }
 
 impl PatchEngagementLinkTrackerDto {
@@ -280,12 +280,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementLinkTrackerDto> for Engagemen
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementLinkTracker here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

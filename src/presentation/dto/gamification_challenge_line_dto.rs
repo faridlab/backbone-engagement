@@ -36,9 +36,14 @@ pub struct CreateGamificationChallengeLineDto {
     #[serde(alias = "definition_id")]
     pub definition_id: Uuid,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
+    #[serde(default = "default_create_gamification_challenge_line_sequence")]
     pub sequence: i32,
     #[serde(alias = "target_goal")]
     pub target_goal: Decimal,
+}
+
+fn default_create_gamification_challenge_line_sequence() -> i32 {
+    1
 }
 
 // =============================================================================
@@ -252,12 +257,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationChallengeLineDto> for Gamif
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationChallengeLine here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

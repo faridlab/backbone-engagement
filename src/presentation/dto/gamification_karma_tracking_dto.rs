@@ -38,7 +38,7 @@ pub struct CreateGamificationKarmaTrackingDto {
     #[serde(alias = "new_value")]
     pub new_value: i32,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
-    #[serde(alias = "tracking_date")]
+    #[serde(default = "default_create_gamification_karma_tracking_tracking_date", alias = "tracking_date")]
     pub tracking_date: DateTime<Utc>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub reason: String,
@@ -49,6 +49,10 @@ pub struct CreateGamificationKarmaTrackingDto {
     pub origin_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "origin_label")]
     pub origin_label: Option<String>,
+}
+
+fn default_create_gamification_karma_tracking_tracking_date() -> DateTime<Utc> {
+    Utc::now()
 }
 
 // =============================================================================
@@ -116,10 +120,10 @@ pub struct PatchGamificationKarmaTrackingDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "origin_kind")]
     pub origin_kind: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "origin_id")]
-    pub origin_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "origin_label")]
-    pub origin_label: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "origin_id")]
+    pub origin_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "origin_label")]
+    pub origin_label: Option<Option<String>>,
 }
 
 impl PatchGamificationKarmaTrackingDto {
@@ -307,12 +311,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationKarmaTrackingDto> for Gamif
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationKarmaTracking here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

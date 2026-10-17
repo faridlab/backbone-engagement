@@ -33,14 +33,19 @@ pub struct CreateEngagementCampaignDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub title: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_engagement_campaign_active")]
     pub active: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "user_id")]
     pub user_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "is_auto_campaign")]
+    #[serde(default, alias = "is_auto_campaign")]
     pub is_auto_campaign: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub color: Option<i32>,
+}
+
+fn default_create_engagement_campaign_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -91,13 +96,13 @@ pub struct PatchEngagementCampaignDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "user_id")]
-    pub user_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "user_id")]
+    pub user_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "is_auto_campaign")]
     pub is_auto_campaign: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub color: Option<i32>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub color: Option<Option<i32>>,
 }
 
 impl PatchEngagementCampaignDto {
@@ -273,12 +278,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementCampaignDto> for EngagementCa
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementCampaign here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

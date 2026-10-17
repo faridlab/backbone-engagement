@@ -49,6 +49,7 @@ pub struct CreateEngagementRatingDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub feedback: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub consumed: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "rated_on")]
     pub rated_on: Option<DateTime<Utc>>,
@@ -131,34 +132,34 @@ pub struct PatchEngagementRatingDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "rated_record_id")]
     pub rated_record_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "parent_rated_model")]
-    pub parent_rated_model: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "parent_rated_record_id")]
-    pub parent_rated_record_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rated_user_id")]
-    pub rated_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rater_user_id")]
-    pub rater_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rater_email")]
-    pub rater_email: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rating_value")]
-    pub rating_value: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub feedback: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "parent_rated_model")]
+    pub parent_rated_model: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "parent_rated_record_id")]
+    pub parent_rated_record_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rated_user_id")]
+    pub rated_user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rater_user_id")]
+    pub rater_user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rater_email")]
+    pub rater_email: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rating_value")]
+    pub rating_value: Option<Option<i32>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub feedback: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub consumed: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rated_on")]
-    pub rated_on: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rated_on")]
+    pub rated_on: Option<Option<DateTime<Utc>>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "token_expires_at")]
     pub token_expires_at: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "publisher_comment")]
-    pub publisher_comment: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "publisher_user_id")]
-    pub publisher_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "publisher_replied_at")]
-    pub publisher_replied_at: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "publisher_comment")]
+    pub publisher_comment: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "publisher_user_id")]
+    pub publisher_user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "publisher_replied_at")]
+    pub publisher_replied_at: Option<Option<DateTime<Utc>>>,
 }
 
 impl PatchEngagementRatingDto {
@@ -384,12 +385,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementRatingDto> for EngagementRati
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementRating here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

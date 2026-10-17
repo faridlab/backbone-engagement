@@ -38,14 +38,28 @@ pub struct CreateGamificationGoalDefinitionDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub monetary: bool,
-    #[serde(alias = "computation_mode")]
+    #[serde(default = "default_create_gamification_goal_definition_computation_mode", alias = "computation_mode")]
     pub computation_mode: GoalComputationMode,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "metric_key")]
     pub metric_key: Option<String>,
+    #[serde(default = "default_create_gamification_goal_definition_condition")]
     pub condition: GoalCondition,
-    #[serde(alias = "display_mode")]
+    #[serde(default = "default_create_gamification_goal_definition_display_mode", alias = "display_mode")]
     pub display_mode: GoalDisplayMode,
+}
+
+fn default_create_gamification_goal_definition_computation_mode() -> GoalComputationMode {
+    GoalComputationMode::Manual
+}
+
+fn default_create_gamification_goal_definition_condition() -> GoalCondition {
+    GoalCondition::Higher
+}
+
+fn default_create_gamification_goal_definition_display_mode() -> GoalDisplayMode {
+    GoalDisplayMode::Progress
 }
 
 // =============================================================================
@@ -92,17 +106,17 @@ pub struct PatchGamificationGoalDefinitionDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub suffix: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub description: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub suffix: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub monetary: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "computation_mode")]
     pub computation_mode: Option<GoalComputationMode>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "metric_key")]
-    pub metric_key: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "metric_key")]
+    pub metric_key: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub condition: Option<GoalCondition>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "display_mode")]
@@ -290,12 +304,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationGoalDefinitionDto> for Gami
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationGoalDefinition here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

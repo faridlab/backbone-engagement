@@ -31,7 +31,12 @@ pub struct CreateEngagementMediumDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_engagement_medium_active")]
     pub active: bool,
+}
+
+fn default_create_engagement_medium_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -221,12 +226,4 @@ impl backbone_core::ApplyUpdateDto<UpdateEngagementMediumDto> for EngagementMedi
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to EngagementMedium here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

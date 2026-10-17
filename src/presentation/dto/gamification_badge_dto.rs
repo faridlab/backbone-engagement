@@ -33,6 +33,7 @@ pub struct CreateGamificationBadgeDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_gamification_badge_active")]
     pub active: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "survey_id")]
     pub survey_id: Option<Uuid>,
@@ -42,15 +43,27 @@ pub struct CreateGamificationBadgeDto {
     pub description: Option<String>,
     #[serde(alias = "rule_auth")]
     pub rule_auth: BadgeRuleAuth,
-    #[serde(alias = "rule_auth_user_ids")]
+    #[serde(default = "default_create_gamification_badge_rule_auth_user_ids", alias = "rule_auth_user_ids")]
     pub rule_auth_user_ids: serde_json::Value,
-    #[serde(alias = "rule_auth_badge_ids")]
+    #[serde(default = "default_create_gamification_badge_rule_auth_badge_ids", alias = "rule_auth_badge_ids")]
     pub rule_auth_badge_ids: serde_json::Value,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "rule_max")]
+    #[serde(default, alias = "rule_max")]
     pub rule_max: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "rule_max_number")]
     pub rule_max_number: Option<i32>,
+}
+
+fn default_create_gamification_badge_active() -> bool {
+    true
+}
+
+fn default_create_gamification_badge_rule_auth_user_ids() -> serde_json::Value {
+    serde_json::json!([])
+}
+
+fn default_create_gamification_badge_rule_auth_badge_ids() -> serde_json::Value {
+    serde_json::json!([])
 }
 
 // =============================================================================
@@ -106,12 +119,12 @@ pub struct PatchGamificationBadgeDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "survey_id")]
-    pub survey_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub level: Option<BadgeLevel>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "survey_id")]
+    pub survey_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub level: Option<Option<BadgeLevel>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub description: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "rule_auth")]
     pub rule_auth: Option<BadgeRuleAuth>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "rule_auth_user_ids")]
@@ -121,8 +134,8 @@ pub struct PatchGamificationBadgeDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "rule_max")]
     pub rule_max: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rule_max_number")]
-    pub rule_max_number: Option<i32>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rule_max_number")]
+    pub rule_max_number: Option<Option<i32>>,
 }
 
 impl PatchGamificationBadgeDto {
@@ -317,12 +330,4 @@ impl backbone_core::ApplyUpdateDto<UpdateGamificationBadgeDto> for GamificationB
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to GamificationBadge here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 
