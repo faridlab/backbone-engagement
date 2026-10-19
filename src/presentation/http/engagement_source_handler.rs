@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for EngagementSourceError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `engagement_source:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn engagement_source_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("engagement_source")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for EngagementSource.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for EngagementSourceError {
 /// let router = create_engagement_source_routes(service);
 /// ```
 pub fn create_engagement_source_routes(service: Arc<EngagementSourceService>) -> Router {
-    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::routes(
+    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::routes_guarded(
         service,
         "/engagement_sources",
+        engagement_source_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for EngagementSource.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_engagement_source_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_engagement_source_read_routes(service: Arc<EngagementSourceService>) -> Router {
-    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::read_routes(
+    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::read_routes_guarded(
         service,
         "/engagement_sources",
+        engagement_source_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_engagement_source_read_routes(service: Arc<EngagementSourceService
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_engagement_source_write_routes(service: Arc<EngagementSourceService>) -> Router {
-    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::write_routes(
+    BackboneCrudHandler::<EngagementSourceService, EngagementSource, CreateEngagementSourceDto, UpdateEngagementSourceDto, EngagementSourceResponseDto>::write_routes_guarded(
         service,
         "/engagement_sources",
+        engagement_source_permissions(),
     )
 }
 

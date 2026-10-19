@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for GamificationKarmaRankError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_karma_rank:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_karma_rank_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_karma_rank")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationKarmaRank.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for GamificationKarmaRankError {
 /// let router = create_gamification_karma_rank_routes(service);
 /// ```
 pub fn create_gamification_karma_rank_routes(service: Arc<GamificationKarmaRankService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::routes(
+    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::routes_guarded(
         service,
         "/gamification_karma_ranks",
+        gamification_karma_rank_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationKarmaRank.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_karma_rank_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_karma_rank_read_routes(service: Arc<GamificationKarmaRankService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::read_routes_guarded(
         service,
         "/gamification_karma_ranks",
+        gamification_karma_rank_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_gamification_karma_rank_read_routes(service: Arc<GamificationKarma
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_karma_rank_write_routes(service: Arc<GamificationKarmaRankService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationKarmaRankService, GamificationKarmaRank, CreateGamificationKarmaRankDto, UpdateGamificationKarmaRankDto, GamificationKarmaRankResponseDto>::write_routes_guarded(
         service,
         "/gamification_karma_ranks",
+        gamification_karma_rank_permissions(),
     )
 }
 

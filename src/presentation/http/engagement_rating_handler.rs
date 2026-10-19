@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for EngagementRatingError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `engagement_rating:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn engagement_rating_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("engagement_rating")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for EngagementRating.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for EngagementRatingError {
 /// let router = create_engagement_rating_routes(service);
 /// ```
 pub fn create_engagement_rating_routes(service: Arc<EngagementRatingService>) -> Router {
-    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::routes(
+    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::routes_guarded(
         service,
         "/engagement_ratings",
+        engagement_rating_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for EngagementRating.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_engagement_rating_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_engagement_rating_read_routes(service: Arc<EngagementRatingService>) -> Router {
-    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::read_routes(
+    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::read_routes_guarded(
         service,
         "/engagement_ratings",
+        engagement_rating_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_engagement_rating_read_routes(service: Arc<EngagementRatingService
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_engagement_rating_write_routes(service: Arc<EngagementRatingService>) -> Router {
-    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::write_routes(
+    BackboneCrudHandler::<EngagementRatingService, EngagementRating, CreateEngagementRatingDto, UpdateEngagementRatingDto, EngagementRatingResponseDto>::write_routes_guarded(
         service,
         "/engagement_ratings",
+        engagement_rating_permissions(),
     )
 }
 

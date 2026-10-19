@@ -82,6 +82,13 @@ impl axum::response::IntoResponse for GamificationGoalError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_goal:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_goal_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_goal")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationGoal.
 ///
 /// # Routes
@@ -111,21 +118,23 @@ impl axum::response::IntoResponse for GamificationGoalError {
 /// let router = create_gamification_goal_routes(service);
 /// ```
 pub fn create_gamification_goal_routes(service: Arc<GamificationGoalService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::routes(
+    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::routes_guarded(
         service,
         "/gamification_goals",
+        gamification_goal_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationGoal.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_goal_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_goal_read_routes(service: Arc<GamificationGoalService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::read_routes_guarded(
         service,
         "/gamification_goals",
+        gamification_goal_permissions(),
     )
 }
 
@@ -141,9 +150,10 @@ pub fn create_gamification_goal_read_routes(service: Arc<GamificationGoalService
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_goal_write_routes(service: Arc<GamificationGoalService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationGoalService, GamificationGoal, CreateGamificationGoalDto, UpdateGamificationGoalDto, GamificationGoalResponseDto>::write_routes_guarded(
         service,
         "/gamification_goals",
+        gamification_goal_permissions(),
     )
 }
 
@@ -200,8 +210,19 @@ pub async fn start_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<GamificationGoalResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("gamification_goal:start", &["engagement:start"]) {
+            return backbone_core::http::permission_refusal::<GamificationGoalResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
@@ -210,24 +231,6 @@ pub async fn start_transition(
         Err(e) => return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&e),
     };
 
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = GoalStateTransition::Start.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("gamification_goal:transition:start");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("start needs gamification_goal:transition:start")));
-        }
-    }
-
     // Create state machine from entity's actual status and validate transition
     let current_state: GoalStateState = match entity.state.to_string().parse() {
         Ok(s) => s,
@@ -235,7 +238,11 @@ pub async fn start_transition(
     };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::Start) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("state", "transition_not_allowed", "start is not allowed from the current state")
+            .with_param("transition", "start")
+            .with_param("from", serde_json::to_value(&entity.state).unwrap_or_default())
+            .with_param("to", "inprogress")]);
+        return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -259,8 +266,19 @@ pub async fn evaluate_met_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<GamificationGoalResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("gamification_goal:evaluate_met", &["engagement:evaluate_met"]) {
+            return backbone_core::http::permission_refusal::<GamificationGoalResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
@@ -269,24 +287,6 @@ pub async fn evaluate_met_transition(
         Err(e) => return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&e),
     };
 
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = GoalStateTransition::EvaluateMet.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("gamification_goal:transition:evaluate_met");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("evaluate_met needs gamification_goal:transition:evaluate_met")));
-        }
-    }
-
     // Create state machine from entity's actual status and validate transition
     let current_state: GoalStateState = match entity.state.to_string().parse() {
         Ok(s) => s,
@@ -294,7 +294,11 @@ pub async fn evaluate_met_transition(
     };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::EvaluateMet) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("state", "transition_not_allowed", "evaluate_met is not allowed from the current state")
+            .with_param("transition", "evaluate_met")
+            .with_param("from", serde_json::to_value(&entity.state).unwrap_or_default())
+            .with_param("to", "reached")]);
+        return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -318,8 +322,19 @@ pub async fn manual_reach_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<GamificationGoalResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("gamification_goal:manual_reach", &["engagement:manual_reach"]) {
+            return backbone_core::http::permission_refusal::<GamificationGoalResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
@@ -328,24 +343,6 @@ pub async fn manual_reach_transition(
         Err(e) => return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&e),
     };
 
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = GoalStateTransition::ManualReach.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("gamification_goal:transition:manual_reach");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("manual_reach needs gamification_goal:transition:manual_reach")));
-        }
-    }
-
     // Create state machine from entity's actual status and validate transition
     let current_state: GoalStateState = match entity.state.to_string().parse() {
         Ok(s) => s,
@@ -353,7 +350,11 @@ pub async fn manual_reach_transition(
     };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::ManualReach) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("state", "transition_not_allowed", "manual_reach is not allowed from the current state")
+            .with_param("transition", "manual_reach")
+            .with_param("from", serde_json::to_value(&entity.state).unwrap_or_default())
+            .with_param("to", "reached")]);
+        return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -377,8 +378,19 @@ pub async fn window_close_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<GamificationGoalResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("gamification_goal:window_close", &["engagement:window_close"]) {
+            return backbone_core::http::permission_refusal::<GamificationGoalResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
@@ -387,24 +399,6 @@ pub async fn window_close_transition(
         Err(e) => return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&e),
     };
 
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = GoalStateTransition::WindowClose.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("gamification_goal:transition:window_close");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("window_close needs gamification_goal:transition:window_close")));
-        }
-    }
-
     // Create state machine from entity's actual status and validate transition
     let current_state: GoalStateState = match entity.state.to_string().parse() {
         Ok(s) => s,
@@ -412,7 +406,11 @@ pub async fn window_close_transition(
     };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::WindowClose) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("state", "transition_not_allowed", "window_close is not allowed from the current state")
+            .with_param("transition", "window_close")
+            .with_param("from", serde_json::to_value(&entity.state).unwrap_or_default())
+            .with_param("to", "failed")]);
+        return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -436,8 +434,19 @@ pub async fn cancel_transition(
     axum::extract::State(service): axum::extract::State<Arc<GamificationGoalService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<GamificationGoalResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("gamification_goal:cancel", &["engagement:cancel"]) {
+            return backbone_core::http::permission_refusal::<GamificationGoalResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
@@ -446,24 +455,6 @@ pub async fn cancel_transition(
         Err(e) => return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&e),
     };
 
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<GamificationGoalResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = GoalStateTransition::Cancel.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("gamification_goal:transition:cancel");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<GamificationGoalResponseDto>::error("cancel needs gamification_goal:transition:cancel")));
-        }
-    }
-
     // Create state machine from entity's actual status and validate transition
     let current_state: GoalStateState = match entity.state.to_string().parse() {
         Ok(s) => s,
@@ -471,7 +462,11 @@ pub async fn cancel_transition(
     };
     let sm = GoalStateStateMachine::from_state(current_state);
     if !sm.can_transition(GoalStateTransition::Cancel) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<GamificationGoalResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("state", "transition_not_allowed", "cancel is not allowed from the current state")
+            .with_param("transition", "cancel")
+            .with_param("from", serde_json::to_value(&entity.state).unwrap_or_default())
+            .with_param("to", "canceled")]);
+        return backbone_core::http::service_error_response::<GamificationGoalResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -499,5 +494,6 @@ pub fn create_gamification_goal_transition_routes(service: Arc<GamificationGoalS
         .route("/gamification_goals/:id/transitions/window_close", post(window_close_transition))
         .route("/gamification_goals/:id/transitions/cancel", post(cancel_transition))
         .with_state(service)
+        .layer(axum::middleware::from_fn(backbone_core::http::correlation_middleware))
 }
 

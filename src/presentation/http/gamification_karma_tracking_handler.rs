@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for GamificationKarmaTrackingError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_karma_tracking:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_karma_tracking_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_karma_tracking")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationKarmaTracking.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for GamificationKarmaTrackingError {
 /// let router = create_gamification_karma_tracking_routes(service);
 /// ```
 pub fn create_gamification_karma_tracking_routes(service: Arc<GamificationKarmaTrackingService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::routes(
+    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::routes_guarded(
         service,
         "/gamification_karma_trackings",
+        gamification_karma_tracking_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationKarmaTracking.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_karma_tracking_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_karma_tracking_read_routes(service: Arc<GamificationKarmaTrackingService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::read_routes_guarded(
         service,
         "/gamification_karma_trackings",
+        gamification_karma_tracking_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_gamification_karma_tracking_read_routes(service: Arc<GamificationK
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_karma_tracking_write_routes(service: Arc<GamificationKarmaTrackingService>) -> Router {
-    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationKarmaTrackingService, GamificationKarmaTracking, CreateGamificationKarmaTrackingDto, UpdateGamificationKarmaTrackingDto, GamificationKarmaTrackingResponseDto>::write_routes_guarded(
         service,
         "/gamification_karma_trackings",
+        gamification_karma_tracking_permissions(),
     )
 }
 

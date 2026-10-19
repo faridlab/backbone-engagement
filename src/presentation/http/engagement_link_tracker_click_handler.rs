@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for EngagementLinkTrackerClickError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `engagement_link_tracker_click:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn engagement_link_tracker_click_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("engagement_link_tracker_click")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for EngagementLinkTrackerClick.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for EngagementLinkTrackerClickError {
 /// let router = create_engagement_link_tracker_click_routes(service);
 /// ```
 pub fn create_engagement_link_tracker_click_routes(service: Arc<EngagementLinkTrackerClickService>) -> Router {
-    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::routes(
+    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::routes_guarded(
         service,
         "/engagement_link_tracker_clicks",
+        engagement_link_tracker_click_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for EngagementLinkTrackerClick.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_engagement_link_tracker_click_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_engagement_link_tracker_click_read_routes(service: Arc<EngagementLinkTrackerClickService>) -> Router {
-    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::read_routes(
+    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::read_routes_guarded(
         service,
         "/engagement_link_tracker_clicks",
+        engagement_link_tracker_click_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_engagement_link_tracker_click_read_routes(service: Arc<EngagementL
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_engagement_link_tracker_click_write_routes(service: Arc<EngagementLinkTrackerClickService>) -> Router {
-    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::write_routes(
+    BackboneCrudHandler::<EngagementLinkTrackerClickService, EngagementLinkTrackerClick, CreateEngagementLinkTrackerClickDto, UpdateEngagementLinkTrackerClickDto, EngagementLinkTrackerClickResponseDto>::write_routes_guarded(
         service,
         "/engagement_link_tracker_clicks",
+        engagement_link_tracker_click_permissions(),
     )
 }
 

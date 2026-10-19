@@ -254,6 +254,14 @@ impl backbone_core::PersistentEntity for GamificationGoal {
     fn state_fields() -> &'static [&'static str] {
         &["state"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("definition_id", "engagement.gamification_goal_definitions", "id"),
+            backbone_core::Reference::new("line_id", "engagement.gamification_challenge_lines", "id"),
+            backbone_core::Reference::new("challenge_id", "engagement.gamification_challenges", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for GamificationBadgeUserError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_badge_user:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_badge_user_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_badge_user")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationBadgeUser.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for GamificationBadgeUserError {
 /// let router = create_gamification_badge_user_routes(service);
 /// ```
 pub fn create_gamification_badge_user_routes(service: Arc<GamificationBadgeUserService>) -> Router {
-    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::routes(
+    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::routes_guarded(
         service,
         "/gamification_badge_users",
+        gamification_badge_user_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationBadgeUser.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_badge_user_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_badge_user_read_routes(service: Arc<GamificationBadgeUserService>) -> Router {
-    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::read_routes_guarded(
         service,
         "/gamification_badge_users",
+        gamification_badge_user_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_gamification_badge_user_read_routes(service: Arc<GamificationBadge
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_badge_user_write_routes(service: Arc<GamificationBadgeUserService>) -> Router {
-    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationBadgeUserService, GamificationBadgeUser, CreateGamificationBadgeUserDto, UpdateGamificationBadgeUserDto, GamificationBadgeUserResponseDto>::write_routes_guarded(
         service,
         "/gamification_badge_users",
+        gamification_badge_user_permissions(),
     )
 }
 

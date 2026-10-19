@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for EngagementMediumError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `engagement_medium:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn engagement_medium_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("engagement_medium")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for EngagementMedium.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for EngagementMediumError {
 /// let router = create_engagement_medium_routes(service);
 /// ```
 pub fn create_engagement_medium_routes(service: Arc<EngagementMediumService>) -> Router {
-    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::routes(
+    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::routes_guarded(
         service,
         "/engagement_mediums",
+        engagement_medium_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for EngagementMedium.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_engagement_medium_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_engagement_medium_read_routes(service: Arc<EngagementMediumService>) -> Router {
-    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::read_routes(
+    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::read_routes_guarded(
         service,
         "/engagement_mediums",
+        engagement_medium_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_engagement_medium_read_routes(service: Arc<EngagementMediumService
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_engagement_medium_write_routes(service: Arc<EngagementMediumService>) -> Router {
-    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::write_routes(
+    BackboneCrudHandler::<EngagementMediumService, EngagementMedium, CreateEngagementMediumDto, UpdateEngagementMediumDto, EngagementMediumResponseDto>::write_routes_guarded(
         service,
         "/engagement_mediums",
+        engagement_medium_permissions(),
     )
 }
 

@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for GamificationChallengeMembershipError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_challenge_membership:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_challenge_membership_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_challenge_membership")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationChallengeMembership.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for GamificationChallengeMembershipError {
 /// let router = create_gamification_challenge_membership_routes(service);
 /// ```
 pub fn create_gamification_challenge_membership_routes(service: Arc<GamificationChallengeMembershipService>) -> Router {
-    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::routes(
+    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::routes_guarded(
         service,
         "/gamification_challenge_memberships",
+        gamification_challenge_membership_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationChallengeMembership.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_challenge_membership_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_challenge_membership_read_routes(service: Arc<GamificationChallengeMembershipService>) -> Router {
-    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::read_routes_guarded(
         service,
         "/gamification_challenge_memberships",
+        gamification_challenge_membership_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_gamification_challenge_membership_read_routes(service: Arc<Gamific
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_challenge_membership_write_routes(service: Arc<GamificationChallengeMembershipService>) -> Router {
-    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationChallengeMembershipService, GamificationChallengeMembership, CreateGamificationChallengeMembershipDto, UpdateGamificationChallengeMembershipDto, GamificationChallengeMembershipResponseDto>::write_routes_guarded(
         service,
         "/gamification_challenge_memberships",
+        gamification_challenge_membership_permissions(),
     )
 }
 

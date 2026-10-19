@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for GamificationGoalDefinitionError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `gamification_goal_definition:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn gamification_goal_definition_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("gamification_goal_definition")
+        .in_module("engagement")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for GamificationGoalDefinition.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for GamificationGoalDefinitionError {
 /// let router = create_gamification_goal_definition_routes(service);
 /// ```
 pub fn create_gamification_goal_definition_routes(service: Arc<GamificationGoalDefinitionService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::routes(
+    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::routes_guarded(
         service,
         "/gamification_goal_definitions",
+        gamification_goal_definition_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for GamificationGoalDefinition.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_gamification_goal_definition_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_gamification_goal_definition_read_routes(service: Arc<GamificationGoalDefinitionService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::read_routes(
+    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::read_routes_guarded(
         service,
         "/gamification_goal_definitions",
+        gamification_goal_definition_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_gamification_goal_definition_read_routes(service: Arc<Gamification
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_gamification_goal_definition_write_routes(service: Arc<GamificationGoalDefinitionService>) -> Router {
-    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::write_routes(
+    BackboneCrudHandler::<GamificationGoalDefinitionService, GamificationGoalDefinition, CreateGamificationGoalDefinitionDto, UpdateGamificationGoalDefinitionDto, GamificationGoalDefinitionResponseDto>::write_routes_guarded(
         service,
         "/gamification_goal_definitions",
+        gamification_goal_definition_permissions(),
     )
 }
 

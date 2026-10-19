@@ -228,6 +228,13 @@ impl super::Entity for GamificationBadgeUser {
 }
 
 impl backbone_core::PersistentEntity for GamificationBadgeUser {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("badge_id", "engagement.gamification_badges", "id"),
+            backbone_core::Reference::new("challenge_id", "engagement.gamification_challenges", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }
