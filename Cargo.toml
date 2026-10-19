@@ -1,6 +1,6 @@
 [package]
 name = "backbone-engagement"
-version = "0.12.2"
+version = "0.12.3"
 edition = "2021"
 description = "Engagement — the attribution floor (UTM masters, short-link tracker, deduped click ledger) plus the visitor rating substrate and the gamification family: goals, challenges, badges, and the append-only karma ledger (Odoo utm + link_tracker + rating + gamification port)"
 license = "MIT OR Apache-2.0"
@@ -20,8 +20,8 @@ path = "src/lib.rs"
 # or `rev = "<commit-sha>"`. Cargo dedupes the git fetch — the repo is only
 # cloned once even though four crates reference it.
 # -----------------------------------------------------------------------------
-backbone-core = { version = "3.11.0", features = ["postgres"] }
-backbone-orm = { version = "3.1.0" }
+backbone-core = { version = "3.18.0", features = ["postgres"] }
+backbone-orm = { version = "3.18.0" }
 backbone-auth = { version = "3.0.0", features = ["axum"] }
 backbone-messaging = { version = "3.0.0" }
 # The public /r/<code> redirect is throttled at middleware (ADR-0019).
